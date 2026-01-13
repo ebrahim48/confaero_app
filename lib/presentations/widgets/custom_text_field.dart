@@ -173,14 +173,14 @@ class _CustomTextFieldState extends State<CustomTextField> {
   _suffixIcon(IconData icon) {
     return Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Icon(icon, color: AppColors.iconColor5B4334));
+        child: Icon(icon, color: AppColors.iconColorAEAEAE));
   }
 
   OutlineInputBorder focusedBorder() {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(widget.borderRadio?.r ?? 10.r),
       borderSide:
-          BorderSide(color: widget.borderColor ?? AppColors.borderColorEADFD7),
+          BorderSide(color: widget.borderColor ?? AppColors.borderColorD2D2D2),
     );
   }
 
@@ -188,7 +188,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(widget.borderRadio?.r ?? 10.r),
       borderSide:
-          BorderSide(color: widget.borderColor ?? AppColors.borderColorEADFD7),
+          BorderSide(color: widget.borderColor ?? AppColors.borderColorD2D2D2),
     );
   }
 

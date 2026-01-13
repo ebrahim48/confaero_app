@@ -40,9 +40,7 @@ class OnboardingController extends GetxController {
   }
 
   void completeOnboarding() {
-    // Save onboarding completion status
-    // Navigate to sign up screen
-    // Get.offAllNamed(AppRoutes.signUpScreen);
+
   }
 
   void goToPage(int index) {
