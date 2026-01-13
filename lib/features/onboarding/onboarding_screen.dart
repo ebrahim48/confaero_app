@@ -4,6 +4,8 @@ import 'package:confaero_app/features/onboarding/presentation/widgets/onboarding
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/config/approutes/app_routes.dart';
 import '../../core/constants/app_colors.dart';
 import '../../presentations/widgets/custom_button.dart';
 import '../../presentations/widgets/custom_text.dart';
@@ -82,29 +84,29 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 child: Column(
                   children: [
                     Obx(() => CustomButton(
-                      title: controller.currentPage.value == 0
-                          ? 'Continue'
-                          : 'Next',
+                      title: controller.currentPage.value == 0 ? 'Continue' : 'Next',
                       onpress: () {
-                        if (controller.currentPage.value <
-                            controller.onboardingData.length - 1) {
+                        if (controller.currentPage.value < controller.onboardingData.length - 1) {
                           _pageController.nextPage(
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.easeInOut,
                           );
                         } else {
-                          // Navigate to Sign Up screen
-                          controller.completeOnboarding();
+
+                          context.go(AppRoutes.signUpScreen);
+
                         }
                       },
                       height: 52.h,
                       borderRadius: 10.r,
                     )),
 
-                    // Skip intro button (hide on first page, show on other pages)
+
                     Obx(() => controller.currentPage.value != 0
                         ? GestureDetector(
-                      onTap: () => controller.skipIntro(),
+                      onTap: () {
+                        context.go(AppRoutes.signUpScreen);
+                      },
                       child: Padding(
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                         child: CustomText(
