@@ -28,22 +28,24 @@ class SignInController extends GetxController {
     }
   }
 
-  void signInWithEmail() async {
-    if (signInFormKey.currentState!.validate()) {
-      isLoading.value = true;
+  void signInWithEmail(BuildContext context) async {
+    // if (signInFormKey.currentState!.validate()) {
+    //   isLoading.value = true;
+    //
+    //   // TODO: API Integration here
+    //   // await authService.signIn(
+    //   //   email: emailController.text,
+    //   //   password: passwordController.text,
+    //   // );
+    //
+    //   await Future.delayed(const Duration(seconds: 2)); // Simulating API call
+    //   isLoading.value = false;
+    //
+    //   // Navigate to events screen after successful signin
+    //
+    // }
 
-      // TODO: API Integration here
-      // await authService.signIn(
-      //   email: emailController.text,
-      //   password: passwordController.text,
-      // );
-
-      await Future.delayed(const Duration(seconds: 2)); // Simulating API call
-      isLoading.value = false;
-
-      // Navigate to next screen after successful signin
-      // Get.offAllNamed(AppRoutes.homeScreen);
-    }
+    context.go(AppRoutes.eventsScreen);
   }
 
   void signInWithGoogle() async {

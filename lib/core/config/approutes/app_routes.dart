@@ -1,9 +1,12 @@
+import 'package:confaero_app/features/Events/presentation/widgets/view/event_details_screen.dart';
+import 'package:confaero_app/features/Events/presentation/widgets/view/events_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../features/onboarding/onboarding_screen.dart';
+import '../../../features/onboarding/presentation/widgets/view/onboarding_screen.dart';
+
 
 
 
@@ -12,6 +15,8 @@ class AppRoutes {
   static const String onBoardingScreen = "/onBoardingScreen";
   static const String signUpScreen = "/signUpScreen";
   static const String signInScreen = "/signInScreen";
+  static const String eventsScreen = "/eventsScreen";
+  static const String eventsDetailsScreen = "/eventsDetailsScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -40,6 +45,20 @@ class AppRoutes {
         path: signInScreen,
         name: signInScreen,
         builder: (context, state) => SignInScreen(),
+      ),
+
+
+      GoRoute(
+        path: eventsScreen,
+        name: eventsScreen,
+        builder: (context, state) => EventsScreen(),
+      ),
+
+
+      GoRoute(
+        path: eventsDetailsScreen,
+        name: eventsDetailsScreen,
+        builder: (context, state) => EventDetailsScreen(),
       ),
 
 

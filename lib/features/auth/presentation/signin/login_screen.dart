@@ -151,12 +151,11 @@ class _SignInScreenState extends State<SignInScreen>
               // Sign In Button
               Obx(() => CustomButton(
                 title: 'Log In',
-                onpress: controller.signInWithEmail,
+                onpress: () => controller.signInWithEmail(context),
                 loading: controller.isLoading.value,
                 height: 52.h,
                 borderRadius: 10.r,
               )),
-
               SizedBox(height: 24.h),
 
               // Or login with divider
