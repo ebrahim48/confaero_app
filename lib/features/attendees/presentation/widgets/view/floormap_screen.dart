@@ -38,7 +38,7 @@ class _FloorMapScreenState extends State<FloorMapScreen>
                   Row(
                     children: [
                       GestureDetector(
-                        onTap: () => Get.back(),
+                        onTap:  () => Navigator.of(context).pop(),
                         child: Icon(
                           Icons.arrow_back,
                           size: 24.sp,
