@@ -1,9 +1,11 @@
 import 'package:confaero_app/features/Events/presentation/widgets/view/event_details_screen.dart';
 import 'package:confaero_app/features/Events/presentation/widgets/view/events_screen.dart';
+import 'package:confaero_app/features/attendees/presentation/widgets/view/floormap_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import '../../../features/attendees/presentation/widgets/view/floor_map_details_screen.dart';
 import '../../../features/bottomNavbar/bottomNavbar_screen.dart';
 import '../../../features/onboarding/presentation/widgets/view/onboarding_screen.dart';
 
@@ -18,6 +20,8 @@ class AppRoutes {
   static const String eventsScreen = "/eventsScreen";
   static const String eventsDetailsScreen = "/eventsDetailsScreen";
   static const String mainNavigationScreen = "/mainNavigationScreen";
+  static const String floorMapScreen = "/floorMapScreen";
+  static const String floorMapDetailsScreen = "/floorMapDetailsScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -67,6 +71,19 @@ class AppRoutes {
         path: mainNavigationScreen,
         name: mainNavigationScreen,
         builder: (context, state) => MainNavigationScreen(),
+      ),
+
+      GoRoute(
+        path: floorMapScreen,
+        name: floorMapScreen,
+        builder: (context, state) => FloorMapScreen(),
+      ),
+
+
+      GoRoute(
+        path: floorMapDetailsScreen,
+        name: floorMapDetailsScreen,
+        builder: (context, state) => FloorMapDetailsScreen(),
       ),
 
 
