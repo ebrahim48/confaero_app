@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../../../../core/config/approutes/app_routes.dart';
 
 class EventDetailsController extends GetxController {
   final invitationCodeController = TextEditingController();
@@ -60,7 +63,7 @@ class EventDetailsController extends GetxController {
     // Success - navigate or show success message
   }
 
-  void registerNow() async {
+  void registerNow(BuildContext context) async {
     isLoading.value = true;
 
     // TODO: API Integration for event registration
@@ -68,7 +71,7 @@ class EventDetailsController extends GetxController {
 
     await Future.delayed(const Duration(seconds: 2));
     isLoading.value = false;
-
+    context.pushNamed(AppRoutes.mainNavigationScreen);
     // Navigate to registration form or success screen
   }
 }

@@ -219,7 +219,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                     // Right section (Button)
                                     Expanded(
                                       child: GestureDetector(
-                                        onTap: controller.registerNow,
+                                        onTap: () => controller.registerNow(context),
                                         child: Container(
                                           alignment: Alignment.center,
                                           decoration: const BoxDecoration(

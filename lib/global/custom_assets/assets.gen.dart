@@ -18,11 +18,51 @@ import 'package:vector_graphics/vector_graphics.dart' as _vg;
 class $AssetsIconsGen {
   const $AssetsIconsGen();
 
+  /// File path: assets/icons/arrow.svg
+  SvgGenImage get arrow => const SvgGenImage('assets/icons/arrow.svg');
+
+  /// File path: assets/icons/ateendees.svg
+  SvgGenImage get ateendees => const SvgGenImage('assets/icons/ateendees.svg');
+
+  /// File path: assets/icons/calendar.svg
+  SvgGenImage get calendar => const SvgGenImage('assets/icons/calendar.svg');
+
+  /// File path: assets/icons/community.svg
+  SvgGenImage get community => const SvgGenImage('assets/icons/community.svg');
+
   /// File path: assets/icons/google.svg
   SvgGenImage get google => const SvgGenImage('assets/icons/google.svg');
 
+  /// File path: assets/icons/home.svg
+  SvgGenImage get home => const SvgGenImage('assets/icons/home.svg');
+
+  /// File path: assets/icons/menusidebar.svg
+  SvgGenImage get menusidebar =>
+      const SvgGenImage('assets/icons/menusidebar.svg');
+
+  /// File path: assets/icons/message.svg
+  SvgGenImage get message => const SvgGenImage('assets/icons/message.svg');
+
+  /// File path: assets/icons/notification.svg
+  SvgGenImage get notification =>
+      const SvgGenImage('assets/icons/notification.svg');
+
+  /// File path: assets/icons/search.svg
+  SvgGenImage get search => const SvgGenImage('assets/icons/search.svg');
+
   /// List of all assets
-  List<SvgGenImage> get values => [google];
+  List<SvgGenImage> get values => [
+    arrow,
+    ateendees,
+    calendar,
+    community,
+    google,
+    home,
+    menusidebar,
+    message,
+    notification,
+    search,
+  ];
 }
 
 class $AssetsImagesGen {
@@ -32,6 +72,9 @@ class $AssetsImagesGen {
   AssetGenImage get accesshandouts =>
       const AssetGenImage('assets/images/accesshandouts.png');
 
+  /// File path: assets/images/banner.png
+  AssetGenImage get banner => const AssetGenImage('assets/images/banner.png');
+
   /// File path: assets/images/logo.png
   AssetGenImage get logo => const AssetGenImage('assets/images/logo.png');
 
@@ -39,9 +82,16 @@ class $AssetsImagesGen {
   AssetGenImage get meetconnect =>
       const AssetGenImage('assets/images/meetconnect.png');
 
+  /// File path: assets/images/myevents.png
+  AssetGenImage get myevents =>
+      const AssetGenImage('assets/images/myevents.png');
+
   /// File path: assets/images/planconference.png
   AssetGenImage get planconference =>
       const AssetGenImage('assets/images/planconference.png');
+
+  /// File path: assets/images/profile.png
+  AssetGenImage get profile => const AssetGenImage('assets/images/profile.png');
 
   /// File path: assets/images/welcome.png
   AssetGenImage get welcome => const AssetGenImage('assets/images/welcome.png');
@@ -49,9 +99,12 @@ class $AssetsImagesGen {
   /// List of all assets
   List<AssetGenImage> get values => [
     accesshandouts,
+    banner,
     logo,
     meetconnect,
+    myevents,
     planconference,
+    profile,
     welcome,
   ];
 }
