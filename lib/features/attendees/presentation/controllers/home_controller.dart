@@ -1,5 +1,7 @@
+import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 
 
 class HomeController extends GetxController {
@@ -29,7 +31,7 @@ class HomeController extends GetxController {
       // Navigate to Speakers
         break;
       case 1:
-      // Navigate to Floor map
+      context.pushNamed(AppRoutes.floorMapScreen);
         break;
       case 2:
       // Navigate to Exhibitors
