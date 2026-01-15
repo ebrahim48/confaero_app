@@ -40,7 +40,7 @@ class HomeController extends GetxController {
       // Navigate to Resources
         break;
       case 4:
-      // Navigate to Check In/Out
+        context.pushNamed(AppRoutes.eventCheckInCheckOutScreen);
         break;
       case 5:
       // Navigate to Sponsors
