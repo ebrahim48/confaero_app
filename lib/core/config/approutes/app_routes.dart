@@ -1,5 +1,7 @@
 import 'package:confaero_app/features/Events/presentation/widgets/view/event_details_screen.dart';
 import 'package:confaero_app/features/Events/presentation/widgets/view/events_screen.dart';
+import 'package:confaero_app/features/attendees/presentation/widgets/view/contact_qr_screen.dart';
+import 'package:confaero_app/features/attendees/presentation/widgets/view/contact_us_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/floormap_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
@@ -7,6 +9,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import '../../../features/attendees/presentation/widgets/view/event_checkIn_checkout_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/floor_map_details_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/live_meeting_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/qr_scanner_screen.dart';
 import '../../../features/bottomNavbar/bottomNavbar_screen.dart';
 import '../../../features/onboarding/presentation/widgets/view/onboarding_screen.dart';
 
@@ -24,6 +28,10 @@ class AppRoutes {
   static const String floorMapScreen = "/floorMapScreen";
   static const String floorMapDetailsScreen = "/floorMapDetailsScreen";
   static const String eventCheckInCheckOutScreen = "/eventCheckInCheckOutScreen";
+  static const String contactUsScreen = "/contactUsScreen";
+  static const String contactQrScreen = "/contactQrScreen";
+  static const String qrScannerScreen = "/qrScannerScreen";
+  static const String liveMeetingScreen = "/liveMeetingScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -92,6 +100,33 @@ class AppRoutes {
         path: eventCheckInCheckOutScreen,
         name: eventCheckInCheckOutScreen,
         builder: (context, state) => EventCheckInCheckOutScreen(),
+      ),
+
+
+      GoRoute(
+        path: contactUsScreen,
+        name: contactUsScreen,
+        builder: (context, state) => ContactUsScreen(),
+      ),
+
+      GoRoute(
+        path: contactQrScreen,
+        name: contactQrScreen,
+        builder: (context, state) => ContactQrScreen(),
+      ),
+
+
+      GoRoute(
+        path: qrScannerScreen,
+        name: qrScannerScreen,
+        builder: (context, state) => QrScannerScreen(),
+      ),
+
+
+      GoRoute(
+        path: liveMeetingScreen,
+        name: liveMeetingScreen,
+        builder: (context, state) => LiveMeetingScreen(),
       ),
 
 

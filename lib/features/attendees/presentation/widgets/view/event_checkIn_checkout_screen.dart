@@ -22,7 +22,6 @@ class _EventCheckInCheckOutScreenState extends State<EventCheckInCheckOutScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
       body: Column(
         children: [
           // Header
@@ -60,31 +59,31 @@ class _EventCheckInCheckOutScreenState extends State<EventCheckInCheckOutScreen>
             child: SingleChildScrollView(
               padding: EdgeInsets.all(24.w),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Title
                   CustomText(
                     text: 'How do you want to join this events?',
-                    fontsize: 18.sp,
+                    fontsize: 14.sp,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textColor424242,
-                    textAlign: TextAlign.start,
+                    textAlign: TextAlign.center,
                   ),
-
-                  SizedBox(height: 24.h),
-
-                  // Check in via QR code
                  CheckInCard(
                     title: '',
                     buttonText: 'Check in via QR code',
-                    description:
-                    'To enter the event, tap the check-in button and present your verification QR code to the volunteer or gatekeeper. For technical issues,',
-                    onButtonPressed: controller.checkInViaQRCode,
-                    onContactTap: controller.contactUs,
+                    description: 'To enter the event, tap the check-in button and present your verification QR code to the volunteer or gatekeeper. For technical issues,',
+                    onButtonPressed: () => controller.checkInViaQRCode(context),
+                    onContactTap: () => controller.contactUs(context),
                     isPrimary: true,
                   ),
 
-                  SizedBox(height: 32.h),
+                  SizedBox(height: 12.h),
+
+                  Divider(
+                    color: AppColors.textColorD2D2D2,
+                  ),
 
                   // Check in virtual
                  CheckInCard(
@@ -92,21 +91,46 @@ class _EventCheckInCheckOutScreenState extends State<EventCheckInCheckOutScreen>
                     buttonText: 'Check in',
                     description:
                     'To enter the virtual event, tap the check-in button and watch the event live. For technical issues,',
-                    onButtonPressed: controller.checkInVirtual,
-                    onContactTap: controller.contactUs,
+                    onButtonPressed: () => controller.checkInVirtual(context),
+                    onContactTap:  () => controller.contactUs(context),
                     isPrimary: false,
                   ),
 
                   SizedBox(height: 32.h),
 
                   // Check in/out times
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (controller.checkInTime.value.isNotEmpty)
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 8.h),
-                          child: RichText(
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        if (controller.checkInTime.value.isNotEmpty)
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 8.h),
+                            child: RichText(
+                              text: TextSpan(
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.textColor424242,
+                                ),
+                                children: [
+                                  const TextSpan(
+                                    text: 'Check in : ',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: controller.checkInTime.value,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        if (controller.checkOutTime.value.isNotEmpty)
+                          RichText(
                             text: TextSpan(
                               style: TextStyle(
                                 fontSize: 14.sp,
@@ -115,40 +139,19 @@ class _EventCheckInCheckOutScreenState extends State<EventCheckInCheckOutScreen>
                               ),
                               children: [
                                 const TextSpan(
-                                  text: 'Check in : ',
+                                  text: 'Check out : ',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 TextSpan(
-                                  text: controller.checkInTime.value,
+                                  text: controller.checkOutTime.value,
                                 ),
                               ],
                             ),
                           ),
-                        ),
-                      if (controller.checkOutTime.value.isNotEmpty)
-                        RichText(
-                          text: TextSpan(
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.textColor424242,
-                            ),
-                            children: [
-                              const TextSpan(
-                                text: 'Check out : ',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              TextSpan(
-                                text: controller.checkOutTime.value,
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+                      ],
+                    ),
                   )
                 ],
               ),
