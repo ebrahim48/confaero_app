@@ -1,7 +1,9 @@
+import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../controllers/home_controller.dart';
@@ -242,7 +244,11 @@ class _HomeScreenState extends State<HomeScreen>
                     SizedBox(width: 12.w),
                     _buildTag('Poster'),
                     SizedBox(width: 12.w),
-                    _buildTag('Job'),
+                    GestureDetector(
+                      onTap: () {
+                        context.pushNamed(AppRoutes.jobOpeningsScreen);
+                      },
+                        child: _buildTag('Job')),
                   ],
                 ),
               ),
