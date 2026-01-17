@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import '../../../features/attendees/presentation/widgets/view/event_checkIn_checkout_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/floor_map_details_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/job_openings_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/live_meeting_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/qr_scanner_screen.dart';
 import '../../../features/bottomNavbar/bottomNavbar_screen.dart';
@@ -32,6 +33,7 @@ class AppRoutes {
   static const String contactQrScreen = "/contactQrScreen";
   static const String qrScannerScreen = "/qrScannerScreen";
   static const String liveMeetingScreen = "/liveMeetingScreen";
+  static const String jobOpeningsScreen = "/jobOpeningsScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -127,6 +129,13 @@ class AppRoutes {
         path: liveMeetingScreen,
         name: liveMeetingScreen,
         builder: (context, state) => LiveMeetingScreen(),
+      ),
+
+
+      GoRoute(
+        path: jobOpeningsScreen,
+        name: jobOpeningsScreen,
+        builder: (context, state) => JobOpeningsScreen(),
       ),
 
 
