@@ -3,6 +3,7 @@ import 'package:confaero_app/features/Events/presentation/widgets/view/events_sc
 import 'package:confaero_app/features/attendees/presentation/widgets/view/contact_qr_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/contact_us_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/floormap_screen.dart';
+import 'package:confaero_app/features/attendees/presentation/widgets/view/job_details_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
 import 'package:flutter/cupertino.dart';
@@ -34,6 +35,7 @@ class AppRoutes {
   static const String qrScannerScreen = "/qrScannerScreen";
   static const String liveMeetingScreen = "/liveMeetingScreen";
   static const String jobOpeningsScreen = "/jobOpeningsScreen";
+  static const String jobDetailsScreen = "/jobDetailsScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -138,7 +140,11 @@ class AppRoutes {
         builder: (context, state) => JobOpeningsScreen(),
       ),
 
-
+      GoRoute(
+        path: jobDetailsScreen,
+        name: jobDetailsScreen,
+        builder: (context, state) => JobDetailsScreen(),
+      ),
 
 
 

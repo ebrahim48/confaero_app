@@ -1,7 +1,9 @@
+import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../controllers/job_openings_controller.dart';
@@ -202,6 +204,7 @@ class JobOpeningsScreen extends StatelessWidget {
                     return JobCardWidget(
                       job: job,
                       onTap: () {
+                        context.pushNamed(AppRoutes.jobDetailsScreen);
                         // Navigate to job details
                         print('Job tapped: ${job.id}');
                       },
