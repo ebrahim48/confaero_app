@@ -12,6 +12,7 @@ import '../../../features/attendees/presentation/widgets/view/event_checkIn_chec
 import '../../../features/attendees/presentation/widgets/view/floor_map_details_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/job_openings_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/live_meeting_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/my_profile_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/qr_scanner_screen.dart';
 import '../../../features/bottomNavbar/bottomNavbar_screen.dart';
 import '../../../features/notification/presentation/widgets/view/notifications_screen.dart';
@@ -38,6 +39,7 @@ class AppRoutes {
   static const String jobOpeningsScreen = "/jobOpeningsScreen";
   static const String jobDetailsScreen = "/jobDetailsScreen";
   static const String notificationsScreen = "/notificationsScreen";
+  static const String myProfileScreen = "/myProfileScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -152,6 +154,11 @@ class AppRoutes {
         path: notificationsScreen,
         name: notificationsScreen,
         builder: (context, state) => NotificationsScreen(),
+      ),
+      GoRoute(
+        path: myProfileScreen,
+        name: myProfileScreen,
+        builder: (context, state) => MyProfileScreen(),
       ),
 
 

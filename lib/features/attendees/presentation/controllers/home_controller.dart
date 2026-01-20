@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
-
 class HomeController extends GetxController {
   final selectedCategory = 0.obs;
+
+
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   final categories = [
     {'icon': 'assets/icons/speakers.svg', 'label': 'Speakers'},
@@ -20,6 +22,11 @@ class HomeController extends GetxController {
     selectedCategory.value = index;
   }
 
+
+  void openDrawer() {
+    scaffoldKey.currentState?.openDrawer();
+  }
+
   void openSponsorDetails(BuildContext context) {
     // Navigate to sponsor details or external link
   }
@@ -31,7 +38,7 @@ class HomeController extends GetxController {
       // Navigate to Speakers
         break;
       case 1:
-      context.pushNamed(AppRoutes.floorMapScreen);
+        context.pushNamed(AppRoutes.floorMapScreen);
         break;
       case 2:
       // Navigate to Exhibitors
@@ -44,18 +51,6 @@ class HomeController extends GetxController {
         break;
       case 5:
       // Navigate to Sponsors
-        break;
-      case 6:
-      // Navigate to Photos
-        break;
-      case 7:
-      // Navigate to Documents
-        break;
-      case 8:
-      // Navigate to Poster
-        break;
-      case 9:
-      // Navigate to Job
         break;
     }
   }

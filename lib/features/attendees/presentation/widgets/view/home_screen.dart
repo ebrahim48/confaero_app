@@ -8,9 +8,10 @@ import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../controllers/home_controller.dart';
 import '../../widgets/about_event_card_widget.dart';
-
 import '../category_item_widgets.dart';
+import '../sidebar_drawer.dart';
 import '../sponsor_banner_widgets.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,6 +27,9 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: controller.scaffoldKey,
+
+      drawer: const SidebarDrawer(),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -104,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen>
                         SizedBox(width: 16.w),
                         GestureDetector(
                           onTap: () {
-
+                            controller.openDrawer();
                           },
                           child: SvgPicture.asset(
                             'assets/icons/menusidebar.svg',
@@ -118,11 +122,11 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       ],
                     ),
-
                   ],
                 ),
               ),
             ),
+
             // Sponsor Banner
             SponsorBanner(
               sponsorName: 'BatteryCrop',
@@ -130,7 +134,8 @@ class _HomeScreenState extends State<HomeScreen>
             ),
 
             Padding(
-              padding: EdgeInsets.only(left: 12.w,bottom: 12.w,top: 12.w,right: 12.h),
+              padding: EdgeInsets.only(
+                  left: 12.w, bottom: 12.w, top: 12.w, right: 12.h),
               child: Stack(
                 children: [
                   ClipRRect(
@@ -165,7 +170,6 @@ class _HomeScreenState extends State<HomeScreen>
                       ],
                     ),
                   ),
-
                   Positioned(
                     bottom: 65.h,
                     left: 16.w,
@@ -200,7 +204,8 @@ class _HomeScreenState extends State<HomeScreen>
                             SizedBox(width: 4.w),
                             Expanded(
                               child: CustomText(
-                                text: 'Venue: palais des congrès de montréal, Conoco',
+                                text:
+                                'Venue: palais des congrès de montréal, Conoco',
                                 fontsize: 11.sp,
                                 fontWeight: FontWeight.w400,
                                 color: Colors.white,
@@ -256,15 +261,14 @@ class _HomeScreenState extends State<HomeScreen>
                     _buildTag('Poster'),
                     SizedBox(width: 12.w),
                     GestureDetector(
-                      onTap: () {
-                        context.pushNamed(AppRoutes.jobOpeningsScreen);
-                      },
+                        onTap: () {
+                          context.pushNamed(AppRoutes.jobOpeningsScreen);
+                        },
                         child: _buildTag('Job')),
                   ],
                 ),
               ),
             ),
-
 
             SizedBox(height: 24.h),
 
@@ -302,5 +306,3 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 }
-
-
