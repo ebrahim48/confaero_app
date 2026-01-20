@@ -4,150 +4,10 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 import '../controllers/job_details_controller.dart';
 
-// Top Card Widget
-class TopCardWidget extends StatelessWidget {
+class JobDetailsWidgets extends StatelessWidget {
   final JobDetailsController controller;
 
-  const TopCardWidget({
-    super.key,
-    required this.controller,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final job = controller.jobDetails.value!;
-
-    return Container(
-      height: 163.h,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(4.r),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Background Image
-            Container(
-              height: 163.h,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(4.r),
-                  topRight: Radius.circular(4.r),
-                ),
-                image: const DecorationImage(
-                  image: AssetImage('assets/images/jobopenings.jpg'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(4.r),
-                    topRight: Radius.circular(4.r),
-                  ),
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      Colors.white.withValues(alpha: 0.9),
-                      Colors.white.withValues(alpha: 0.5),
-                      Colors.white.withValues(alpha: 0.2),
-                    ],
-                  ),
-                ),
-                alignment: Alignment.centerLeft,
-                padding: EdgeInsets.only(bottom: 12,right: 12,top: 9,left: 12),
-                child: CustomText(
-                  text: job.companyName,
-                  fontsize: 18.sp,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textColor424242,
-                ),
-              ),
-            ),
-        
-            // Bottom Info
-            Padding(
-              padding: EdgeInsets.all(12.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Position & Job Type & Salary
-                  Row(
-                    children: [
-                      CustomText(
-                        text: job.position,
-                        fontsize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textColor424242,
-                      ),
-                      SizedBox(width: 12.w),
-                      Icon(
-                        Icons.work_outline,
-                        size: 14.sp,
-                        color: AppColors.textColor424242,
-                      ),
-                      SizedBox(width: 4.w),
-                      CustomText(
-                        text: job.jobType,
-                        fontsize: 12.sp,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textColor424242,
-                      ),
-                      const Spacer(),
-                      CustomText(
-                        text: job.salary,
-                        fontsize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textColor424242,
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8.h),
-        
-                  // Location
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.location_on_outlined,
-                        size: 14.sp,
-                        color: AppColors.textColor7E7F7E,
-                      ),
-                      SizedBox(width: 4.w),
-                      Expanded(
-                        child: CustomText(
-                          text: job.location,
-                          fontsize: 11.sp,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.textColor7E7F7E,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 4.h),
-        
-                  // Last Date
-                  CustomText(
-                    text: 'Last Date : ${job.lastDate}',
-                    fontsize: 11.sp,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textColor7E7F7E,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Job Description Widget
-class JobDescriptionWidget extends StatelessWidget {
-  final JobDetailsController controller;
-
-  const JobDescriptionWidget({
+  const JobDetailsWidgets({
     super.key,
     required this.controller,
   });
@@ -159,6 +19,148 @@ class JobDescriptionWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Top Card with Image
+        _buildTopCard(job),
+
+        SizedBox(height: 16.h),
+
+        // Job Description
+        _buildJobDescription(job),
+
+        SizedBox(height: 16.h),
+
+        // Requirements
+        _buildRequirements(job),
+
+        SizedBox(height: 16.h),
+
+        // Location
+        _buildLocation(job),
+
+        SizedBox(height: 16.h),
+
+        // Informations
+        _buildInformations(job),
+
+        SizedBox(height: 16.h),
+
+        // Facilities and Others
+        _buildFacilities(job),
+      ],
+    );
+  }
+
+  // Top Card Widget
+  Widget _buildTopCard(job) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(4.r),
+      ),
+      child: Column(
+        children: [
+          // Background Image
+          Container(
+            height: 163.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(4.r),
+                topRight: Radius.circular(4.r),
+              ),
+              image: const DecorationImage(
+                image: AssetImage('assets/images/jobopenings.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+            alignment: Alignment.topLeft,
+            padding: EdgeInsets.only(bottom: 12.h, right: 5.w, top: 9.h, left: 12.w),
+            child: CustomText(
+              text: job.companyName,
+              fontsize: 18.sp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textColor424242,
+            ),
+          ),
+
+          // Bottom Info
+          Padding(
+            padding: EdgeInsets.only(bottom: 12.h, right: 12.w, top: 12.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                Row(
+                  children: [
+                    CustomText(
+                      text: job.position,
+                      fontsize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textColor252525,
+                    ),
+                    SizedBox(width: 12.w),
+                    Icon(
+                      Icons.work_outline,
+                      size: 14.sp,
+                      color: AppColors.textColor252525,
+                    ),
+                    SizedBox(width: 4.w),
+                    CustomText(
+                      text: job.jobType,
+                      fontsize: 12.sp,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textColor252525,
+                    ),
+                    const Spacer(),
+                    CustomText(
+                      text: job.salary,
+                      fontsize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textColor252525,
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+
+                // Location & Last Date
+                Row(
+                  children: [
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 14.sp,
+                      color: AppColors.textColor252525,
+                    ),
+                    SizedBox(width: 4.w),
+                    Expanded(
+                      child: CustomText(
+                        textAlign: TextAlign.start,
+                        text: job.location,
+                        fontsize: 11.sp,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.textColor252525,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    CustomText(
+                      text: 'Last Date : ${job.lastDate}',
+                      fontsize: 11.sp,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textColor252525,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Job Description Section
+  Widget _buildJobDescription(job) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         CustomText(
           text: 'Job Description',
           fontsize: 16.sp,
@@ -167,29 +169,19 @@ class JobDescriptionWidget extends StatelessWidget {
         ),
         SizedBox(height: 8.h),
         CustomText(
+          textAlign: TextAlign.start,
           text: job.description,
           fontsize: 13.sp,
           fontWeight: FontWeight.w400,
           color: AppColors.textColor7E7F7E,
+          maxline: 12,
         ),
       ],
     );
   }
-}
 
-// Requirements Widget
-class RequirementsWidget extends StatelessWidget {
-  final JobDetailsController controller;
-
-  const RequirementsWidget({
-    super.key,
-    required this.controller,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final job = controller.jobDetails.value!;
-
+  // Requirements Section
+  Widget _buildRequirements(job) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -217,10 +209,12 @@ class RequirementsWidget extends StatelessWidget {
                 ),
                 Expanded(
                   child: CustomText(
+                    textAlign: TextAlign.start,
                     text: req,
                     fontsize: 13.sp,
                     fontWeight: FontWeight.w400,
                     color: AppColors.textColor7E7F7E,
+
                   ),
                 ),
               ],
@@ -230,21 +224,9 @@ class RequirementsWidget extends StatelessWidget {
       ],
     );
   }
-}
 
-// Location Widget
-class LocationWidget extends StatelessWidget {
-  final JobDetailsController controller;
-
-  const LocationWidget({
-    super.key,
-    required this.controller,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final job = controller.jobDetails.value!;
-
+  // Location Section
+  Widget _buildLocation(job) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -285,21 +267,9 @@ class LocationWidget extends StatelessWidget {
       ],
     );
   }
-}
 
-// Informations Widget
-class InformationsWidget extends StatelessWidget {
-  final JobDetailsController controller;
-
-  const InformationsWidget({
-    super.key,
-    required this.controller,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final job = controller.jobDetails.value!;
-
+  // Informations Section
+  Widget _buildInformations(job) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -319,6 +289,7 @@ class InformationsWidget extends StatelessWidget {
     );
   }
 
+  // Info Row Helper
   Widget _buildInfoRow(String label, String value) {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
@@ -342,21 +313,9 @@ class InformationsWidget extends StatelessWidget {
       ),
     );
   }
-}
 
-// Facilities Widget
-class FacilitiesWidget extends StatelessWidget {
-  final JobDetailsController controller;
-
-  const FacilitiesWidget({
-    super.key,
-    required this.controller,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final job = controller.jobDetails.value!;
-
+  // Facilities Section
+  Widget _buildFacilities(job) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -87,27 +87,38 @@ class _HomeScreenState extends State<HomeScreen>
                     // Notification and Menu Icons
                     Row(
                       children: [
-                        SvgPicture.asset(
-                          'assets/icons/notification.svg',
-                          width: 24.w,
-                          height: 24.h,
-                          colorFilter: ColorFilter.mode(
-                            AppColors.textColor424242,
-                            BlendMode.srcIn,
+                        GestureDetector(
+                          onTap: () {
+                            context.pushNamed(AppRoutes.notificationsScreen);
+                          },
+                          child: SvgPicture.asset(
+                            'assets/icons/notification.svg',
+                            width: 24.w,
+                            height: 24.h,
+                            colorFilter: ColorFilter.mode(
+                              AppColors.textColor424242,
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                         SizedBox(width: 16.w),
-                        SvgPicture.asset(
-                          'assets/icons/menusidebar.svg',
-                          width: 24.w,
-                          height: 24.h,
-                          colorFilter: ColorFilter.mode(
-                            AppColors.textColor424242,
-                            BlendMode.srcIn,
+                        GestureDetector(
+                          onTap: () {
+
+                          },
+                          child: SvgPicture.asset(
+                            'assets/icons/menusidebar.svg',
+                            width: 24.w,
+                            height: 24.h,
+                            colorFilter: ColorFilter.mode(
+                              AppColors.textColor424242,
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                       ],
                     ),
+
                   ],
                 ),
               ),
