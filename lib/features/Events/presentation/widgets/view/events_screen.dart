@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../controllers/events_controller.dart';
@@ -65,27 +67,38 @@ class _EventsScreenState extends State<EventsScreen>
                   // Notification and Menu Icons
                   Row(
                     children: [
-                      SvgPicture.asset(
-                        'assets/icons/notification.svg',
-                        width: 24.w,
-                        height: 24.h,
-                        colorFilter: ColorFilter.mode(
-                          AppColors.textColor424242,
-                          BlendMode.srcIn,
+                      GestureDetector(
+                        onTap: () {
+                          context.pushNamed(AppRoutes.notificationsScreen);
+                        },
+                        child: SvgPicture.asset(
+                          'assets/icons/notification.svg',
+                          width: 24.w,
+                          height: 24.h,
+                          colorFilter: ColorFilter.mode(
+                            AppColors.textColor424242,
+                            BlendMode.srcIn,
+                          ),
                         ),
                       ),
                       SizedBox(width: 16.w),
-                      SvgPicture.asset(
-                        'assets/icons/menusidebar.svg',
-                        width: 24.w,
-                        height: 24.h,
-                        colorFilter: ColorFilter.mode(
-                          AppColors.textColor424242,
-                          BlendMode.srcIn,
+                      GestureDetector(
+                        onTap: () {
+
+                        },
+                        child: SvgPicture.asset(
+                          'assets/icons/menusidebar.svg',
+                          width: 24.w,
+                          height: 24.h,
+                          colorFilter: ColorFilter.mode(
+                            AppColors.textColor424242,
+                            BlendMode.srcIn,
+                          ),
                         ),
                       ),
                     ],
                   ),
+
                 ],
               ),
             ),

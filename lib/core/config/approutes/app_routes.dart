@@ -14,6 +14,7 @@ import '../../../features/attendees/presentation/widgets/view/job_openings_scree
 import '../../../features/attendees/presentation/widgets/view/live_meeting_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/qr_scanner_screen.dart';
 import '../../../features/bottomNavbar/bottomNavbar_screen.dart';
+import '../../../features/notification/presentation/widgets/view/notifications_screen.dart';
 import '../../../features/onboarding/presentation/widgets/view/onboarding_screen.dart';
 
 
@@ -36,6 +37,7 @@ class AppRoutes {
   static const String liveMeetingScreen = "/liveMeetingScreen";
   static const String jobOpeningsScreen = "/jobOpeningsScreen";
   static const String jobDetailsScreen = "/jobDetailsScreen";
+  static const String notificationsScreen = "/notificationsScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -144,6 +146,12 @@ class AppRoutes {
         path: jobDetailsScreen,
         name: jobDetailsScreen,
         builder: (context, state) => JobDetailsScreen(),
+      ),
+
+      GoRoute(
+        path: notificationsScreen,
+        name: notificationsScreen,
+        builder: (context, state) => NotificationsScreen(),
       ),
 
 

@@ -12,7 +12,7 @@ class JobDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize controller
+
     final controller = Get.put(JobDetailsController());
 
     return Scaffold(
@@ -62,33 +62,8 @@ class JobDetailsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Top Card with Image
-                      TopCardWidget(controller: controller),
-
-                      SizedBox(height: 16.h),
-
-                      // Job Description
-                      JobDescriptionWidget(controller: controller),
-
-                      SizedBox(height: 16.h),
-
-                      // Requirements
-                      RequirementsWidget(controller: controller),
-
-                      SizedBox(height: 16.h),
-
-                      // Location
-                      LocationWidget(controller: controller),
-
-                      SizedBox(height: 16.h),
-
-                      // Informations
-                      InformationsWidget(controller: controller),
-
-                      SizedBox(height: 16.h),
-
-                      // Facilities and Others
-                      FacilitiesWidget(controller: controller),
+                      // All Job Details Widgets
+                      JobDetailsWidgets(controller: controller),
 
                       SizedBox(height: 24.h),
 
