@@ -148,6 +148,7 @@ class SidebarDrawer extends StatelessWidget {
                   ),
                 ),
                 title: CustomText(
+                  textAlign: TextAlign.start,
                   text: 'Logout',
                   fontsize: 14.sp,
                   fontWeight: FontWeight.w600,
