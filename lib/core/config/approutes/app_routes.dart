@@ -8,12 +8,15 @@ import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import '../../../features/attendees/presentation/widgets/view/connectionlist_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/event_checkIn_checkout_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/floor_map_details_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/job_openings_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/live_meeting_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/my_profile_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/qr_scanner_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/quick_notes_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/write_note_screen.dart';
 import '../../../features/bottomNavbar/bottomNavbar_screen.dart';
 import '../../../features/notification/presentation/widgets/view/notifications_screen.dart';
 import '../../../features/onboarding/presentation/widgets/view/onboarding_screen.dart';
@@ -40,6 +43,9 @@ class AppRoutes {
   static const String jobDetailsScreen = "/jobDetailsScreen";
   static const String notificationsScreen = "/notificationsScreen";
   static const String myProfileScreen = "/myProfileScreen";
+  static const String connectionListScreen = "/connectionListScreen";
+  static const String quickNotesScreen = "/quickNotesScreen";
+  static const String writeNoteScreen = "/writeNoteScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -159,6 +165,21 @@ class AppRoutes {
         path: myProfileScreen,
         name: myProfileScreen,
         builder: (context, state) => MyProfileScreen(),
+      ),
+      GoRoute(
+        path: connectionListScreen,
+        name: connectionListScreen,
+        builder: (context, state) => ConnectionListScreen(),
+      ),
+      GoRoute(
+        path: quickNotesScreen,
+        name: quickNotesScreen,
+        builder: (context, state) => QuickNotesScreen(),
+      ),
+      GoRoute(
+        path: writeNoteScreen,
+        name: writeNoteScreen,
+        builder: (context, state) => WriteNoteScreen(),
       ),
 
 
