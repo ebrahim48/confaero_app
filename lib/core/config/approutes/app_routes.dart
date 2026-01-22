@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import '../../../features/attendees/presentation/widgets/view/connectionlist_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/event_checkIn_checkout_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/floor_map_details_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/grganizers_guidelines.dart';
 import '../../../features/attendees/presentation/widgets/view/job_openings_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/live_meeting_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/my_profile_screen.dart';
@@ -46,6 +47,7 @@ class AppRoutes {
   static const String connectionListScreen = "/connectionListScreen";
   static const String quickNotesScreen = "/quickNotesScreen";
   static const String writeNoteScreen = "/writeNoteScreen";
+  static const String organizserGuidelinesScreen = "/organizserGuidelinesScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -180,6 +182,11 @@ class AppRoutes {
         path: writeNoteScreen,
         name: writeNoteScreen,
         builder: (context, state) => WriteNoteScreen(),
+      ),
+      GoRoute(
+        path: organizserGuidelinesScreen,
+        name: organizserGuidelinesScreen,
+        builder: (context, state) => OrganizserGuidelinesScreen(),
       ),
 
 

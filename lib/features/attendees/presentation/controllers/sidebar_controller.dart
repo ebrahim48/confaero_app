@@ -54,7 +54,7 @@ class SidebarController extends GetxController {
     SidebarMenuItem(
       icon: 'assets/icons/organizer.svg',
       label: 'Organizers',
-      route: '/organizers', // Add this route to AppRoutes
+      route: AppRoutes.organizserGuidelinesScreen,
     ),
     SidebarMenuItem(
       icon: 'assets/icons/about.svg',
