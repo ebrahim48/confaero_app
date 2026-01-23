@@ -13,7 +13,7 @@ class AppColors {
   static const Color topNavbarColorF5F5F5 = Color(0xffF5F5F5);
   static const Color iconColorAEAEAE = Color(0xffAEAEAE);
   static const Color borderColorD2D2D2 = Color(0xffD2D2D2);
-
+  static const Color redColorAC1F1F = Color(0xffAC1F1F);
 
 
 
@@ -30,7 +30,7 @@ class AppColors {
   static const Color textColor8A8A8A = Color(0xff8A8A8A);
 
   static const Color textColor997C67 = Color(0xff997C67);
-  static const Color redColorFF1D1D = Color(0xffFF1D1D);
+
   static const Color textColorFFFFFF = Color(0xffFFFFFF);
   static const Color textColor2E2E2E = Color(0xff2E2E2E);
   static const Color textColor222222 = Color(0xff222222);

@@ -59,17 +59,17 @@ class SidebarController extends GetxController {
     SidebarMenuItem(
       icon: 'assets/icons/about.svg',
       label: 'About',
-      route: '/about', // Add this route to AppRoutes
+      route: AppRoutes.aboutUsScreen,
     ),
     SidebarMenuItem(
       icon: 'assets/icons/settings.svg',
       label: 'Settings',
-      route: '/settings', // Add this route to AppRoutes
+      route: AppRoutes.settingsScreen,
     ),
     SidebarMenuItem(
       icon: 'assets/icons/termsconditions.svg',
       label: 'Terms & Conditions',
-      route: '/terms-conditions', // Add this route to AppRoutes
+      route: AppRoutes.termsConditionScreen,
     ),
   ];
 
