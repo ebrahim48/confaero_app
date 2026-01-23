@@ -1,21 +1,29 @@
 import 'package:confaero_app/features/Events/presentation/widgets/view/event_details_screen.dart';
 import 'package:confaero_app/features/Events/presentation/widgets/view/events_screen.dart';
+import 'package:confaero_app/features/attendees/presentation/widgets/view/about_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/contact_qr_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/contact_us_screen.dart';
+import 'package:confaero_app/features/attendees/presentation/widgets/view/event_posters_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/floormap_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/job_details_screen.dart';
+import 'package:confaero_app/features/attendees/presentation/widgets/view/new_event_proposal_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import '../../../features/attendees/presentation/widgets/view/change_password.dart';
 import '../../../features/attendees/presentation/widgets/view/connectionlist_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/delete_account.dart';
 import '../../../features/attendees/presentation/widgets/view/event_checkIn_checkout_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/floor_map_details_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/grganizers_guidelines_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/job_openings_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/live_meeting_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/my_profile_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/qr_scanner_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/quick_notes_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/settings_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/terms_condition_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/write_note_screen.dart';
 import '../../../features/bottomNavbar/bottomNavbar_screen.dart';
 import '../../../features/notification/presentation/widgets/view/notifications_screen.dart';
@@ -46,6 +54,14 @@ class AppRoutes {
   static const String connectionListScreen = "/connectionListScreen";
   static const String quickNotesScreen = "/quickNotesScreen";
   static const String writeNoteScreen = "/writeNoteScreen";
+  static const String organizserGuidelinesScreen = "/organizserGuidelinesScreen";
+  static const String aboutUsScreen = "/aboutUsScreen";
+  static const String newEventProposalScreen = "/newEventProposalScreen";
+  static const String settingsScreen = "/settingsScreen";
+  static const String changePasswordScreen = "/changePasswordScreen";
+  static const String deleteAccountScreen = "/deleteAccountScreen";
+  static const String termsConditionScreen = "/termsConditionScreen";
+  static const String eventsPostersScreen = "/eventsPostersScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -180,6 +196,48 @@ class AppRoutes {
         path: writeNoteScreen,
         name: writeNoteScreen,
         builder: (context, state) => WriteNoteScreen(),
+      ),
+      GoRoute(
+        path: organizserGuidelinesScreen,
+        name: organizserGuidelinesScreen,
+        builder: (context, state) => OrganizserGuidelinesScreen(),
+      ),
+      GoRoute(
+        path: aboutUsScreen,
+        name: aboutUsScreen,
+        builder: (context, state) => AboutUsScreen(),
+      ),
+
+      GoRoute(
+        path: newEventProposalScreen,
+        name: newEventProposalScreen,
+        builder: (context, state) => NewEventProposalScreen(),
+      ),
+
+      GoRoute(
+        path: settingsScreen,
+        name: settingsScreen,
+        builder: (context, state) => SettingsScreen(),
+      ),
+      GoRoute(
+        path: changePasswordScreen,
+        name: changePasswordScreen,
+        builder: (context, state) => ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: deleteAccountScreen,
+        name: deleteAccountScreen,
+        builder: (context, state) => DeleteAccountScreen(),
+      ),
+      GoRoute(
+        path: termsConditionScreen,
+        name: termsConditionScreen,
+        builder: (context, state) => TermsConditionScreen(),
+      ),
+      GoRoute(
+        path: eventsPostersScreen,
+        name: eventsPostersScreen,
+        builder: (context, state) => EventsPostersScreen(),
       ),
 
 
