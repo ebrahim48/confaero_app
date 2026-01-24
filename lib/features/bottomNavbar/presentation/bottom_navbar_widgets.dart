@@ -28,7 +28,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
       'label': 'Agenda',
     },
     {
-      'icon': 'assets/icons/attendees.svg',
+      'icon': 'assets/icons/ateendees.svg',
       'label': 'Attendees',
     },
     {

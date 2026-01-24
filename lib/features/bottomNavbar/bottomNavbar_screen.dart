@@ -1,7 +1,10 @@
+import 'package:confaero_app/features/agenda/presentation/widgets/view/agenda_screen.dart';
 import 'package:confaero_app/features/bottomNavbar/presentation/bottom_navbar_widgets.dart';
+import 'package:confaero_app/features/community_screen.dart';
+import 'package:confaero_app/features/mainattendees/presentation/widgets/view/attendees_screen.dart';
+import 'package:confaero_app/features/message/message_screen.dart';
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
-import '../Events/presentation/widgets/view/events_screen.dart';
 import '../attendees/presentation/widgets/view/home_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -16,10 +19,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   final List<Widget> screens = [
     const HomeScreen(), // Home
-    const Center(child: Text('Agenda')), // Agenda
-    const Center(child: Text('Attendees')), // Attendees
-    const Center(child: Text('Community')), // Community
-    const Center(child: Text('Messages')), // Messages
+    const AgendaScreen(), // Agenda
+    const AttendeesScreen(), // Attendees
+    const CommunityScreen(), // Community
+    const MessageScreen(), // Messages
   ];
 
   @override

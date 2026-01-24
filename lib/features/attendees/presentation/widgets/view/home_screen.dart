@@ -254,11 +254,23 @@ class _HomeScreenState extends State<HomeScreen>
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _buildTag('Photos'),
+                    GestureDetector(
+                      onTap: () {
+                        context.pushNamed(AppRoutes.photosScreen);
+                      },
+                        child: _buildTag('Photos')),
                     SizedBox(width: 12.w),
-                    _buildTag('Documents'),
+                    GestureDetector(
+                        onTap: () {
+                          context.pushNamed(AppRoutes.documentScreen);
+                        },
+                        child: _buildTag('Documents')),
                     SizedBox(width: 12.w),
-                    _buildTag('Poster'),
+                    GestureDetector(
+                      onTap: () {
+                        context.pushNamed(AppRoutes.eventsPostersScreen);
+                      },
+                        child: _buildTag('Poster')),
                     SizedBox(width: 12.w),
                     GestureDetector(
                         onTap: () {

@@ -11,10 +11,13 @@ import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import '../../../features/agenda/presentation/widgets/view/agenda_details_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/add_poster_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/change_password.dart';
 import '../../../features/attendees/presentation/widgets/view/connectionlist_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/delete_account.dart';
+import '../../../features/attendees/presentation/widgets/view/document_details.dart';
+import '../../../features/attendees/presentation/widgets/view/document_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/event_checkIn_checkout_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/event_posters_details_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/floor_map_details_screen.dart';
@@ -24,8 +27,11 @@ import '../../../features/attendees/presentation/widgets/view/job_openings_scree
 import '../../../features/attendees/presentation/widgets/view/live_meeting_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/my_profile_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/pdf_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/photos_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/poll_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/qr_scanner_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/quick_notes_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/resources_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/settings_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/terms_condition_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/write_note_screen.dart';
@@ -70,6 +76,12 @@ class AppRoutes {
   static const String pdfScreen = "/pdfScreen";
   static const String imagePdfScreen = "/imagePdfScreen";
   static const String addPosterScreen = "/addPosterScreen";
+  static const String resourcesScreen = "/resourcesScreen";
+  static const String pollScreen = "/pollScreen";
+  static const String documentScreen = "/documentScreen";
+  static const String documentDetailsScreen = "/documentDetailsScreen";
+  static const String photosScreen = "/photosScreen";
+  static const String agendaDetailsScreen = "/agendaDetailsScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -86,27 +98,22 @@ class AppRoutes {
         name: onBoardingScreen,
         builder: (context, state) => OnboardingScreen(),
       ),
-
-
       GoRoute(
         path: signUpScreen,
         name: signUpScreen,
         builder: (context, state) => SignUpScreen(),
       ),
-
       GoRoute(
         path: signInScreen,
         name: signInScreen,
         builder: (context, state) => SignInScreen(),
       ),
 
-
       GoRoute(
         path: eventsScreen,
         name: eventsScreen,
         builder: (context, state) => EventsScreen(),
       ),
-
 
       GoRoute(
         path: eventsDetailsScreen,
@@ -266,6 +273,36 @@ class AppRoutes {
         path: addPosterScreen,
         name: addPosterScreen,
         builder: (context, state) => AddPosterScreen(),
+      ),
+      GoRoute(
+        path: resourcesScreen,
+        name: resourcesScreen,
+        builder: (context, state) => ResourcesScreen(),
+      ),
+      GoRoute(
+        path: pollScreen,
+        name: pollScreen,
+        builder: (context, state) => PollScreen(),
+      ),
+      GoRoute(
+        path: documentScreen,
+        name: documentScreen,
+        builder: (context, state) => DocumentScreen(),
+      ),
+      GoRoute(
+        path: documentDetailsScreen,
+        name: documentDetailsScreen,
+        builder: (context, state) => DocumentDetailsScreen(),
+      ),
+      GoRoute(
+        path: photosScreen,
+        name: photosScreen,
+        builder: (context, state) => PhotosScreen(),
+      ),
+      GoRoute(
+        path: agendaDetailsScreen,
+        name: agendaDetailsScreen,
+        builder: (context, state) => AgendaDetailsScreen(),
       ),
 
 
