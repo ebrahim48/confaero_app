@@ -49,7 +49,7 @@ class SidebarController extends GetxController {
     SidebarMenuItem(
       icon: 'assets/icons/eventposters.svg',
       label: 'Event Posters',
-      route: '/event-posters', // Add this route to AppRoutes
+      route: AppRoutes.eventsPostersScreen,
     ),
     SidebarMenuItem(
       icon: 'assets/icons/organizer.svg',

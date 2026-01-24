@@ -18,6 +18,12 @@ import 'package:vector_graphics/vector_graphics.dart' as _vg;
 class $AssetsIconsGen {
   const $AssetsIconsGen();
 
+  /// File path: assets/icons/about.svg
+  SvgGenImage get about => const SvgGenImage('assets/icons/about.svg');
+
+  /// File path: assets/icons/addicon.svg
+  SvgGenImage get addicon => const SvgGenImage('assets/icons/addicon.svg');
+
   /// File path: assets/icons/arrow.svg
   SvgGenImage get arrow => const SvgGenImage('assets/icons/arrow.svg');
 
@@ -27,14 +33,73 @@ class $AssetsIconsGen {
   /// File path: assets/icons/calendar.svg
   SvgGenImage get calendar => const SvgGenImage('assets/icons/calendar.svg');
 
+  /// File path: assets/icons/checkcircle.svg
+  SvgGenImage get checkcircle =>
+      const SvgGenImage('assets/icons/checkcircle.svg');
+
+  /// File path: assets/icons/checkin.svg
+  SvgGenImage get checkin => const SvgGenImage('assets/icons/checkin.svg');
+
+  /// File path: assets/icons/checkinout.svg
+  SvgGenImage get checkinout =>
+      const SvgGenImage('assets/icons/checkinout.svg');
+
+  /// File path: assets/icons/chevrondown.svg
+  SvgGenImage get chevrondown =>
+      const SvgGenImage('assets/icons/chevrondown.svg');
+
+  /// File path: assets/icons/chevronright.svg
+  SvgGenImage get chevronright =>
+      const SvgGenImage('assets/icons/chevronright.svg');
+
   /// File path: assets/icons/community.svg
   SvgGenImage get community => const SvgGenImage('assets/icons/community.svg');
+
+  /// File path: assets/icons/confareo.svg
+  SvgGenImage get confareo => const SvgGenImage('assets/icons/confareo.svg');
+
+  /// File path: assets/icons/delete.svg
+  SvgGenImage get delete => const SvgGenImage('assets/icons/delete.svg');
+
+  /// File path: assets/icons/downloadicon.svg
+  SvgGenImage get downloadicon =>
+      const SvgGenImage('assets/icons/downloadicon.svg');
+
+  /// File path: assets/icons/edit.svg
+  SvgGenImage get edit => const SvgGenImage('assets/icons/edit.svg');
+
+  /// File path: assets/icons/editicon.svg
+  SvgGenImage get editicon => const SvgGenImage('assets/icons/editicon.svg');
+
+  /// File path: assets/icons/eventposters.svg
+  SvgGenImage get eventposters =>
+      const SvgGenImage('assets/icons/eventposters.svg');
+
+  /// File path: assets/icons/exhibitors.svg
+  SvgGenImage get exhibitors =>
+      const SvgGenImage('assets/icons/exhibitors.svg');
+
+  /// File path: assets/icons/exploreevents.svg
+  SvgGenImage get exploreevents =>
+      const SvgGenImage('assets/icons/exploreevents.svg');
+
+  /// File path: assets/icons/floormap.svg
+  SvgGenImage get floormap => const SvgGenImage('assets/icons/floormap.svg');
 
   /// File path: assets/icons/google.svg
   SvgGenImage get google => const SvgGenImage('assets/icons/google.svg');
 
   /// File path: assets/icons/home.svg
   SvgGenImage get home => const SvgGenImage('assets/icons/home.svg');
+
+  /// File path: assets/icons/lock.svg
+  SvgGenImage get lock => const SvgGenImage('assets/icons/lock.svg');
+
+  /// File path: assets/icons/logout.svg
+  SvgGenImage get logout => const SvgGenImage('assets/icons/logout.svg');
+
+  /// File path: assets/icons/map.svg
+  SvgGenImage get map => const SvgGenImage('assets/icons/map.svg');
 
   /// File path: assets/icons/menusidebar.svg
   SvgGenImage get menusidebar =>
@@ -43,30 +108,108 @@ class $AssetsIconsGen {
   /// File path: assets/icons/message.svg
   SvgGenImage get message => const SvgGenImage('assets/icons/message.svg');
 
+  /// File path: assets/icons/notebook.svg
+  SvgGenImage get notebook => const SvgGenImage('assets/icons/notebook.svg');
+
   /// File path: assets/icons/notification.svg
   SvgGenImage get notification =>
       const SvgGenImage('assets/icons/notification.svg');
 
+  /// File path: assets/icons/organizer.svg
+  SvgGenImage get organizer => const SvgGenImage('assets/icons/organizer.svg');
+
+  /// File path: assets/icons/qrcode.svg
+  SvgGenImage get qrcode => const SvgGenImage('assets/icons/qrcode.svg');
+
+  /// File path: assets/icons/quicknotes.svg
+  SvgGenImage get quicknotes =>
+      const SvgGenImage('assets/icons/quicknotes.svg');
+
+  /// File path: assets/icons/resources.svg
+  SvgGenImage get resources => const SvgGenImage('assets/icons/resources.svg');
+
+  /// File path: assets/icons/rolearrow.svg
+  SvgGenImage get rolearrow => const SvgGenImage('assets/icons/rolearrow.svg');
+
   /// File path: assets/icons/search.svg
   SvgGenImage get search => const SvgGenImage('assets/icons/search.svg');
 
+  /// File path: assets/icons/settings.svg
+  SvgGenImage get settings => const SvgGenImage('assets/icons/settings.svg');
+
+  /// File path: assets/icons/share.svg
+  SvgGenImage get share => const SvgGenImage('assets/icons/share.svg');
+
+  /// File path: assets/icons/speakers.svg
+  SvgGenImage get speakers => const SvgGenImage('assets/icons/speakers.svg');
+
+  /// File path: assets/icons/sponsors.svg
+  SvgGenImage get sponsors => const SvgGenImage('assets/icons/sponsors.svg');
+
+  /// File path: assets/icons/star.svg
+  SvgGenImage get star => const SvgGenImage('assets/icons/star.svg');
+
+  /// File path: assets/icons/termsconditions.svg
+  SvgGenImage get termsconditions =>
+      const SvgGenImage('assets/icons/termsconditions.svg');
+
+  /// File path: assets/icons/userprofile.svg
+  SvgGenImage get userprofile =>
+      const SvgGenImage('assets/icons/userprofile.svg');
+
   /// List of all assets
   List<SvgGenImage> get values => [
+    about,
+    addicon,
     arrow,
     ateendees,
     calendar,
+    checkcircle,
+    checkin,
+    checkinout,
+    chevrondown,
+    chevronright,
     community,
+    confareo,
+    delete,
+    downloadicon,
+    edit,
+    editicon,
+    eventposters,
+    exhibitors,
+    exploreevents,
+    floormap,
     google,
     home,
+    lock,
+    logout,
+    map,
     menusidebar,
     message,
+    notebook,
     notification,
+    organizer,
+    qrcode,
+    quicknotes,
+    resources,
+    rolearrow,
     search,
+    settings,
+    share,
+    speakers,
+    sponsors,
+    star,
+    termsconditions,
+    userprofile,
   ];
 }
 
 class $AssetsImagesGen {
   const $AssetsImagesGen();
+
+  /// File path: assets/images/aboutbanner.png
+  AssetGenImage get aboutbanner =>
+      const AssetGenImage('assets/images/aboutbanner.png');
 
   /// File path: assets/images/accesshandouts.png
   AssetGenImage get accesshandouts =>
@@ -75,8 +218,37 @@ class $AssetsImagesGen {
   /// File path: assets/images/banner.png
   AssetGenImage get banner => const AssetGenImage('assets/images/banner.png');
 
+  /// File path: assets/images/bannerdetails.png
+  AssetGenImage get bannerdetails =>
+      const AssetGenImage('assets/images/bannerdetails.png');
+
+  /// File path: assets/images/cardbanner.png
+  AssetGenImage get cardbanner =>
+      const AssetGenImage('assets/images/cardbanner.png');
+
+  /// File path: assets/images/catl.png
+  AssetGenImage get catl => const AssetGenImage('assets/images/catl.png');
+
+  /// File path: assets/images/demomap.png
+  AssetGenImage get demomap => const AssetGenImage('assets/images/demomap.png');
+
+  /// File path: assets/images/homebanner.png
+  AssetGenImage get homebanner =>
+      const AssetGenImage('assets/images/homebanner.png');
+
+  /// File path: assets/images/jobopenings.jpg
+  AssetGenImage get jobopenings =>
+      const AssetGenImage('assets/images/jobopenings.jpg');
+
+  /// File path: assets/images/livesession.png
+  AssetGenImage get livesession =>
+      const AssetGenImage('assets/images/livesession.png');
+
   /// File path: assets/images/logo.png
   AssetGenImage get logo => const AssetGenImage('assets/images/logo.png');
+
+  /// File path: assets/images/map.png
+  AssetGenImage get map => const AssetGenImage('assets/images/map.png');
 
   /// File path: assets/images/meetconnect.png
   AssetGenImage get meetconnect =>
@@ -86,25 +258,48 @@ class $AssetsImagesGen {
   AssetGenImage get myevents =>
       const AssetGenImage('assets/images/myevents.png');
 
+  /// File path: assets/images/ourmission.png
+  AssetGenImage get ourmission =>
+      const AssetGenImage('assets/images/ourmission.png');
+
   /// File path: assets/images/planconference.png
   AssetGenImage get planconference =>
       const AssetGenImage('assets/images/planconference.png');
 
+  /// File path: assets/images/posterprofile.jpg
+  AssetGenImage get posterprofile =>
+      const AssetGenImage('assets/images/posterprofile.jpg');
+
   /// File path: assets/images/profile.png
   AssetGenImage get profile => const AssetGenImage('assets/images/profile.png');
+
+  /// File path: assets/images/qr.png
+  AssetGenImage get qr => const AssetGenImage('assets/images/qr.png');
 
   /// File path: assets/images/welcome.png
   AssetGenImage get welcome => const AssetGenImage('assets/images/welcome.png');
 
   /// List of all assets
   List<AssetGenImage> get values => [
+    aboutbanner,
     accesshandouts,
     banner,
+    bannerdetails,
+    cardbanner,
+    catl,
+    demomap,
+    homebanner,
+    jobopenings,
+    livesession,
     logo,
+    map,
     meetconnect,
     myevents,
+    ourmission,
     planconference,
+    posterprofile,
     profile,
+    qr,
     welcome,
   ];
 }
