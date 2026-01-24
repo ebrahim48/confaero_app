@@ -1,5 +1,7 @@
+import 'package:confaero_app/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../global/custom_assets/assets.gen.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 import '../controllers/posters_controller.dart';
 
@@ -19,7 +21,7 @@ class PosterCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 345.w,
-      height: 134.h,
+      height: 160.h,
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -38,36 +40,44 @@ class PosterCardWidget extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // Poster Banner Image (Right side)
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
+          // Background Banner Image
+          Positioned.fill(
             child: ClipRRect(
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(16.r),
-                bottomRight: Radius.circular(16.r),
-              ),
-              child: Container(
-                width: 100.w,
-                height: 134.h,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-                child: Image.asset(
-                  poster.posterImage,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
+              borderRadius: BorderRadius.circular(16.r),
+              child: Image.asset(
+                poster.posterImage,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    decoration: BoxDecoration(
                       color: const Color(0xFFE0E0E0),
-                      child: Icon(
-                        Icons.image,
-                        color: Colors.grey,
-                        size: 40.sp,
-                      ),
-                    );
-                  },
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                    child: Icon(
+                      Icons.image,
+                      color: Colors.grey,
+                      size: 40.sp,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          // White overlay gradient
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16.r),
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.95),
+                    Colors.white.withValues(alpha:0.85),
+                    Colors.white.withValues(alpha:0.2),
+                  ],
+                  stops: const [0.0, 0.55, 1.0],
                 ),
               ),
             ),
@@ -75,7 +85,7 @@ class PosterCardWidget extends StatelessWidget {
 
           // Content
           Padding(
-            padding: EdgeInsets.all(14.w),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -83,7 +93,7 @@ class PosterCardWidget extends StatelessWidget {
                 Row(
                   children: [
                     CircleAvatar(
-                      radius: 12.r,
+                      radius: 13.r,
                       backgroundImage: AssetImage(poster.authorImage),
                       onBackgroundImageError: (_, __) {},
                       backgroundColor: const Color(0xFFE0E0E0),
@@ -91,48 +101,46 @@ class PosterCardWidget extends StatelessWidget {
                     SizedBox(width: 8.w),
                     Expanded(
                       child: CustomText(
+                        textAlign: TextAlign.start,
                         text: poster.authorName,
                         fontsize: 12.sp,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF252525),
+                        color: AppColors.textColor252525,
                         maxline: 1,
                         textOverflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: 6.h),
 
                 // Title
-                SizedBox(
-                  width: 217.w,
-                  child: CustomText(
-                    text: poster.title,
-                    fontsize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF252525),
-                    maxline: 1,
-                    textOverflow: TextOverflow.ellipsis,
-                  ),
+                CustomText(
+                  textAlign: TextAlign.start,
+                  text: poster.title,
+                  fontsize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textColor252525,
+                  maxline: 1,
+                  textOverflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 4.h),
 
                 // Description
-                SizedBox(
-                  width: 217.w,
-                  child: CustomText(
-                    text: poster.description,
-                    fontsize: 11.sp,
-                    fontWeight: FontWeight.w400,
-                    color: const Color(0xFF666666),
-                    maxline: 2,
-                    textOverflow: TextOverflow.ellipsis,
-                  ),
+                CustomText(
+                  textAlign: TextAlign.start,
+                  text: poster.description,
+                  fontsize: 11.sp,
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF666666),
+                  maxline: 1,
+                  textOverflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 4.h),
 
                 // Upload Date
                 CustomText(
+                  textAlign: TextAlign.start,
                   text: 'Uploaded: ${poster.uploadDate}',
                   fontsize: 10.sp,
                   fontWeight: FontWeight.w400,
@@ -141,9 +149,9 @@ class PosterCardWidget extends StatelessWidget {
 
                 const Spacer(),
 
-                // Action Buttons
-                SizedBox(
-                  width: 217.w,
+
+                Padding(
+                  padding: EdgeInsets.only(top: 8.h),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -151,12 +159,9 @@ class PosterCardWidget extends StatelessWidget {
                       GestureDetector(
                         onTap: onDownload,
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.download_outlined,
-                              size: 16.sp,
-                              color: const Color(0xFF666666),
-                            ),
+                           Assets.icons.downloadicon.svg(),
                             SizedBox(width: 4.w),
                             CustomText(
                               text: 'download',
@@ -173,8 +178,8 @@ class PosterCardWidget extends StatelessWidget {
                         onTap: onView,
                         child: Container(
                           padding: EdgeInsets.symmetric(
-                            horizontal: 20.w,
-                            vertical: 5.h,
+                            horizontal: 28.w,
+                            vertical: 8.h,
                           ),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
@@ -189,7 +194,7 @@ class PosterCardWidget extends StatelessWidget {
                           ),
                           child: CustomText(
                             text: 'View',
-                            fontsize: 12.sp,
+                            fontsize: 13.sp,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),

@@ -1,5 +1,7 @@
+import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 
 class PostersController extends GetxController {
   // Search controller
@@ -30,7 +32,7 @@ class PostersController extends GetxController {
           (index) => PosterModel(
         id: index.toString(),
         authorName: 'Dr. L. Chen - University Lab',
-        authorImage: 'assets/images/avatar.png',
+        authorImage: 'assets/images/profile.png',
         title: 'Engineering of the FRB domain of the...',
         description: 'Lorem Ipsum is simply dummy text of the printing and...',
         uploadDate: '12 Feb, 2026',
@@ -57,10 +59,9 @@ class PostersController extends GetxController {
     Get.snackbar('Download', 'Poster download started');
   }
 
-  void viewPoster(String posterId) {
-    print('Viewing poster: $posterId');
-    // Navigate to poster detail screen
-    // Get.toNamed('/poster-detail', arguments: posterId);
+  void viewPoster(BuildContext context) {
+    context.pushNamed(AppRoutes.eventPostersDetailsScreen);
+
   }
 
   @override

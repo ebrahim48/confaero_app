@@ -11,15 +11,19 @@ import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import '../../../features/attendees/presentation/widgets/view/add_poster_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/change_password.dart';
 import '../../../features/attendees/presentation/widgets/view/connectionlist_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/delete_account.dart';
 import '../../../features/attendees/presentation/widgets/view/event_checkIn_checkout_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/event_posters_details_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/floor_map_details_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/grganizers_guidelines_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/imagepdf_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/job_openings_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/live_meeting_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/my_profile_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/pdf_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/qr_scanner_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/quick_notes_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/settings_screen.dart';
@@ -62,6 +66,10 @@ class AppRoutes {
   static const String deleteAccountScreen = "/deleteAccountScreen";
   static const String termsConditionScreen = "/termsConditionScreen";
   static const String eventsPostersScreen = "/eventsPostersScreen";
+  static const String eventPostersDetailsScreen = "/eventPostersDetailsScreen";
+  static const String pdfScreen = "/pdfScreen";
+  static const String imagePdfScreen = "/imagePdfScreen";
+  static const String addPosterScreen = "/addPosterScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -238,6 +246,26 @@ class AppRoutes {
         path: eventsPostersScreen,
         name: eventsPostersScreen,
         builder: (context, state) => EventsPostersScreen(),
+      ),
+      GoRoute(
+        path: eventPostersDetailsScreen,
+        name: eventPostersDetailsScreen,
+        builder: (context, state) => EventPosterDetailsScreen(),
+      ),
+      GoRoute(
+        path: pdfScreen,
+        name: pdfScreen,
+        builder: (context, state) => PdfScreen(),
+      ),
+      GoRoute(
+        path: imagePdfScreen,
+        name: imagePdfScreen,
+        builder: (context, state) => ImagePdfScreen(),
+      ),
+      GoRoute(
+        path: addPosterScreen,
+        name: addPosterScreen,
+        builder: (context, state) => AddPosterScreen(),
       ),
 
 
