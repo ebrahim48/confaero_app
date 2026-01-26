@@ -12,6 +12,7 @@ import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dar
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import '../../../features/agenda/presentation/widgets/view/agenda_details_screen.dart';
+import '../../../features/agenda/presentation/widgets/view/spekar_profile_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/add_poster_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/change_password.dart';
 import '../../../features/attendees/presentation/widgets/view/connectionlist_screen.dart';
@@ -82,6 +83,7 @@ class AppRoutes {
   static const String documentDetailsScreen = "/documentDetailsScreen";
   static const String photosScreen = "/photosScreen";
   static const String agendaDetailsScreen = "/agendaDetailsScreen";
+  static const String speakarProfileScreen = "/speakarProfileScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -303,6 +305,11 @@ class AppRoutes {
         path: agendaDetailsScreen,
         name: agendaDetailsScreen,
         builder: (context, state) => AgendaDetailsScreen(),
+      ),
+      GoRoute(
+        path: speakarProfileScreen,
+        name: speakarProfileScreen,
+        builder: (context, state) => SpeakerProfileScreen(),
       ),
 
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../global/custom_assets/assets.gen.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 
 class SpeakerCard extends StatelessWidget {
@@ -43,18 +44,19 @@ class SpeakerCard extends StatelessWidget {
           children: [
             // Speaker Image
             Container(
-              width: 50.w,
-              height: 50.h,
+              width: 49.w,
+              height: 49.h,
               margin: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 image: DecorationImage(
-                  image: AssetImage(imagePath),
+                  image: imagePath != null && imagePath!.isNotEmpty
+                      ? AssetImage(imagePath!)
+                      : AssetImage(Assets.images.profile.path),
                   fit: BoxFit.cover,
                 ),
               ),
             ),
-
             // Speaker Info
             Expanded(
               child: Column(

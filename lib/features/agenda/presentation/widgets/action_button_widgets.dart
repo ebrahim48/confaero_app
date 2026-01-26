@@ -1,10 +1,12 @@
+import 'package:confaero_app/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../presentations/widgets/custom_text.dart';
 
 class ActionButton extends StatelessWidget {
-  final IconData icon;
+  final String svgIcon; // 🔥 svg path
   final String text;
   final VoidCallback onTap;
   final Color? iconColor;
@@ -12,7 +14,7 @@ class ActionButton extends StatelessWidget {
 
   const ActionButton({
     super.key,
-    required this.icon,
+    required this.svgIcon,
     required this.text,
     required this.onTap,
     this.iconColor,
@@ -30,17 +32,20 @@ class ActionButton extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(50.r),
           border: Border.all(
-            color: borderColor ?? const Color(0xffD2D2D2),
+            color: borderColor ?? AppColors.primaryColor32A69A,
             width: 1,
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 18.sp,
-              color: iconColor ?? const Color(0xff252525),
+            SvgPicture.asset(
+              svgIcon,
+              width: 18.w,
+              height: 18.h,
+              colorFilter: iconColor != null
+                  ? ColorFilter.mode(iconColor!, BlendMode.srcIn)
+                  : null,
             ),
             SizedBox(width: 8.w),
             CustomText(
