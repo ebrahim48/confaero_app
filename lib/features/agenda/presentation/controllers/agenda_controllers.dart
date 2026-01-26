@@ -1,4 +1,3 @@
-// lib/features/agenda/controllers/agenda_controller.dart
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 
@@ -12,15 +11,17 @@ class AgendaController extends GetxController {
   // Selected day
   final RxInt selectedDay = 3.obs;
 
-  // Week days
-  final List<Map<String, dynamic>> weekDays = [
-    {'day': 'Mon', 'date': 3},
-    {'day': 'Tue', 'date': 4},
-    {'day': 'Wed', 'date': 5},
-    {'day': 'Thu', 'date': 6},
-    {'day': 'Fri', 'date': 7},
-    {'day': 'Sat', 'date': 8},
-  ];
+  // Selected full date
+  final Rx<DateTime> selectedDate = DateTime(2026, 7, 3).obs;
+
+  // Week days - dynamically generated based on selected date
+  final RxList<Map<String, dynamic>> weekDays = <Map<String, dynamic>>[].obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _generateWeekDays(selectedDate.value);
+  }
 
   // All sessions (Image 1 - All Sessions Tab)
   final RxList<Map<String, dynamic>> allSessions = <Map<String, dynamic>>[
@@ -87,6 +88,59 @@ class AgendaController extends GetxController {
   // Change day
   void changeDay(int day) {
     selectedDay.value = day;
+
+    // Update the full selected date
+    selectedDate.value = DateTime(
+      selectedDate.value.year,
+      selectedDate.value.month,
+      day,
+    );
+  }
+
+  // Handle calendar date selection
+  void onCalendarDateSelected(DateTime date) {
+    selectedDate.value = date;
+    selectedDay.value = date.day;
+
+    // Update month string
+    selectedMonth.value = _formatMonthYear(date);
+
+    // Generate new week days based on selected date
+    _generateWeekDays(date);
+  }
+
+  // Generate week days around selected date
+  void _generateWeekDays(DateTime date) {
+    weekDays.clear();
+
+    // Find Monday of the week containing the selected date
+    final dayOfWeek = date.weekday; // Monday = 1, Sunday = 7
+    final monday = date.subtract(Duration(days: dayOfWeek - 1));
+
+    // Generate 6 days starting from Monday
+    for (int i = 0; i < 6; i++) {
+      final currentDay = monday.add(Duration(days: i));
+      weekDays.add({
+        'day': _getDayName(currentDay.weekday),
+        'date': currentDay.day,
+        'fullDate': currentDay,
+      });
+    }
+  }
+
+  // Get day name from weekday number
+  String _getDayName(int weekday) {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return days[weekday - 1];
+  }
+
+  // Format DateTime to "MMM YYYY" format
+  String _formatMonthYear(DateTime date) {
+    const months = [
+      'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'
+    ];
+    return '${months[date.month - 1]} ${date.year}';
   }
 
   // Toggle favorite

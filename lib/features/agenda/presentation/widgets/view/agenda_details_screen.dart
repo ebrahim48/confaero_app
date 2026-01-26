@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import '../../../../../global/custom_assets/assets.gen.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../../../attendees/presentation/widgets/custom_app_bar_widget.dart';
 import '../../controllers/agenda_details_controller.dart';
@@ -69,11 +70,7 @@ class AgendaDetailsScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.access_time,
-                                size: 16.sp,
-                                color: const Color(0xff757575),
-                              ),
+                              Assets.icons.time.svg(),
                               SizedBox(width: 6.w),
                               Expanded(
                                 child: CustomText(
@@ -90,11 +87,7 @@ class AgendaDetailsScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.location_on_outlined,
-                                size: 16.sp,
-                                color: const Color(0xff757575),
-                              ),
+                              Assets.icons.location.svg(),
                               SizedBox(width: 6.w),
                               CustomText(
                                 text: session['location'],
@@ -103,7 +96,7 @@ class AgendaDetailsScreen extends StatelessWidget {
                               ),
                               SizedBox(width: 8.w),
                               GestureDetector(
-                                onTap: () => controller.viewMap(),
+                                onTap: () => controller.viewMap(context),
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
                                     horizontal: 8.w,
@@ -135,14 +128,14 @@ class AgendaDetailsScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         ActionButton(
-                          icon: Icons.question_answer_outlined,
+                          svgIcon: 'assets/icons/qa.svg',
                           text: 'Q&A',
-                          onTap: () => controller.openQA(),
+                          onTap: () => controller.openQA(context),
                         ),
                         ActionButton(
-                          icon: Icons.poll_outlined,
+                          svgIcon: 'assets/icons/poll.svg',
                           text: 'Poll',
-                          onTap: () => controller.openPoll(),
+                          onTap: () => controller.openPoll(context),
                         ),
                       ],
                     ),
@@ -152,14 +145,14 @@ class AgendaDetailsScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         ActionButton(
-                          icon: Icons.note_outlined,
+                          svgIcon: 'assets/icons/note.svg',
                           text: 'Note',
-                          onTap: () => controller.openNote(),
+                          onTap: () => controller.openNote(context),
                         ),
                         ActionButton(
-                          icon: controller.isLiked.value
-                              ? Icons.favorite
-                              : Icons.favorite_border,
+                          svgIcon: controller.isLiked.value
+                              ? 'assets/icons/like.svg'
+                              : 'assets/icons/like.svg',
                           text: 'Like',
                           onTap: () => controller.toggleLike(),
                           iconColor: controller.isLiked.value
@@ -183,6 +176,8 @@ class AgendaDetailsScreen extends StatelessWidget {
                         ),
                       ),
                       child: CustomText(
+                        textAlign: TextAlign.start,
+                        maxline: 6,
                         text: session['overview'],
                         fontsize: 14.sp,
                         color: const Color(0xff252525),
@@ -240,7 +235,7 @@ class AgendaDetailsScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 24.h),
 
-                    // Speakers
+                    ///  Speakers
                     const SectionHeader(title: 'Speakers'),
                     Container(
                       width: 345.w,
@@ -259,7 +254,7 @@ class AgendaDetailsScreen extends StatelessWidget {
                             role: speaker['role'],
                             company: speaker['company'],
                             imagePath: speaker['image'],
-                            onTap: () => controller.openSpeakerDetails(speaker),
+                            onTap: () => controller.openSpeakerDetails(context),
                           );
                         }).toList(),
                       ),

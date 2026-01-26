@@ -1,4 +1,7 @@
+import 'package:confaero_app/core/config/approutes/app_routes.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 
 class AgendaDetailsController extends GetxController {
   // Session details
@@ -43,27 +46,35 @@ class AgendaDetailsController extends GetxController {
   }
 
   // Open Q&A
-  void openQA() {
+  void openQA(BuildContext context) {
+    context.pushNamed(AppRoutes.resourcesScreen);
     print('Open Q&A');
   }
 
   // Open Poll
-  void openPoll() {
+  void openPoll(BuildContext context) {
+    context.pushNamed(AppRoutes.pollScreen);
     print('Open Poll');
   }
 
   // Open Note
-  void openNote() {
+  void openNote(BuildContext context) {
+    context.pushNamed(AppRoutes.quickNotesScreen);
     print('Open Note');
   }
 
   // View map
-  void viewMap() {
-    print('View Map');
+  void viewMap(BuildContext context) {
+    context.pushNamed(AppRoutes.floorMapScreen);
+
   }
 
   // Speaker details
-  void openSpeakerDetails(Map<String, dynamic> speaker) {
-    print('Open speaker: ${speaker['name']}');
+  void openSpeakerDetails(BuildContext context) {
+
+    context.pushNamed(AppRoutes.speakarProfileScreen);
+
+
+
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../global/custom_assets/assets.gen.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 
 class SessionCard extends StatelessWidget {
@@ -41,23 +42,26 @@ class SessionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CustomText(
-              text: duration,
-              fontsize: 12.sp,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xff252525),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                CustomText(
+                  text: duration,
+                  fontsize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xff252525),
+                ),
+                SizedBox(width: 8.w),
+                Assets.icons.coffee.svg()
+
+              ],
             ),
             SizedBox(height: 12.h),
             Row(
               children: [
-                Icon(
-                  Icons.coffee_outlined,
-                  size: 24.sp,
-                  color: const Color(0xff252525),
-                ),
-                SizedBox(width: 8.w),
                 Expanded(
                   child: CustomText(
+                    textAlign: TextAlign.start,
                     text: title,
                     fontsize: 16.sp,
                     fontWeight: FontWeight.w600,
@@ -170,6 +174,7 @@ class SessionCard extends StatelessWidget {
 
                               // Title
                               CustomText(
+                                textAlign: TextAlign.start,
                                 text: title,
                                 fontsize: 16.sp,
                                 fontWeight: FontWeight.w600,
@@ -230,11 +235,7 @@ class SessionCard extends StatelessWidget {
                         Positioned(
                           top: 12.h,
                           right: 12.w,
-                          child: Icon(
-                            Icons.calendar_today_outlined,
-                            size: 20.sp,
-                            color: const Color(0xff5BB8AE),
-                          ),
+                          child: Assets.icons.calendar1.svg()
                         ),
                       ],
                     ),

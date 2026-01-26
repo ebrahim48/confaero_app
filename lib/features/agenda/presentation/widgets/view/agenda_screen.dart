@@ -1,10 +1,14 @@
-import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../../core/config/approutes/app_routes.dart';
+import '../../../../../global/custom_assets/assets.gen.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../controllers/agenda_controllers.dart';
+
+import '../calendar_dropwon_widget.dart';
+import '../dashed_line_painter.dart';
 import '../day_selecter.dart';
 import '../session_card.dart';
 import '../tab_toggle_button_widget.dart';
@@ -18,7 +22,6 @@ class AgendaScreen extends StatelessWidget {
     final AgendaController controller = Get.put(AgendaController());
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -61,24 +64,17 @@ class AgendaScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Obx(() {
-                        return CustomText(
-                          text: controller.selectedMonth.value,
-                          fontsize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xff252525),
-                        );
-                      }),
-                      SizedBox(width: 8.w),
-                      Icon(
-                        Icons.keyboard_arrow_down,
-                        size: 20.sp,
-                        color: const Color(0xff252525),
-                      ),
-                    ],
-                  ),
+                  // Calendar Dropdown (Updated)
+                  Obx(() {
+                    return CalendarDropdown(
+                      selectedMonth: controller.selectedMonth.value,
+                      onDateSelected: (date) {
+                        controller.onCalendarDateSelected(date);
+                      },
+                    );
+                  }),
+
+                  // Filters Button
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
@@ -90,11 +86,7 @@ class AgendaScreen extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.tune,
-                          size: 16.sp,
-                          color: const Color(0xff252525),
-                        ),
+                        Assets.icons.filter.svg(),
                         SizedBox(width: 4.w),
                         CustomText(
                           text: 'Filters',
@@ -110,7 +102,7 @@ class AgendaScreen extends StatelessWidget {
             ),
             SizedBox(height: 16.h),
 
-            // Day Selector
+            // Day Selector (Updated to use dynamic weekDays)
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: Obx(() {
@@ -137,8 +129,6 @@ class AgendaScreen extends StatelessWidget {
                 return ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 14.w),
                   itemCount: sessions.length,
-
-
                   itemBuilder: (context, index) {
                     final session = sessions[index];
 
@@ -219,30 +209,4 @@ class AgendaScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-// Dashed Line Painter
-class DashedLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xff252525)
-      ..strokeWidth = 1;
-
-    const dashWidth = 2.0;
-    const dashSpace = 2.0;
-    double startY = 0;
-
-    while (startY < size.height) {
-      canvas.drawLine(
-        Offset(0, startY),
-        Offset(0, startY + dashWidth),
-        paint,
-      );
-      startY += dashWidth + dashSpace;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

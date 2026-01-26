@@ -24,6 +24,10 @@ class $AssetsIconsGen {
   /// File path: assets/icons/addicon.svg
   SvgGenImage get addicon => const SvgGenImage('assets/icons/addicon.svg');
 
+  /// File path: assets/icons/addpostericon.svg
+  SvgGenImage get addpostericon =>
+      const SvgGenImage('assets/icons/addpostericon.svg');
+
   /// File path: assets/icons/arrow.svg
   SvgGenImage get arrow => const SvgGenImage('assets/icons/arrow.svg');
 
@@ -32,6 +36,9 @@ class $AssetsIconsGen {
 
   /// File path: assets/icons/calendar.svg
   SvgGenImage get calendar => const SvgGenImage('assets/icons/calendar.svg');
+
+  /// File path: assets/icons/calendar1.svg
+  SvgGenImage get calendar1 => const SvgGenImage('assets/icons/calendar1.svg');
 
   /// File path: assets/icons/checkcircle.svg
   SvgGenImage get checkcircle =>
@@ -52,6 +59,16 @@ class $AssetsIconsGen {
   SvgGenImage get chevronright =>
       const SvgGenImage('assets/icons/chevronright.svg');
 
+  /// File path: assets/icons/clcok.svg
+  SvgGenImage get clcok => const SvgGenImage('assets/icons/clcok.svg');
+
+  /// File path: assets/icons/coffee.svg
+  SvgGenImage get coffee => const SvgGenImage('assets/icons/coffee.svg');
+
+  /// File path: assets/icons/communicationmail.svg
+  SvgGenImage get communicationmail =>
+      const SvgGenImage('assets/icons/communicationmail.svg');
+
   /// File path: assets/icons/community.svg
   SvgGenImage get community => const SvgGenImage('assets/icons/community.svg');
 
@@ -60,6 +77,10 @@ class $AssetsIconsGen {
 
   /// File path: assets/icons/delete.svg
   SvgGenImage get delete => const SvgGenImage('assets/icons/delete.svg');
+
+  /// File path: assets/icons/deleteicon.svg
+  SvgGenImage get deleteicon =>
+      const SvgGenImage('assets/icons/deleteicon.svg');
 
   /// File path: assets/icons/downloadicon.svg
   SvgGenImage get downloadicon =>
@@ -83,6 +104,9 @@ class $AssetsIconsGen {
   SvgGenImage get exploreevents =>
       const SvgGenImage('assets/icons/exploreevents.svg');
 
+  /// File path: assets/icons/filter.svg
+  SvgGenImage get filter => const SvgGenImage('assets/icons/filter.svg');
+
   /// File path: assets/icons/floormap.svg
   SvgGenImage get floormap => const SvgGenImage('assets/icons/floormap.svg');
 
@@ -91,6 +115,22 @@ class $AssetsIconsGen {
 
   /// File path: assets/icons/home.svg
   SvgGenImage get home => const SvgGenImage('assets/icons/home.svg');
+
+  /// File path: assets/icons/image.svg
+  SvgGenImage get image => const SvgGenImage('assets/icons/image.svg');
+
+  /// File path: assets/icons/imagepdficon.svg
+  SvgGenImage get imagepdficon =>
+      const SvgGenImage('assets/icons/imagepdficon.svg');
+
+  /// File path: assets/icons/like.svg
+  SvgGenImage get like => const SvgGenImage('assets/icons/like.svg');
+
+  /// File path: assets/icons/link.svg
+  SvgGenImage get link => const SvgGenImage('assets/icons/link.svg');
+
+  /// File path: assets/icons/location.svg
+  SvgGenImage get location => const SvgGenImage('assets/icons/location.svg');
 
   /// File path: assets/icons/lock.svg
   SvgGenImage get lock => const SvgGenImage('assets/icons/lock.svg');
@@ -108,6 +148,9 @@ class $AssetsIconsGen {
   /// File path: assets/icons/message.svg
   SvgGenImage get message => const SvgGenImage('assets/icons/message.svg');
 
+  /// File path: assets/icons/note.svg
+  SvgGenImage get note => const SvgGenImage('assets/icons/note.svg');
+
   /// File path: assets/icons/notebook.svg
   SvgGenImage get notebook => const SvgGenImage('assets/icons/notebook.svg');
 
@@ -117,6 +160,15 @@ class $AssetsIconsGen {
 
   /// File path: assets/icons/organizer.svg
   SvgGenImage get organizer => const SvgGenImage('assets/icons/organizer.svg');
+
+  /// File path: assets/icons/pdficon.svg
+  SvgGenImage get pdficon => const SvgGenImage('assets/icons/pdficon.svg');
+
+  /// File path: assets/icons/poll.svg
+  SvgGenImage get poll => const SvgGenImage('assets/icons/poll.svg');
+
+  /// File path: assets/icons/qa.svg
+  SvgGenImage get qa => const SvgGenImage('assets/icons/qa.svg');
 
   /// File path: assets/icons/qrcode.svg
   SvgGenImage get qrcode => const SvgGenImage('assets/icons/qrcode.svg');
@@ -153,42 +205,70 @@ class $AssetsIconsGen {
   SvgGenImage get termsconditions =>
       const SvgGenImage('assets/icons/termsconditions.svg');
 
+  /// File path: assets/icons/time.svg
+  SvgGenImage get time => const SvgGenImage('assets/icons/time.svg');
+
   /// File path: assets/icons/userprofile.svg
   SvgGenImage get userprofile =>
       const SvgGenImage('assets/icons/userprofile.svg');
+
+  /// File path: assets/icons/viewpdf.svg
+  SvgGenImage get viewpdf => const SvgGenImage('assets/icons/viewpdf.svg');
+
+  /// File path: assets/icons/watch.svg
+  SvgGenImage get watch => const SvgGenImage('assets/icons/watch.svg');
+
+  /// File path: assets/icons/weblink.svg
+  SvgGenImage get weblink => const SvgGenImage('assets/icons/weblink.svg');
 
   /// List of all assets
   List<SvgGenImage> get values => [
     about,
     addicon,
+    addpostericon,
     arrow,
     ateendees,
     calendar,
+    calendar1,
     checkcircle,
     checkin,
     checkinout,
     chevrondown,
     chevronright,
+    clcok,
+    coffee,
+    communicationmail,
     community,
     confareo,
     delete,
+    deleteicon,
     downloadicon,
     edit,
     editicon,
     eventposters,
     exhibitors,
     exploreevents,
+    filter,
     floormap,
     google,
     home,
+    image,
+    imagepdficon,
+    like,
+    link,
+    location,
     lock,
     logout,
     map,
     menusidebar,
     message,
+    note,
     notebook,
     notification,
     organizer,
+    pdficon,
+    poll,
+    qa,
     qrcode,
     quicknotes,
     resources,
@@ -200,7 +280,11 @@ class $AssetsIconsGen {
     sponsors,
     star,
     termsconditions,
+    time,
     userprofile,
+    viewpdf,
+    watch,
+    weblink,
   ];
 }
 
@@ -236,6 +320,10 @@ class $AssetsImagesGen {
   AssetGenImage get homebanner =>
       const AssetGenImage('assets/images/homebanner.png');
 
+  /// File path: assets/images/imagepdf.png
+  AssetGenImage get imagepdf =>
+      const AssetGenImage('assets/images/imagepdf.png');
+
   /// File path: assets/images/jobopenings.jpg
   AssetGenImage get jobopenings =>
       const AssetGenImage('assets/images/jobopenings.jpg');
@@ -262,6 +350,18 @@ class $AssetsImagesGen {
   AssetGenImage get ourmission =>
       const AssetGenImage('assets/images/ourmission.png');
 
+  /// File path: assets/images/pdf.png
+  AssetGenImage get pdf => const AssetGenImage('assets/images/pdf.png');
+
+  /// File path: assets/images/pdf1.png
+  AssetGenImage get pdf1 => const AssetGenImage('assets/images/pdf1.png');
+
+  /// File path: assets/images/photo1.jpg
+  AssetGenImage get photo1 => const AssetGenImage('assets/images/photo1.jpg');
+
+  /// File path: assets/images/photo2.jpg
+  AssetGenImage get photo2 => const AssetGenImage('assets/images/photo2.jpg');
+
   /// File path: assets/images/planconference.png
   AssetGenImage get planconference =>
       const AssetGenImage('assets/images/planconference.png');
@@ -276,6 +376,13 @@ class $AssetsImagesGen {
   /// File path: assets/images/qr.png
   AssetGenImage get qr => const AssetGenImage('assets/images/qr.png');
 
+  /// File path: assets/images/speakers.jpg
+  AssetGenImage get speakers =>
+      const AssetGenImage('assets/images/speakers.jpg');
+
+  /// File path: assets/images/viewpdf.png
+  AssetGenImage get viewpdf => const AssetGenImage('assets/images/viewpdf.png');
+
   /// File path: assets/images/welcome.png
   AssetGenImage get welcome => const AssetGenImage('assets/images/welcome.png');
 
@@ -289,6 +396,7 @@ class $AssetsImagesGen {
     catl,
     demomap,
     homebanner,
+    imagepdf,
     jobopenings,
     livesession,
     logo,
@@ -296,10 +404,16 @@ class $AssetsImagesGen {
     meetconnect,
     myevents,
     ourmission,
+    pdf,
+    pdf1,
+    photo1,
+    photo2,
     planconference,
     posterprofile,
     profile,
     qr,
+    speakers,
+    viewpdf,
     welcome,
   ];
 }
