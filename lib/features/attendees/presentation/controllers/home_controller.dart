@@ -36,6 +36,7 @@ class HomeController extends GetxController {
     switch (index) {
       case 0:
       // Navigate to Speakers
+        context.pushNamed(AppRoutes.eventSpekarScreen);
         break;
       case 1:
         context.pushNamed(AppRoutes.floorMapScreen);
