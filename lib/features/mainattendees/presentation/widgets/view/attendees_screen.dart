@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import '../../../../../global/custom_assets/assets.gen.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 
 
@@ -9,7 +10,7 @@ import '../../../../attendees/presentation/widgets/document_search_field_widget.
 import '../../controllers/attendees_controller.dart';
 import '../attendee_card.dart';
 import '../stats_card.dart';
-import 'attendees_details.dart';
+import 'attendees_details_screen.dart';
 
 
 class AttendeesScreen extends StatelessWidget {
@@ -20,7 +21,6 @@ class AttendeesScreen extends StatelessWidget {
     final AttendeesController controller = Get.put(AttendeesController());
 
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -39,7 +39,7 @@ class AttendeesScreen extends StatelessWidget {
                     ),
                     child: Center(
                       child: SvgPicture.asset(
-                        'assets/icons/attendees.svg',
+                        'assets/icons/profile.svg',
                         width: 24.w,
                         height: 24.h,
                       ),
@@ -96,11 +96,8 @@ class AttendeesScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Center(
-                      child: Icon(
-                        Icons.tune,
-                        size: 20.sp,
-                        color: const Color(0xff252525),
-                      ),
+                      child: Assets.icons
+                          .filter.svg()
                     ),
                   ),
                 ],

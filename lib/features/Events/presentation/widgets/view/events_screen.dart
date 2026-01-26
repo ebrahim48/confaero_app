@@ -84,7 +84,7 @@ class _EventsScreenState extends State<EventsScreen>
                       SizedBox(width: 16.w),
                       GestureDetector(
                         onTap: () {
-
+                          controller.openDrawer();
                         },
                         child: SvgPicture.asset(
                           'assets/icons/menusidebar.svg',

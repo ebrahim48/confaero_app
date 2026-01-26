@@ -11,6 +11,7 @@ import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import '../../../features/Events/presentation/widgets/view/event_speaker_screen.dart';
 import '../../../features/agenda/presentation/widgets/view/agenda_details_screen.dart';
 import '../../../features/agenda/presentation/widgets/view/spekar_profile_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/add_poster_screen.dart';
@@ -37,6 +38,7 @@ import '../../../features/attendees/presentation/widgets/view/settings_screen.da
 import '../../../features/attendees/presentation/widgets/view/terms_condition_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/write_note_screen.dart';
 import '../../../features/bottomNavbar/bottomNavbar_screen.dart';
+import '../../../features/community/presentation/widgets/view/organizers_announcements.dart';
 import '../../../features/notification/presentation/widgets/view/notifications_screen.dart';
 import '../../../features/onboarding/presentation/widgets/view/onboarding_screen.dart';
 
@@ -84,6 +86,8 @@ class AppRoutes {
   static const String photosScreen = "/photosScreen";
   static const String agendaDetailsScreen = "/agendaDetailsScreen";
   static const String speakarProfileScreen = "/speakarProfileScreen";
+  static const String eventSpekarScreen = "/eventSpekarScreen";
+  static const String organizerAnnouncementsScreen = "/organizerAnnouncementsScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -310,6 +314,16 @@ class AppRoutes {
         path: speakarProfileScreen,
         name: speakarProfileScreen,
         builder: (context, state) => SpeakerProfileScreen(),
+      ),
+      GoRoute(
+        path: eventSpekarScreen,
+        name: eventSpekarScreen,
+        builder: (context, state) => EventSpekarScreen(),
+      ),
+      GoRoute(
+        path: organizerAnnouncementsScreen,
+        name: organizerAnnouncementsScreen,
+        builder: (context, state) => OrganizerAnnouncementsScreen(),
       ),
 
 

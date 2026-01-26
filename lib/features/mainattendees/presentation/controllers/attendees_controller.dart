@@ -17,7 +17,7 @@ class AttendeesController extends GetxController {
       'company': 'Tech Corp',
       'role': 'Organizer',
       'sessions': '2 sessions',
-      'image': 'assets/images/attendee1.jpg',
+      'image': 'assets/images/profile.png',
       'isBookmarked': false,
     },
     {
@@ -26,7 +26,7 @@ class AttendeesController extends GetxController {
       'company': 'Tech Corp',
       'role': 'Speakers',
       'sessions': '2 sessions',
-      'image': 'assets/images/attendee2.jpg',
+      'image': 'assets/images/profile.png',
       'isBookmarked': true,
     },
     {
@@ -35,7 +35,7 @@ class AttendeesController extends GetxController {
       'company': 'Tech Corp',
       'role': 'Speakers',
       'sessions': '2 sessions',
-      'image': 'assets/images/attendee3.jpg',
+      'image': 'assets/images/profile.png',
       'isBookmarked': false,
     },
     {
@@ -44,7 +44,7 @@ class AttendeesController extends GetxController {
       'company': 'Tech Corp',
       'role': 'Attendee',
       'sessions': '2 sessions',
-      'image': 'assets/images/attendee4.jpg',
+      'image': 'assets/images/profile.png',
       'isBookmarked': true,
     },
   ].obs;

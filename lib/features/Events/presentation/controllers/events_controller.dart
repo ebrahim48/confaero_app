@@ -7,6 +7,7 @@ class EventsController extends GetxController {
   final searchController = TextEditingController();
   final selectedTab = 0.obs; // 0 for My Events, 1 for Explore Events
 
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   void onClose() {
     searchController.dispose();
@@ -21,6 +22,9 @@ class EventsController extends GetxController {
     // TODO: Implement search functionality
   }
 
+  void openDrawer() {
+    scaffoldKey.currentState?.openDrawer();
+  }
   void registerEvent(BuildContext context) {
     context.pushNamed(AppRoutes.eventsDetailsScreen);
     // TODO: Implement register event API
