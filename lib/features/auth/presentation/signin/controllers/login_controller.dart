@@ -61,8 +61,7 @@ class SignInController extends GetxController {
     // Get.offAllNamed(AppRoutes.homeScreen);
   }
 
-  void forgotPassword() {
-    // Navigate to forgot password screen
-    // Get.toNamed(AppRoutes.forgotPasswordScreen);
+  void forgotPassword(BuildContext context) {
+    context.pushNamed(AppRoutes.forgetPasswordScreen);
   }
 }

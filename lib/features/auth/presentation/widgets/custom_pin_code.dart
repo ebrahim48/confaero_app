@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -7,36 +6,63 @@ import '../../../../core/constants/app_colors.dart';
 
 class CustomPinCodeTextField extends StatelessWidget {
   final TextEditingController? textEditingController;
+  final Function(String)? onCompleted;
+  final Function(String)? onChanged;
 
-  const CustomPinCodeTextField({super.key, this.textEditingController});
+  const CustomPinCodeTextField({
+    super.key,
+    this.textEditingController,
+    this.onCompleted,
+    this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     return PinCodeTextField(
       backgroundColor: Colors.transparent,
-      cursorColor: AppColors.textColor222222,
+      cursorColor: const Color(0xff222222),
       controller: textEditingController,
-      textStyle: TextStyle(color: AppColors.textColor222222),
+      textStyle: TextStyle(
+        color: const Color(0xff222222),
+        fontSize: 18.sp,
+        fontWeight: FontWeight.w600,
+      ),
       autoFocus: false,
       appContext: context,
       length: 6,
+      animationType: AnimationType.fade,
       pinTheme: PinTheme(
         shape: PinCodeFieldShape.box,
-        borderRadius: BorderRadius.circular(10),
-        selectedColor: AppColors.borderColorD2D2D2,
-        activeFillColor: AppColors.borderColorD2D2D2,
-        selectedFillColor: AppColors.borderColorD2D2D2,
-        inactiveFillColor: AppColors.borderColorD2D2D2,
-        fieldHeight: 66.h,
-        fieldWidth: 44.w,
-        inactiveColor: AppColors.borderColorD6BDD4,
-        activeColor: AppColors.borderColorD2D2D2,
+        borderRadius: BorderRadius.circular(8.r),
+        fieldHeight: 55.h,
+        fieldWidth: 43.w,
+        borderWidth: 1,
+        // Active state (currently typing)
+        activeColor: const Color(0xffD6BDD4),
+        activeFillColor: const Color(0xffFAFAFA),
+        // Selected state (cursor is here)
+        selectedColor: const Color(0xffD6BDD4),
+        selectedFillColor: const Color(0xffFAFAFA),
+        // Inactive state (not filled yet)
+        inactiveColor: const Color(0xffD6BDD4),
+        inactiveFillColor: const Color(0xffFAFAFA),
+        // Error state
+        errorBorderColor: const Color(0xffFF1D1D),
       ),
-      obscureText: false,
+      enableActiveFill: true,
       keyboardType: TextInputType.number,
-      onChanged: (value) {},
+      onChanged: (value) {
+        if (onChanged != null) {
+          onChanged!(value);
+        }
+      },
       onCompleted: (value) {
-        textEditingController?.text = value;
+        if (textEditingController != null) {
+          textEditingController!.text = value;
+        }
+        if (onCompleted != null) {
+          onCompleted!(value);
+        }
       },
     );
   }
