@@ -41,6 +41,9 @@ import '../../../features/attendees/presentation/widgets/view/sponsors_details_s
 import '../../../features/attendees/presentation/widgets/view/sponsors_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/terms_condition_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/write_note_screen.dart';
+import '../../../features/auth/presentation/forget/forget_screen.dart';
+import '../../../features/auth/presentation/reset/reset_password_screen.dart';
+import '../../../features/auth/presentation/verify/verify_screen.dart';
 import '../../../features/bottomNavbar/bottomNavbar_screen.dart';
 import '../../../features/community/presentation/widgets/view/organizers_announcements.dart';
 import '../../../features/mainattendees/presentation/widgets/view/attendees_details_screen.dart';
@@ -56,6 +59,7 @@ class AppRoutes {
   static const String onBoardingScreen = "/onBoardingScreen";
   static const String signUpScreen = "/signUpScreen";
   static const String signInScreen = "/signInScreen";
+  static const String forgetPasswordScreen = "/forgetPasswordScreen";
   static const String eventsScreen = "/eventsScreen";
   static const String eventsDetailsScreen = "/eventsDetailsScreen";
   static const String mainNavigationScreen = "/mainNavigationScreen";
@@ -100,6 +104,8 @@ class AppRoutes {
   static const String sponsorsDetailsScreen = "/sponsorsDetailsScreen";
   static const String exHabitorsScreen = "/exHabitorsScreen";
   static const String exhibitorDetailsScreen = "/exhibitorDetailsScreen";
+  static const String verifyScreen = "/verifyScreen";
+  static const String resetPasswordScreen = "/resetPasswordScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -366,6 +372,21 @@ class AppRoutes {
         path: exhibitorDetailsScreen,
         name: exhibitorDetailsScreen,
         builder: (context, state) => ExhibitorDetailsScreen(),
+      ),
+      GoRoute(
+        path: forgetPasswordScreen,
+        name: forgetPasswordScreen,
+        builder: (context, state) => ForgetPasswordScreen(),
+      ),
+      GoRoute(
+        path: verifyScreen,
+        name: verifyScreen,
+        builder: (context, state) => VerifyScreen(),
+      ),
+      GoRoute(
+        path: resetPasswordScreen,
+        name: resetPasswordScreen,
+        builder: (context, state) => ResetPasswordScreen(),
       ),
 
 

@@ -136,7 +136,7 @@ class _SignInScreenState extends State<SignInScreen>
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
-                  onTap: controller.forgotPassword,
+                  onTap: () => controller.forgotPassword(context),
                   child: CustomText(
                     text: 'Forget password',
                     fontsize: 14.sp,

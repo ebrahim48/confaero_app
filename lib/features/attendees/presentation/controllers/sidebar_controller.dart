@@ -97,43 +97,47 @@ class SidebarController extends GetxController {
 
   // Logout
   void logout(BuildContext context) {
-    Navigator.of(context).pop(); // Close drawer
 
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Get.back();
+    context.pushNamed(AppRoutes.signInScreen);
+    // Navigator.of(context).pop(); // Close drawer
+    // Get.dialog(
+    //   AlertDialog(
+    //     shape: RoundedRectangleBorder(
+    //       borderRadius: BorderRadius.circular(12),
+    //     ),
+    //     title: const Text('Logout'),
+    //     content: const Text('Are you sure you want to logout?'),
+    //     actions: [
+    //       TextButton(
+    //         onPressed: () => Get.back(),
+    //         child: const Text('Cancel'),
+    //       ),
+    //       TextButton(
+    //         onPressed: () {
+    //           // Get.back();
+    //
+    //           // TODO: Clear user data
+    //           // final prefs = await SharedPreferences.getInstance();
+    //           // await prefs.clear();
+    //
+    //           // Navigate to login (uncomment when login route is ready)
+    //
+    //
+    //           Get.snackbar(
+    //             'Logged Out',
+    //             'You have been logged out successfully',
+    //             snackPosition: SnackPosition.BOTTOM,
+    //             backgroundColor: Colors.green,
+    //             colorText: Colors.white,
+    //           );
+    //         },
+    //         child: const Text('Logout', style: TextStyle(color: Colors.red)),
+    //       ),
+    //     ],
+    //   ),
+    // );
 
-              // TODO: Clear user data
-              // final prefs = await SharedPreferences.getInstance();
-              // await prefs.clear();
 
-              // Navigate to login (uncomment when login route is ready)
-              // context.go('/login');
 
-              Get.snackbar(
-                'Logged Out',
-                'You have been logged out successfully',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.green,
-                colorText: Colors.white,
-              );
-            },
-            child: const Text('Logout', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
   }
 }
