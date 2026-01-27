@@ -42,6 +42,7 @@ class HomeController extends GetxController {
         context.pushNamed(AppRoutes.floorMapScreen);
         break;
       case 2:
+        context.pushNamed(AppRoutes.exHabitorsScreen);
       // Navigate to Exhibitors
         break;
       case 3:
@@ -51,6 +52,7 @@ class HomeController extends GetxController {
         context.pushNamed(AppRoutes.eventCheckInCheckOutScreen);
         break;
       case 5:
+        context.pushNamed(AppRoutes.sponsorsScreen);
       // Navigate to Sponsors
         break;
     }
