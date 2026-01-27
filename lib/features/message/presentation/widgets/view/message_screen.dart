@@ -1,0 +1,105 @@
+import 'package:confaero_app/core/constants/app_colors.dart';
+import 'package:confaero_app/presentations/widgets/custom_text.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../../core/config/approutes/app_routes.dart';
+import '../../controllers/message_controller.dart';
+import '../message_item_widget.dart';
+
+
+class MessageScreen extends StatelessWidget {
+  const MessageScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.put(MessageController());
+
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            /// Header
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 40.w,
+                        height: 40.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Icon(Icons.people_outline, size: 24.r),
+                      ),
+                      SizedBox(width: 12.w),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CustomText(text: 'Event Participant',
+                            fontsize: 18 ,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textColor252525,
+                             ),
+                          CustomText(
+                            text: 'Connect with everyone',
+                            fontsize: 14 ,
+                            fontWeight: FontWeight.w600,
+
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16.h),
+
+                  /// Search
+                  Container(
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5F5F5),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: TextField(
+                      controller: controller.searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Search by participant',
+                        prefixIcon: const Icon(Icons.search),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            /// Message List
+            Expanded(
+              child: Obx(
+                    () => ListView.builder(
+                  itemCount: controller.messages.length,
+                  itemBuilder: (context, index) {
+                    final msg = controller.messages[index];
+                    return MessageItemWidget(
+                      message: msg,
+                      onTap: () {
+                        controller.markAsRead(msg.id);
+                        context.pushNamed(AppRoutes.messageChatScreen);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
