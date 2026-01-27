@@ -22,6 +22,8 @@ import '../../../features/attendees/presentation/widgets/view/document_details.d
 import '../../../features/attendees/presentation/widgets/view/document_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/event_checkIn_checkout_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/event_posters_details_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/exhibitors_details_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/exhibitors_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/floor_map_details_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/grganizers_guidelines_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/imagepdf_screen.dart';
@@ -35,6 +37,8 @@ import '../../../features/attendees/presentation/widgets/view/qr_scanner_screen.
 import '../../../features/attendees/presentation/widgets/view/quick_notes_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/resources_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/settings_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/sponsors_details_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/sponsors_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/terms_condition_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/write_note_screen.dart';
 import '../../../features/bottomNavbar/bottomNavbar_screen.dart';
@@ -92,6 +96,10 @@ class AppRoutes {
   static const String organizerAnnouncementsScreen = "/organizerAnnouncementsScreen";
   static const String messageChatScreen = "/messageChatScreen";
   static const String attendeeDetailsScreen = "/attendeeDetailsScreen";
+  static const String sponsorsScreen = "/sponsorsScreen";
+  static const String sponsorsDetailsScreen = "/sponsorsDetailsScreen";
+  static const String exHabitorsScreen = "/exHabitorsScreen";
+  static const String exhibitorDetailsScreen = "/exhibitorDetailsScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -338,6 +346,26 @@ class AppRoutes {
         path: attendeeDetailsScreen,
         name: attendeeDetailsScreen,
         builder: (context, state) => AttendeeDetailsScreen(),
+      ),
+      GoRoute(
+        path: sponsorsScreen,
+        name: sponsorsScreen,
+        builder: (context, state) => SponsorsScreen(),
+      ),
+      GoRoute(
+        path: sponsorsDetailsScreen,
+        name: sponsorsDetailsScreen,
+        builder: (context, state) => SponsorsDetailsScreen(),
+      ),
+      GoRoute(
+        path: exHabitorsScreen,
+        name: exHabitorsScreen,
+        builder: (context, state) => ExhibitorScreen(),
+      ),
+      GoRoute(
+        path: exhibitorDetailsScreen,
+        name: exhibitorDetailsScreen,
+        builder: (context, state) => ExhibitorDetailsScreen(),
       ),
 
 
