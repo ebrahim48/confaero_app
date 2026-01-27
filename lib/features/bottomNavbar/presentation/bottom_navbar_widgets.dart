@@ -94,7 +94,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                 colorFilter: ColorFilter.mode(
                   isSelected
                       ? const Color(0xff32A69A)
-                      : const Color(0xffB2A28E),
+                      : const Color(0xff252525),
                   BlendMode.srcIn,
                 ),
               ),
@@ -106,7 +106,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
                   fontWeight: FontWeight.w500,
                   color: isSelected
                       ? const Color(0xff32A69A)
-                      : const Color(0xffB2A28E),
+                      : const Color(0xff252525),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

@@ -2,7 +2,7 @@ import 'package:confaero_app/features/agenda/presentation/widgets/view/agenda_sc
 import 'package:confaero_app/features/bottomNavbar/presentation/bottom_navbar_widgets.dart';
 import 'package:confaero_app/features/community/presentation/widgets/view/community_screen.dart';
 import 'package:confaero_app/features/mainattendees/presentation/widgets/view/attendees_screen.dart';
-import 'package:confaero_app/features/message/message_screen.dart';
+import 'package:confaero_app/features/message/presentation/widgets/view/message_screen.dart';
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../attendees/presentation/widgets/view/home_screen.dart';

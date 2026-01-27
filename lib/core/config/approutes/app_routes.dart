@@ -39,6 +39,8 @@ import '../../../features/attendees/presentation/widgets/view/terms_condition_sc
 import '../../../features/attendees/presentation/widgets/view/write_note_screen.dart';
 import '../../../features/bottomNavbar/bottomNavbar_screen.dart';
 import '../../../features/community/presentation/widgets/view/organizers_announcements.dart';
+import '../../../features/mainattendees/presentation/widgets/view/attendees_details_screen.dart';
+import '../../../features/message/presentation/widgets/view/message_chat_screen.dart';
 import '../../../features/notification/presentation/widgets/view/notifications_screen.dart';
 import '../../../features/onboarding/presentation/widgets/view/onboarding_screen.dart';
 
@@ -88,6 +90,8 @@ class AppRoutes {
   static const String speakarProfileScreen = "/speakarProfileScreen";
   static const String eventSpekarScreen = "/eventSpekarScreen";
   static const String organizerAnnouncementsScreen = "/organizerAnnouncementsScreen";
+  static const String messageChatScreen = "/messageChatScreen";
+  static const String attendeeDetailsScreen = "/attendeeDetailsScreen";
 
 
   static final GoRouter goRouter = GoRouter(
@@ -324,6 +328,16 @@ class AppRoutes {
         path: organizerAnnouncementsScreen,
         name: organizerAnnouncementsScreen,
         builder: (context, state) => OrganizerAnnouncementsScreen(),
+      ),
+      GoRoute(
+        path: messageChatScreen,
+        name: messageChatScreen,
+        builder: (context, state) => MessageChatScreen(),
+      ),
+      GoRoute(
+        path: attendeeDetailsScreen,
+        name: attendeeDetailsScreen,
+        builder: (context, state) => AttendeeDetailsScreen(),
       ),
 
 
