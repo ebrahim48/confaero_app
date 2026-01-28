@@ -43,23 +43,30 @@ class SignUpController extends GetxController {
     return null;
   }
 
-  void signUpWithEmail() async {
-    if (signUpFormKey.currentState!.validate()) {
-      isLoading.value = true;
+  void signUpWithEmail(BuildContext context) async {
 
-      // TODO: API Integration here
-      // await authService.signUp(
-      //   fullName: fullNameController.text,
-      //   email: emailController.text,
-      //   password: passwordController.text,
-      // );
 
-      await Future.delayed(const Duration(seconds: 2)); // Simulating API call
-      isLoading.value = false;
+    // if (signUpFormKey.currentState!.validate()) {
+    //   isLoading.value = true;
+    //
+    //   // TODO: API Integration here
+    //   // await authService.signUp(
+    //   //   fullName: fullNameController.text,
+    //   //   email: emailController.text,
+    //   //   password: passwordController.text,
+    //   // );
+    //
+    //   await Future.delayed(const Duration(seconds: 2)); // Simulating API call
+    //   isLoading.value = false;
+    //
+    //   // Navigate to next screen after successful signup
+    //   // Get.offAllNamed(AppRoutes.homeScreen);
+    // }
 
-      // Navigate to next screen after successful signup
-      // Get.offAllNamed(AppRoutes.homeScreen);
-    }
+
+
+
+
   }
 
   void signUpWithGoogle() async {
