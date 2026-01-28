@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/config/approutes/app_routes.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../presentations/widgets/custom_button.dart';
 import '../../../../presentations/widgets/custom_text.dart';
@@ -172,13 +174,15 @@ class _SignUpScreenState extends State<SignUpScreen>
               SizedBox(height: 24.h),
 
               // Sign Up Button
-              Obx(() => CustomButton(
+              CustomButton(
                 title: 'Sign Up',
-                onpress: controller.signUpWithEmail,
-                loading: controller.isLoading.value,
+                onpress: () {
+                  context.pushNamed(AppRoutes.verifyScreen);
+
+                },
                 height: 52.h,
                 borderRadius: 10.r,
-              )),
+              ),
 
               SizedBox(height: 24.h),
 

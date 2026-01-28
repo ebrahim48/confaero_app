@@ -162,7 +162,7 @@ class EventCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(20.r),
                             ),
                             child: CustomText(
-                              text: 'Register Now',
+                              text: 'Join Now',
                               fontsize: 12.sp,
                               fontWeight: FontWeight.w500,
                               color: AppColors.textColorFFFFFF,
