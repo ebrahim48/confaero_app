@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
-// import '../services/api_service.dart';
-// import '../services/cache_service.dart';
-// import '../services/connectivity_service.dart';
+
 import '../../features/auth/data/repositories/auth_repository.dart';
-import '../../features/auth/domain/services/auth_service.dart';
+import '../services/api_service.dart';
+import '../services/cache_service.dart';
+import '../services/connectivity_service.dart';
 
 /// Dependency Injection setup for the application.
 ///
@@ -22,7 +22,7 @@ import '../../features/auth/domain/services/auth_service.dart';
 /// ```dart
 /// void main() async {
 ///   WidgetsFlutterBinding.ensureInitialized();
-///   await DependencyInjection.init();
+///   DependencyInjection.init();
 ///   runApp(MyApp());
 /// }
 /// ```
@@ -51,28 +51,20 @@ class DependencyInjection {
   /// 4. Controllers (depends on Domain Services and Repositories)
   ///
   /// The `fenix: true` parameter ensures services are recreated if deleted.
-  static Future<void> init() async {
-    // // Core Services (Singletons)
-    // Get.lazyPut<CacheService>(() => CacheService(), fenix: true);
-    // Get.lazyPut<ApiService>(() => ApiService(), fenix: true);
-    // Get.lazyPut<ConnectivityService>(() => ConnectivityService(), fenix: true);
-    //
-    // // Auth Repository and Service
-    // Get.lazyPut<AuthRepository>(
-    //   () => AuthRepository(
-    //     apiService: Get.find<ApiService>(),
-    //     connectivityService: Get.find<ConnectivityService>(),
-    //   ),
-    //   fenix: true,
-    // );
-    //
-    // Get.lazyPut<AuthService>(
-    //   () => AuthService(
-    //     repository: Get.find<AuthRepository>(),
-    //     connectivityService: Get.find<ConnectivityService>(),
-    //   ),
-    //   fenix: true,
-    // );
+  static void init() {
+    // Core Services (Singletons)
+    Get.lazyPut<ApiService>(() => ApiService(), fenix: true);
+    Get.lazyPut<CacheService>(() => CacheService(), fenix: true);
+    Get.lazyPut<ConnectivityService>(() => ConnectivityService(), fenix: true);
+
+    // Auth Repository
+    Get.lazyPut<AuthRepository>(
+      () => AuthRepository(
+        apiService: Get.find<ApiService>(),
+        connectivityService: Get.find<ConnectivityService>(),
+      ),
+      fenix: true,
+    );
   }
 
   /// Clear all dependencies from memory.

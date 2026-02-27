@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:toastification/toastification.dart';
 import 'core/config/approutes/app_routes.dart';
 import 'core/config/appthemes/app_themes.dart';
-
+import 'core/di/dependency_injection.dart';
 import 'core/helpers/network_connection.dart';
 import 'presentations/controller/theme_controller.dart';
 
@@ -16,15 +16,10 @@ void main() async {
 
   PlatformDispatcher.instance.onAccessibilityFeaturesChanged = () {};
 
-
-
-  // DependencyInjection di = DependencyInjection();
-  // di.dependencies();
-  // di.lockDevicePortrait();
+  // Initialize dependency injection
+  DependencyInjection.init();
 
   Get.put(ThemeController());
-
-
 
   runApp(
     DevicePreview(
