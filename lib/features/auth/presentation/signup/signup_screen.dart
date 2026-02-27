@@ -26,11 +26,17 @@ class _SignUpScreenState extends State<SignUpScreen>
   @override
   void initState() {
     super.initState();
+    // Always create a fresh controller for signup screen
     if (Get.isRegistered<SignUpController>()) {
-      controller = Get.find<SignUpController>();
-    } else {
-      controller = Get.put(SignUpController(), permanent: false);
+      Get.delete<SignUpController>();
     }
+    controller = Get.put(SignUpController(), permanent: false);
+  }
+
+  @override
+  void dispose() {
+    // Controller will be disposed by GetX when screen is popped
+    super.dispose();
   }
 
   @override

@@ -1,11 +1,11 @@
-import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../presentations/widgets/custom_text.dart';
 import '../../../../presentations/widgets/custom_button.dart';
+import '../../../../presentations/widgets/custom_text.dart';
 import '../widgets/custom_pin_code.dart';
+import 'controllers/verify_controller.dart';
 
 class VerifyScreen extends StatefulWidget {
   const VerifyScreen({super.key});
@@ -15,12 +15,17 @@ class VerifyScreen extends StatefulWidget {
 }
 
 class _VerifyScreenState extends State<VerifyScreen> {
-  final TextEditingController _pinController = TextEditingController();
-  bool _isPinComplete = false;
+  late final VerifyController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(VerifyController());
+  }
 
   @override
   void dispose() {
-    _pinController.dispose();
+    Get.delete<VerifyController>();
     super.dispose();
   }
 
@@ -32,108 +37,76 @@ class _VerifyScreenState extends State<VerifyScreen> {
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              // AppBar with back button
-              SizedBox(
-                height: 56.h,
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.arrow_back,
-                        color: AppColors.textColor424242,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
+              SizedBox(height: 56.h),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  icon: Icon(Icons.arrow_back, color: AppColors.textColor424242),
+                  onPressed: () => Get.back(),
                 ),
               ),
-
               SizedBox(height: 40.h),
-
-              // Logo
-              Image.asset(
-                'assets/images/logo.png',
-                width: 169.w,
-                height: 84.h,
-              ),
-
+              Image.asset('assets/images/logo.png', width: 169.w, height: 84.h),
               SizedBox(height: 32.h),
 
-              // Enter verification code Title
               CustomText(
                 text: 'Enter verification code',
                 fontsize: 24.sp,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textColor424242,
               ),
-
               SizedBox(height: 12.h),
 
-              // Description
-              CustomText(
-                text:
-                'We ve sent a verification code to example@gmail.com that will expire in 10 minutes. Please enter the code to continue',
-              fontsize: 14.sp,
+              Obx(() => CustomText(
+                text: 'We\'ve sent a verification code to ${controller.email.value} that will expire in 10 minutes. Please enter the code to continue',
+                fontsize: 14.sp,
                 fontWeight: FontWeight.w400,
                 color: AppColors.textColor424242.withValues(alpha: 0.7),
                 textAlign: TextAlign.center,
                 maxline: 3,
-              ),
-
+              )),
               SizedBox(height: 32.h),
 
-              // PIN Code TextField
               CustomPinCodeTextField(
-                textEditingController: _pinController,
-                onChanged: (value) {
-                  setState(() {
-                    _isPinComplete = value.length == 6;
-                  });
-                },
-                onCompleted: (value) {
-                  setState(() {
-                    _isPinComplete = true;
-                  });
-                },
+                textEditingController: controller.pinController,
+                onChanged: (value) {},
+                onCompleted: (value) {},
               ),
-
               SizedBox(height: 24.h),
 
-              // Resend Code
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   CustomText(
                     text: 'Didnt receive the code? ',
-                  fontsize: 14.sp,
+                    fontsize: 14.sp,
                     fontWeight: FontWeight.w400,
                     color: AppColors.textColor424242.withValues(alpha: 0.7),
                   ),
                   Spacer(),
-                  GestureDetector(
-                    onTap: () {
-                      // Resend code logic
-                      print('Resending code...');
-                    },
+                  Obx(() => GestureDetector(
+                    onTap: controller.canResend.value ? () => controller.resendCode(context) : null,
                     child: CustomText(
-                      text: 'Resend Code',
+                      text: controller.canResend.value 
+                          ? 'Resend Code' 
+                          : 'Resend in ${controller.resendTimer.value}s',
                       fontsize: 14.sp,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xffFF1D1D),
+                      color: controller.canResend.value 
+                          ? const Color(0xffFF1D1D) 
+                          : AppColors.textColor707070,
                     ),
-                  ),
+                  )),
                 ],
               ),
-
               SizedBox(height: 200.h),
 
-             CustomButton(title: 'Verify', onpress: () {
-               context.pushNamed(AppRoutes.resetPasswordScreen);
-
-             },),
-
+              Obx(() => CustomButton(
+                title: 'Verify',
+                onpress: () => controller.verifyCode(context),
+                loading: controller.isLoading.value,
+              )),
               SizedBox(height: 40.h),
             ],
           ),

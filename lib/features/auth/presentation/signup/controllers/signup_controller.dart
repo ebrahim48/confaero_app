@@ -15,7 +15,7 @@ class SignUpController extends GetxController {
 
   final signUpFormKey = GlobalKey<FormState>();
   final isLoading = false.obs;
-  final selectedTab = 1.obs; // 0 for Login, 1 for Sign Up
+  final selectedTab = 1.obs;
 
   final AuthRepository _authRepository = AuthRepository(
     connectivityService: Get.find(),
@@ -35,9 +35,19 @@ class SignUpController extends GetxController {
     selectedTab.value = index;
     // Navigate to login if index is 0
     if (index == 0) {
+      // Clear all fields before navigating
+      clearFields();
       // Navigate first, then controller will be disposed automatically
       context.go(AppRoutes.signInScreen);
     }
+  }
+
+  /// Clear all text fields
+  void clearFields() {
+    fullNameController.clear();
+    emailController.clear();
+    passwordController.clear();
+    confirmPasswordController.clear();
   }
 
   String? validateConfirmPassword(String? value) {

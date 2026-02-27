@@ -53,26 +53,26 @@ class TabSwitcher extends StatelessWidget {
       child: Container(
         height: 34.h,
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.textColorFFFFFF : Colors.transparent,
+          color: isSelected ? AppColors.backgroundColor : Colors.transparent,
           borderRadius: BorderRadius.circular(6.r),
           border: isSelected
               ? Border.all(color: const Color(0x80EFF0F6))
               : null,
           boxShadow: isSelected
               ? [
-            BoxShadow(
-              color: const Color(0x08000000),
-              blurRadius: 2,
-              offset: const Offset(0, -2),
-              spreadRadius: 0,
-              blurStyle: BlurStyle.inner,
-            ),
-            BoxShadow(
-              color: const Color(0x3DE4E5E7),
-              blurRadius: 2,
-              offset: const Offset(0, 1),
-            ),
-          ]
+                  BoxShadow(
+                    color: const Color(0x08000000),
+                    blurRadius: 2,
+                    offset: const Offset(0, -2),
+                    spreadRadius: 0,
+                    blurStyle: BlurStyle.inner,
+                  ),
+                  BoxShadow(
+                    color: const Color(0x3DE4E5E7),
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
               : null,
         ),
         child: Center(
@@ -82,7 +82,7 @@ class TabSwitcher extends StatelessWidget {
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             color: isSelected
                 ? AppColors.textColor424242
-                : AppColors.textColor424242.withOpacity(0.6),
+                : AppColors.textColor424242.withValues(alpha: 0.6),
           ),
         ),
       ),
