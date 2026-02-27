@@ -9,6 +9,10 @@ class ApiConstants {
 
   static const String register = '/auth/register';
   static const String login = '/auth/login';
+  static const String forgetPassword = '/auth/forgot-password';
+  static const String verifyResetCode = '/auth/verify-reset-code';
+  static const String resetPassword = '/auth/reset-password';
+
 
 
 }

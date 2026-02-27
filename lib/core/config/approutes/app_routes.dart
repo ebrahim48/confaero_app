@@ -50,8 +50,7 @@ import '../../../features/mainattendees/presentation/widgets/view/attendees_deta
 import '../../../features/message/presentation/widgets/view/message_chat_screen.dart';
 import '../../../features/notification/presentation/widgets/view/notifications_screen.dart';
 import '../../../features/onboarding/presentation/widgets/view/onboarding_screen.dart';
-
-
+import '../../../core/constants/api_constants.dart';
 
 
 class AppRoutes {
@@ -59,7 +58,12 @@ class AppRoutes {
   static const String onBoardingScreen = "/onBoardingScreen";
   static const String signUpScreen = "/signUpScreen";
   static const String signInScreen = "/signInScreen";
-  static const String forgetPasswordScreen = "/forgetPasswordScreen";
+  
+  // Password reset routes - using API constants paths
+  static const String forgetPasswordScreen = ApiConstants.forgetPassword;
+  static const String verifyScreen = ApiConstants.verifyResetCode;
+  static const String resetPasswordScreen = ApiConstants.resetPassword;
+  
   static const String eventsScreen = "/eventsScreen";
   static const String eventsDetailsScreen = "/eventsDetailsScreen";
   static const String mainNavigationScreen = "/mainNavigationScreen";
@@ -104,8 +108,7 @@ class AppRoutes {
   static const String sponsorsDetailsScreen = "/sponsorsDetailsScreen";
   static const String exHabitorsScreen = "/exHabitorsScreen";
   static const String exhibitorDetailsScreen = "/exhibitorDetailsScreen";
-  static const String verifyScreen = "/verifyScreen";
-  static const String resetPasswordScreen = "/resetPasswordScreen";
+  // verifyScreen and resetPasswordScreen already defined above with API constants
 
 
   static final GoRouter goRouter = GoRouter(
@@ -376,7 +379,10 @@ class AppRoutes {
       GoRoute(
         path: forgetPasswordScreen,
         name: forgetPasswordScreen,
-        builder: (context, state) => ForgetPasswordScreen(),
+        builder: (context, state) {
+          final email = state.uri.queryParameters['email'];
+          return ForgetPasswordScreen(email: email);
+        },
       ),
       GoRoute(
         path: verifyScreen,

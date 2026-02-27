@@ -33,9 +33,17 @@ class SignInController extends GetxController {
     selectedTab.value = index;
     // Navigate to signup if index is 1
     if (index == 1) {
+      // Clear all fields before navigating
+      clearFields();
       // Navigate first, then controller will be disposed automatically
       context.go(AppRoutes.signUpScreen);
     }
+  }
+
+  /// Clear all text fields
+  void clearFields() {
+    emailController.clear();
+    passwordController.clear();
   }
 
   String? validateEmail(String? value) {
@@ -75,7 +83,6 @@ class SignInController extends GetxController {
       isLoading.value = false;
 
       final success = response['success'] as bool? ?? false;
-      final message = response['message'] as String? ?? 'Login successful';
       final data = response['data'] as Map<String, dynamic>?;
 
       if (success && data != null) {
@@ -88,10 +95,10 @@ class SignInController extends GetxController {
         await PrefsHelper.setString(AppConstants.refreshToken, refreshToken);
         await PrefsHelper.setString(AppConstants.userRole, activeRole);
 
-        // ToastMessageHelper.showToastMessage(
-        //   message,
-        //   title: 'Success',
-        // );
+        ToastMessageHelper.showToastMessage(
+          'Login successful',
+          title: 'Success',
+        );
 
         // Navigate to main navigation screen after successful login
         // Use GoRouter for navigation since app doesn't use GetMaterialApp
@@ -160,7 +167,17 @@ class SignInController extends GetxController {
     isLoading.value = false;
   }
 
-  void forgotPassword(BuildContext context) {
-    context.push(AppRoutes.forgetPasswordScreen);
+  void forgotPassword(BuildContext context, {String? email}) {
+    // Debug print
+    print('Forgot Password - Email: $email');
+    
+    // Use GoRouter navigation since app uses MaterialApp.router
+    if (email != null && email.isNotEmpty) {
+      print('Navigating with email: $email');
+      context.push('${AppRoutes.forgetPasswordScreen}?email=${Uri.encodeComponent(email)}');
+    } else {
+      print('No email provided, navigating without email');
+      context.push(AppRoutes.forgetPasswordScreen);
+    }
   }
 }

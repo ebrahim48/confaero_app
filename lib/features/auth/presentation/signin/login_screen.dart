@@ -26,11 +26,17 @@ class _SignInScreenState extends State<SignInScreen>
   @override
   void initState() {
     super.initState();
+    // Always create a fresh controller for signin screen
     if (Get.isRegistered<SignInController>()) {
-      controller = Get.find<SignInController>();
-    } else {
-      controller = Get.put(SignInController(), permanent: false);
+      Get.delete<SignInController>();
     }
+    controller = Get.put(SignInController(), permanent: false);
+  }
+
+  @override
+  void dispose() {
+    // Controller will be disposed by GetX when screen is popped
+    super.dispose();
   }
 
   @override
@@ -137,7 +143,10 @@ class _SignInScreenState extends State<SignInScreen>
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
-                  onTap: () => controller.forgotPassword(context),
+                  onTap: () => controller.forgotPassword(
+                    context,
+                    email: controller.emailController.text.trim(),
+                  ),
                   child: CustomText(
                     text: 'Forget password',
                     fontsize: 14.sp,
