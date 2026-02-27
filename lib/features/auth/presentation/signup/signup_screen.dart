@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:go_router/go_router.dart';
-import '../../../../core/config/approutes/app_routes.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../presentations/widgets/custom_button.dart';
 import '../../../../presentations/widgets/custom_text.dart';
@@ -27,8 +26,6 @@ class _SignUpScreenState extends State<SignUpScreen>
   @override
   void initState() {
     super.initState();
-    // Check if controller already exists (shouldn't happen due to proper disposal),
-    // but if it does, find it; otherwise create a new one
     if (Get.isRegistered<SignUpController>()) {
       controller = Get.find<SignUpController>();
     } else {
@@ -71,7 +68,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                 text: 'Create an account or log in to explore\nabout our app',
                 fontsize: 14.sp,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textColor424242.withOpacity(0.7),
+                color: AppColors.textColor424242.withValues(alpha: 0.7),
                 textAlign: TextAlign.center,
                 maxline: 2,
               ),
@@ -107,6 +104,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                       keyboardType: TextInputType.name,
                       contentPaddingHorizontal: 16.w,
                       contentPaddingVertical: 14.h,
+                      validator: (value) => controller.validateFullName(value),
                     ),
 
                     SizedBox(height: 16.h),
@@ -127,6 +125,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                       isEmail: true,
                       contentPaddingHorizontal: 16.w,
                       contentPaddingVertical: 14.h,
+                      validator: (value) => controller.validateEmail(value),
                     ),
 
                     SizedBox(height: 16.h),
@@ -146,6 +145,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                       isPassword: true,
                       contentPaddingHorizontal: 16.w,
                       contentPaddingVertical: 14.h,
+                      validator: (value) => controller.validatePassword(value),
                     ),
 
                     SizedBox(height: 16.h),
@@ -163,9 +163,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                       controller: controller.confirmPasswordController,
                       hintText: 'Confirm your password',
                       isPassword: true,
-                      validator: (value) => controller.validateConfirmPassword(value),
                       contentPaddingHorizontal: 16.w,
                       contentPaddingVertical: 14.h,
+                      validator: (value) => controller.validateConfirmPassword(value),
                     ),
                   ],
                 ),
@@ -174,15 +174,13 @@ class _SignUpScreenState extends State<SignUpScreen>
               SizedBox(height: 24.h),
 
               // Sign Up Button
-              CustomButton(
+              Obx(() => CustomButton(
                 title: 'Sign Up',
-                onpress: () {
-                  context.pushNamed(AppRoutes.verifyScreen);
-
-                },
+                onpress: () => controller.signUpWithEmail(context),
+                loading: controller.isLoading.value,
                 height: 52.h,
                 borderRadius: 10.r,
-              ),
+              )),
 
               SizedBox(height: 24.h),
 

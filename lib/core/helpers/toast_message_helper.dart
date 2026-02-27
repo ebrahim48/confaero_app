@@ -27,7 +27,7 @@ class ToastMessageHelper {
         break;
       default:
         type = ToastificationType.success;
-        icon = const Icon(Icons.check, color: Colors.black);
+        // icon = const Icon(Icons.check, color: Colors.black);
     }
 
     toastification.show(
