@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_button.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../../../../presentations/widgets/custom_text_field.dart';
+import '../../../data/models/event_model.dart';
+
 import '../../controllers/events_details_controller.dart';
 import '../event_info_card.dart';
 import '../map_location_widget.dart';
-
 
 class EventDetailsScreen extends StatefulWidget {
   const EventDetailsScreen({super.key});
@@ -19,242 +22,424 @@ class EventDetailsScreen extends StatefulWidget {
 
 class _EventDetailsScreenState extends State<EventDetailsScreen>
     with SingleTickerProviderStateMixin {
-  final EventDetailsController controller = Get.put(EventDetailsController());
+  late final EventDetailsController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(EventDetailsController());
+
+    // Get event ID passed via GoRouter extra
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final extra = GoRouterState.of(context).extra;
+      if (extra is String && extra.isNotEmpty) {
+        controller.loadEvent(extra);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header with Back Button
-            Container(
-              width: double.infinity,
-              height: 50.h,
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Icon(
-                      Icons.arrow_back,
-                      size: 24.sp,
-                      color: AppColors.textColor424242,
-                    ),
-                  ),
+        child: Obx(() {
+          final event = controller.event.value;
 
-                  SizedBox(width: 14.w),
-                  Expanded(
-                    child: CustomText(
-                      text: '18th Lithium Supply & Battery...',
-                      fontsize: 18.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textColor424242,
-                      textAlign: TextAlign.start,
-                      maxline: 1,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Content
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          return Column(
+            children: [
+              // ── Header ──────────────────────────────────────────────────
+              Container(
+                width: double.infinity,
+                height: 50.h,
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: Row(
                   children: [
-                    // Event Banner Image
-                    Image.asset(
-                      'assets/images/banner.png',
-                      width: double.infinity,
-                      height: 190.h,
-                      fit: BoxFit.cover,
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Icon(Icons.arrow_back,
+                          size: 24.sp, color: AppColors.textColor424242),
                     ),
-
-                    SizedBox(height: 24.h),
-
-                    // Event Info Card
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w),
-                      child: EventInfoCard(
-                        imageUrl: 'assets/images/myevents.png',
-                        title: '18th Lithium Supply & Battery Raw Materials Conference',
-                        date: 'Jun 22-25, 2026',
-                        location: 'Las Vegas, USA',
+                    SizedBox(width: 14.w),
+                    Expanded(
+                      child: CustomText(
+                        text: event?.title ?? 'Event Details',
+                        fontsize: 18.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textColor424242,
+                        textAlign: TextAlign.start,
+                        maxline: 1,
                       ),
                     ),
-
-                    SizedBox(height: 16.h),
-
-                    // Map Location Card
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24.w),
-                      child: MapLocationCard(
-                        locationName: 'Montreal Convention Centre',
-                        onTap: controller.openMap,
-                      ),
-                    ),
-
-                    SizedBox(height: 24.h),
-
-                    // Event Description
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CustomText(
-                            text: 'Event Description',
-                            fontsize: 18.sp,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textColor424242,
-                            textAlign: TextAlign.start,
-                          ),
-                          SizedBox(height: 12.h),
-                          CustomText(
-                            text:
-                            'For 18 years, the Fastmarkets Lithium Supply and Battery Raw Materials Conference has been the definitive meeting place for the sector. More than 1,300 delegates rely on this platform to negotiate offtake agreements, secure financing, assess market fundamentals and build partnerships across the supply chain.....',
-                            fontsize: 14.sp,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.textColor7E7F7E,
-                            textAlign: TextAlign.start,
-                            maxline: 6,
-                          ),
-                          SizedBox(height: 8.h),
-                          GestureDetector(
-                            onTap: () {
-                              // Show full description
-                            },
-                            child: CustomText(
-                              text: 'See More',
-                              fontsize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xff5BB8AE),
-                              textAlign: TextAlign.start,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(height: 32.h),
-
-                    // Registration Section
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24.w),
-                      child: Obx(() {
-                        if (controller.showInvitationInput.value) {
-                          // Show invitation code input
-                          return Column(
-                            children: [
-                              CustomTextField(
-                                controller: controller.invitationCodeController,
-                                hintText: 'Enter event invitation code',
-                                contentPaddingHorizontal: 16.w,
-                                contentPaddingVertical: 14.h,
-                              ),
-                              SizedBox(height: 16.h),
-                              CustomButton(
-                                title: 'Join',
-                                onpress: controller.joinWithInvitationCode,
-                                loading: controller.isLoading.value,
-                                height: 48.h,
-                                borderRadius: 8.r,
-                              ),
-                            ],
-                          );
-                        } else {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CustomText(
-                                text: 'Already Registered?',
-                                fontsize: 14.sp,
-                                fontWeight: FontWeight.w400,
-                                color: AppColors.textColor424242,
-                                textAlign: TextAlign.start,
-                                bottom: 12.h,
-                              ),
-                              CustomButton(
-                                title: 'Join with invitation code',
-                                onpress: controller.toggleInvitationInput,
-                                height: 48.h,
-                                borderRadius: 8.r,
-                                color: const Color(0xff5BB8AE),
-                              ),
-                              SizedBox(height: 16.h),
-                              Container(
-                                width: 400,
-                                height: 54,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: const Color(0xFFD2D2D2),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    // Left section
-                                    Expanded(
-                                      child: Container(
-                                        alignment: Alignment.center,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(8),
-                                            bottomLeft: Radius.circular(8),
-                                          ),
-                                        ),
-                                        child: CustomText(
-                                          text: 'Not Registered?',
-                                          fontsize: 14.sp,
-                                          fontWeight: FontWeight.w400,
-                                          color: AppColors.textColor424242,
-                                        ),
-                                      ),
-                                    ),
-
-                                    // Right section (Button)
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () => controller.registerNow(context),
-                                        child: Container(
-                                          alignment: Alignment.center,
-                                          decoration: const BoxDecoration(
-                                            color: Color(0xff5BB8AE),
-                                            borderRadius: BorderRadius.only(
-                                              topRight: Radius.circular(8),
-                                              bottomRight: Radius.circular(8),
-                                            ),
-                                          ),
-                                          child: CustomText(
-                                            text: 'Register Now',
-                                            fontsize: 14.sp,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-
-                            ],
-                          );
-                        }
-                      }),
-                    ),
-                    SizedBox(height: 40.h),
                   ],
+                ),
+              ),
+
+              // ── Body ─────────────────────────────────────────────────────
+              Expanded(
+                child: _buildBody(event),
+              ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildBody(EventModel? event) {
+    // Loading
+    if (controller.isLoading.value && event == null) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xff5BB8AE)),
+      );
+    }
+
+    // Error
+    if (controller.errorMessage.isNotEmpty && event == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 48.sp, color: Colors.red),
+            SizedBox(height: 12.h),
+            CustomText(
+              text: controller.errorMessage.value,
+              fontsize: 14.sp,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textColor7E7F7E,
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16.h),
+            GestureDetector(
+              onTap: () {
+                final extra = GoRouterState.of(context).extra;
+                if (extra is String) controller.loadEvent(extra);
+              },
+              child: Container(
+                padding:
+                EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xff5BB8AE),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: CustomText(
+                  text: 'Retry',
+                  fontsize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
                 ),
               ),
             ),
           ],
         ),
+      );
+    }
+
+    if (event == null) return const SizedBox.shrink();
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Banner ────────────────────────────────────────────────────
+          _buildBanner(event),
+
+          SizedBox(height: 24.h),
+
+          // ── Event Info Card ───────────────────────────────────────────
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12.w),
+            child: EventInfoCard(
+              imageUrl: (event.bannerImageUrl != null &&
+                  event.bannerImageUrl!.isNotEmpty)
+                  ? event.bannerImageUrl!
+                  : 'assets/images/myevents.png',
+              isNetworkImage: event.bannerImageUrl != null &&
+                  event.bannerImageUrl!.isNotEmpty,
+              title: event.title,
+              date: event.formattedDateRange,
+              location: event.location,
+            ),
+          ),
+
+          SizedBox(height: 16.h),
+
+          // ── Map ───────────────────────────────────────────────────────
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: MapLocationCard(
+              locationName: event.location,
+              onTap: controller.openMap,
+            ),
+          ),
+
+          SizedBox(height: 24.h),
+
+          // ── Description ───────────────────────────────────────────────
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: _buildDescription(event),
+          ),
+
+          // ── Extra info row (price / type) ─────────────────────────────
+          if (event.price != null || event.eventType != null) ...[
+            SizedBox(height: 16.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              child: _buildExtraInfo(event),
+            ),
+          ],
+
+          SizedBox(height: 32.h),
+
+          // ── Registration Section ──────────────────────────────────────
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: _buildRegistrationSection(event),
+          ),
+
+          SizedBox(height: 40.h),
+        ],
       ),
+    );
+  }
+
+  // ── Banner ──────────────────────────────────────────────────────────────
+
+  Widget _buildBanner(EventModel event) {
+    if (event.bannerImageUrl != null && event.bannerImageUrl!.isNotEmpty) {
+      return Image.network(
+        event.bannerImageUrl!,
+        width: double.infinity,
+        height: 190.h,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _fallbackBanner(),
+      );
+    }
+    return _fallbackBanner();
+  }
+
+  Widget _fallbackBanner() {
+    return Image.asset(
+      'assets/images/banner.png',
+      width: double.infinity,
+      height: 190.h,
+      fit: BoxFit.cover,
+    );
+  }
+
+  // ── Description ─────────────────────────────────────────────────────────
+
+  Widget _buildDescription(EventModel event) {
+    final desc = event.details?.isNotEmpty == true
+        ? event.details!
+        : 'No description available for this event.';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CustomText(
+          text: 'Event Description',
+          fontsize: 18.sp,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textColor424242,
+          textAlign: TextAlign.start,
+        ),
+        SizedBox(height: 12.h),
+        CustomText(
+          text: desc,
+          fontsize: 14.sp,
+          fontWeight: FontWeight.w400,
+          color: AppColors.textColor7E7F7E,
+          textAlign: TextAlign.start,
+          maxline: 6,
+        ),
+        SizedBox(height: 8.h),
+        GestureDetector(
+          onTap: () {
+            // TODO: Show full description dialog
+          },
+          child: CustomText(
+            text: 'See More',
+            fontsize: 14.sp,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xff5BB8AE),
+            textAlign: TextAlign.start,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Extra Info (price / type) ────────────────────────────────────────────
+
+  Widget _buildExtraInfo(EventModel event) {
+    return Row(
+      children: [
+        if (event.eventType != null) ...[
+          _infoChip(
+            icon: Icons.event_outlined,
+            label: event.eventType!,
+          ),
+          SizedBox(width: 12.w),
+        ],
+        if (event.price != null)
+          _infoChip(
+            icon: Icons.attach_money,
+            label: event.price == 0
+                ? 'Free'
+                : '\$${event.price!.toStringAsFixed(0)}',
+          ),
+      ],
+    );
+  }
+
+  Widget _infoChip({required IconData icon, required String label}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: const Color(0xff5BB8AE).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: const Color(0xff5BB8AE).withOpacity(0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.sp, color: const Color(0xff5BB8AE)),
+          SizedBox(width: 4.w),
+          CustomText(
+            text: label,
+            fontsize: 12.sp,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xff5BB8AE),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Registration Section ─────────────────────────────────────────────────
+
+  Widget _buildRegistrationSection(EventModel event) {
+    // Already registered (VERIFIED or PENDING)
+    if (controller.isAlreadyRegistered) {
+      return Container(
+        width: double.infinity,
+        height: 54.h,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: const Color(0xff5BB8AE).withOpacity(0.12),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: const Color(0xff5BB8AE)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.check_circle_outline,
+                color: const Color(0xff5BB8AE), size: 20.sp),
+            SizedBox(width: 8.w),
+            CustomText(
+              text: controller.registrationStatusLabel,
+              fontsize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xff5BB8AE),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Invitation code input visible
+    if (controller.showInvitationInput.value) {
+      return Column(
+        children: [
+          CustomTextField(
+            controller: controller.invitationCodeController,
+            hintText: 'Enter event invitation code',
+            contentPaddingHorizontal: 16.w,
+            contentPaddingVertical: 14.h,
+          ),
+          SizedBox(height: 16.h),
+          CustomButton(
+            title: 'Join',
+            onpress: controller.joinWithInvitationCode,
+            loading: controller.isLoading.value,
+            height: 48.h,
+            borderRadius: 8.r,
+          ),
+        ],
+      );
+    }
+
+    // Default: Not registered
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: 16.h),
+        Container(
+          width: double.infinity,
+          height: 54.h,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border.all(color: const Color(0xFFD2D2D2), width: 1),
+          ),
+          child: Row(
+            children: [
+              // Left: Not Registered?
+              Expanded(
+                child: Container(
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      bottomLeft: Radius.circular(8),
+                    ),
+                  ),
+                  child: CustomText(
+                    text: 'Not Registered?',
+                    fontsize: 14.sp,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textColor424242,
+                  ),
+                ),
+              ),
+              // Right: Register Now button
+              Expanded(
+                child: GestureDetector(
+                  onTap: controller.isRegistering.value
+                      ? null
+                      : () => controller.registerNow(context),
+                  child: Container(
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: Color(0xff5BB8AE),
+                      borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(8),
+                        bottomRight: Radius.circular(8),
+                      ),
+                    ),
+                    child: controller.isRegistering.value
+                        ? SizedBox(
+                      width: 20.w,
+                      height: 20.h,
+                      child: const CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                        : CustomText(
+                      text: 'Register Now',
+                      fontsize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
