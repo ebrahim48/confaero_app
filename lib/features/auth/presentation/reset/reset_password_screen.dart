@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../presentations/widgets/custom_button.dart';
 import '../../../../presentations/widgets/custom_text.dart';
@@ -16,11 +17,21 @@ class ResetPasswordScreen extends StatefulWidget {
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   late final ResetPasswordController controller;
+  String? _email;
+  String? _token;
 
   @override
-  void initState() {
-    super.initState();
-    controller = Get.put(ResetPasswordController());
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_email == null) {
+      // Get email and token from GoRouter query parameters
+      final state = GoRouterState.of(context);
+      _email = state.uri.queryParameters['email'] ?? '';
+      _token = state.uri.queryParameters['token'] ?? '';
+      
+      controller = Get.put(ResetPasswordController());
+      controller.setEmailAndToken(_email!, _token!);
+    }
   }
 
   @override

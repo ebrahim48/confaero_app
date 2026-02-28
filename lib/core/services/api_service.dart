@@ -98,13 +98,16 @@ class ApiService {
         Map<String, dynamic>? queryParameters,
         Options? options,
         CancelToken? cancelToken,
+        bool validateStatus = true,
       }) async {
     try {
       return await _dio.post(
         path,
         data: data,
         queryParameters: queryParameters,
-        options: options,
+        options: options ?? (validateStatus
+            ? null
+            : Options(validateStatus: (status) => true)),
         cancelToken: cancelToken,
       );
     } on DioException catch (e) {
@@ -219,10 +222,10 @@ class ApiService {
 
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode;
+        final responseData = error.response?.data;
 
         String message = 'Server error';
         try {
-          final responseData = error.response?.data;
           if (responseData is Map<String, dynamic>) {
             message = responseData['message'] as String? ??
                 error.response?.statusMessage ??
@@ -234,7 +237,7 @@ class ApiService {
           message = error.response?.statusMessage ?? 'Server error';
         }
 
-        return ServerException(message, statusCode, error.message);
+        return ServerException(message, statusCode, error.message, responseData, error.stackTrace);
 
       case DioExceptionType.cancel:
         return UnknownException('Request cancelled');
