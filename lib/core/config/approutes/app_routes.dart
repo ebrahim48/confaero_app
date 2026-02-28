@@ -66,6 +66,7 @@ class AppRoutes {
   
   static const String eventsScreen = "/eventsScreen";
   static const String eventsDetailsScreen = "/eventsDetailsScreen";
+  static const String eventsDetailsScreenWithId = "/eventsDetailsScreen/:eventId";
   static const String mainNavigationScreen = "/mainNavigationScreen";
   static const String floorMapScreen = "/floorMapScreen";
   static const String floorMapDetailsScreen = "/floorMapDetailsScreen";
@@ -145,6 +146,12 @@ class AppRoutes {
       GoRoute(
         path: eventsDetailsScreen,
         name: eventsDetailsScreen,
+        builder: (context, state) => EventDetailsScreen(),
+      ),
+
+      GoRoute(
+        path: eventsDetailsScreenWithId,
+        name: eventsDetailsScreenWithId,
         builder: (context, state) => EventDetailsScreen(),
       ),
 

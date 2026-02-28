@@ -3,13 +3,36 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../core/config/approutes/app_routes.dart';
+import '../../../../../core/config/approutes/app_routes.dart';
+import '../../../../../core/services/api_service.dart';
+import '../../../../../core/services/connectivity_service.dart';
+import '../../data/models/event_model.dart';
+import '../../data/repositories/events_repository.dart';
+import '../../domain/services/events_service.dart';
 
 class EventDetailsController extends GetxController {
+  late final EventsRepository _repository;
+
   final invitationCodeController = TextEditingController();
-  final isRegistered = false.obs;
-  final showInvitationInput = false.obs;
+
   final isLoading = false.obs;
+  final isRegistering = false.obs;
+  final showInvitationInput = false.obs;
+
+  final event = Rxn<EventModel>();
+  final errorMessage = ''.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Build dependency chain internally — no Get.find<EventsRepository> needed
+    _repository = EventsRepository(
+      eventsService: EventsService(
+        apiService: Get.find<ApiService>(),
+        connectivityService: Get.find<ConnectivityService>(),
+      ),
+    );
+  }
 
   @override
   void onClose() {
@@ -17,61 +40,117 @@ class EventDetailsController extends GetxController {
     super.onClose();
   }
 
+  Future<void> loadEvent(String eventId) async {
+    if (eventId.isEmpty) return;
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+      event.value = await _repository.getEventDetails(eventId);
+    } catch (e) {
+      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void openMap() async {
+    final mapLink = event.value?.googleMapLink;
+    Uri url;
+    if (mapLink != null && mapLink.isNotEmpty) {
+      url = Uri.parse(mapLink);
+    } else {
+      final location = Uri.encodeComponent(event.value?.location ?? '');
+      url = Uri.parse(
+          'https://www.google.com/maps/search/?api=1&query=$location');
+    }
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      debugPrint('Map launch error: $e');
+    }
+  }
+
+  void registerNow(BuildContext context) async {
+    final eventId = event.value?.id;
+    if (eventId == null || eventId.isEmpty) return;
+
+    try {
+      isRegistering.value = true;
+      errorMessage.value = '';
+
+      final result = await _repository.initiateRegistration(eventId);
+
+      if (result != null) {
+        final status = result['status'] as String? ?? '';
+        Get.snackbar(
+          'Registration',
+          status == 'VERIFIED'
+              ? 'Successfully registered!'
+              : 'Registration submitted. Status: $status',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: const Color(0xff5BB8AE).withOpacity(0.9),
+          colorText: const Color(0xFFFFFFFF),
+          duration: const Duration(seconds: 3),
+        );
+        await loadEvent(eventId);
+        await Future.delayed(const Duration(seconds: 1));
+        if (context.mounted) {
+          context.goNamed(AppRoutes.mainNavigationScreen);
+        }
+      } else {
+        errorMessage.value = 'Registration failed. Please try again.';
+        Get.snackbar(
+          'Error',
+          errorMessage.value,
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: const Color(0xFFE53935).withOpacity(0.9),
+          colorText: const Color(0xFFFFFFFF),
+        );
+      }
+    } catch (e) {
+      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      Get.snackbar(
+        'Error',
+        errorMessage.value,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: const Color(0xFFE53935).withOpacity(0.9),
+        colorText: const Color(0xFFFFFFFF),
+      );
+    } finally {
+      isRegistering.value = false;
+    }
+  }
+
   void toggleInvitationInput() {
     showInvitationInput.value = !showInvitationInput.value;
   }
 
-  void openMap() async {
-    // Montreal Convention Centre coordinates
-    const latitude = 23.8103;
-    const longitude = 90.4125;
-
-    // Google Maps URL with API key
-    final url = Uri.parse(
-        'https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude&key=AIzaSyDFiKLw_sSi4BAjNEBe1HYIqG-FDAs86Kk'
-    );
-
-    try {
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        // Fallback to basic Google Maps URL
-        final fallbackUrl = Uri.parse(
-            'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude'
-        );
-        await launchUrl(fallbackUrl, mode: LaunchMode.externalApplication);
-      }
-    } catch (e) {
-      print('Error opening map: $e');
-    }
-  }
-
   void joinWithInvitationCode() async {
-    if (invitationCodeController.text.isEmpty) {
-      // Show error
+    if (invitationCodeController.text.trim().isEmpty) {
+      Get.snackbar('Error', 'Please enter an invitation code',
+          snackPosition: SnackPosition.TOP);
       return;
     }
-
     isLoading.value = true;
-
-    // TODO: API Integration for joining with invitation code
-    // await eventService.joinWithCode(invitationCodeController.text);
-
+    // TODO: API call for invitation code join
     await Future.delayed(const Duration(seconds: 2));
     isLoading.value = false;
-
-    // Success - navigate or show success message
   }
 
-  void registerNow(BuildContext context) async {
-    isLoading.value = true;
+  bool get isAlreadyRegistered =>
+      event.value?.registrationStatus == 'VERIFIED' ||
+          event.value?.registrationStatus == 'PENDING';
 
-    // TODO: API Integration for event registration
-    // await eventService.registerEvent();
-
-    await Future.delayed(const Duration(seconds: 2));
-    isLoading.value = false;
-    context.pushNamed(AppRoutes.mainNavigationScreen);
-    // Navigate to registration form or success screen
+  String get registrationStatusLabel {
+    switch (event.value?.registrationStatus) {
+      case 'VERIFIED':
+        return 'Registered';
+      case 'PENDING':
+        return 'Pending';
+      default:
+        return '';
+    }
   }
 }

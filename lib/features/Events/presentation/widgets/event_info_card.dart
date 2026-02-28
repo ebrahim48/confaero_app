@@ -5,6 +5,7 @@ import '../../../../presentations/widgets/custom_text.dart';
 
 class EventInfoCard extends StatelessWidget {
   final String imageUrl;
+  final bool isNetworkImage;
   final String title;
   final String date;
   final String location;
@@ -12,6 +13,7 @@ class EventInfoCard extends StatelessWidget {
   const EventInfoCard({
     super.key,
     required this.imageUrl,
+    this.isNetworkImage = false,
     required this.title,
     required this.date,
     required this.location,
@@ -27,7 +29,15 @@ class EventInfoCard extends StatelessWidget {
           // Event Image
           ClipRRect(
             borderRadius: BorderRadius.circular(4.r),
-            child: Image.asset(
+            child: isNetworkImage
+                ? Image.network(
+              imageUrl,
+              width: 84.w,
+              height: 84.h,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _fallback(),
+            )
+                : Image.asset(
               imageUrl,
               width: 84.w,
               height: 84.h,
@@ -70,6 +80,15 @@ class EventInfoCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _fallback() {
+    return Image.asset(
+      'assets/images/myevents.png',
+      width: 84.w,
+      height: 84.h,
+      fit: BoxFit.cover,
     );
   }
 }
