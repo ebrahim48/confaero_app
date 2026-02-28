@@ -14,6 +14,10 @@ class ApiConstants {
   static const String resetPassword = '/auth/reset-password';
 
 
+  /// Events
+  static const String getAllUpcomingEvents = '/attendee/events';
+
+
 
 }
 

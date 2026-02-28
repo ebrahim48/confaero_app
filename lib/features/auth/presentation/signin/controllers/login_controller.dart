@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/exceptions/app_exceptions.dart';
+import '../../../../../core/helpers/logger_helper.dart';
 import '../../../../../core/helpers/prefs_helper.dart';
 import '../../../../../core/helpers/toast_message_helper.dart';
 import '../../../../../core/constants/app_constants.dart';
@@ -15,7 +16,9 @@ class SignInController extends GetxController {
 
   final signInFormKey = GlobalKey<FormState>();
   final isLoading = false.obs;
-  final selectedTab = 0.obs; // 0 for Login, 1 for Sign Up
+  final selectedTab = 0.obs;
+
+  final LoggerHelper _logger = LoggerHelper('SignInController');
 
   final AuthRepository _authRepository = AuthRepository(
     connectivityService: Get.find(),
@@ -31,16 +34,13 @@ class SignInController extends GetxController {
 
   void switchTab(int index, BuildContext context) {
     selectedTab.value = index;
-    // Navigate to signup if index is 1
     if (index == 1) {
-      // Clear all fields before navigating
       clearFields();
-      // Navigate first, then controller will be disposed automatically
       context.go(AppRoutes.signUpScreen);
     }
   }
 
-  /// Clear all text fields
+
   void clearFields() {
     emailController.clear();
     passwordController.clear();
@@ -74,6 +74,8 @@ class SignInController extends GetxController {
 
     isLoading.value = true;
 
+    _logger.i('Sign in attempt for: ${emailController.text.trim()}');
+
     try {
       final response = await _authRepository.login(
         email: emailController.text.trim(),
@@ -86,27 +88,26 @@ class SignInController extends GetxController {
       final data = response['data'] as Map<String, dynamic>?;
 
       if (success && data != null) {
+        _logger.i('Login successful for: ${emailController.text.trim()}');
+        
         // Save tokens to local storage
         final accessToken = data['accessToken'] as String? ?? '';
         final refreshToken = data['refreshToken'] as String? ?? '';
         final activeRole = data['activeRole'] as String? ?? 'ATTENDEE';
 
+        _logger.d('Tokens received - AccessToken: ${accessToken.substring(0, 20)}...');
+
         await PrefsHelper.setString(AppConstants.bearerToken, accessToken);
         await PrefsHelper.setString(AppConstants.refreshToken, refreshToken);
         await PrefsHelper.setString(AppConstants.userRole, activeRole);
 
-        ToastMessageHelper.showToastMessage(
-          'Login successful',
-          title: 'Success',
-        );
-
-        // Navigate to main navigation screen after successful login
-        // Use GoRouter for navigation since app doesn't use GetMaterialApp
-        await Future.delayed(const Duration(milliseconds: 100)); // Small delay to ensure toast shows
+        await Future.delayed(const Duration(milliseconds: 100));
         if (!context.mounted) return;
-        context.go(AppRoutes.mainNavigationScreen);
+        _logger.i('Navigating to main navigation screen');
+        context.go(AppRoutes.eventsScreen);
       } else {
         final errorMessage = response['message'] as String? ?? 'Login failed';
+        _logger.w('Login failed: $errorMessage');
         ToastMessageHelper.showToastMessage(
           errorMessage,
           title: '',
@@ -114,8 +115,10 @@ class SignInController extends GetxController {
       }
     } on ServerException catch (e) {
       isLoading.value = false;
-      String errorMessage = e.message;
+      _logger.e('ServerException during login', error: e);
       
+      String errorMessage = e.message;
+
       // Handle specific error cases
       if (errorMessage.toLowerCase().contains('invalid credentials') ||
           errorMessage.toLowerCase().contains('incorrect password') ||
@@ -125,16 +128,17 @@ class SignInController extends GetxController {
           errorMessage.toLowerCase().contains('verify your email')) {
         errorMessage = "Please verify your email before signing in.";
       }
-      
+
       ToastMessageHelper.showToastMessage(
         errorMessage,
         title: '',
       );
     } catch (e) {
       isLoading.value = false;
-      
+      _logger.e('Exception during login', error: e);
+
       String errorMessage = e.toString();
-      
+
       // Handle specific error cases from exception message
       if (errorMessage.toLowerCase().contains('invalid credentials') ||
           errorMessage.toLowerCase().contains('incorrect password') ||
@@ -150,7 +154,7 @@ class SignInController extends GetxController {
       } else {
         errorMessage = "Login failed. Please try again.";
       }
-      
+
       ToastMessageHelper.showToastMessage(
         errorMessage,
         title: '',
@@ -160,24 +164,8 @@ class SignInController extends GetxController {
 
   void signInWithGoogle() async {
     isLoading.value = true;
-
-    // TODO: Google Sign In API Integration
     await Future.delayed(const Duration(seconds: 2));
-    
     isLoading.value = false;
   }
 
-  void forgotPassword(BuildContext context, {String? email}) {
-    // Debug print
-    print('Forgot Password - Email: $email');
-    
-    // Use GoRouter navigation since app uses MaterialApp.router
-    if (email != null && email.isNotEmpty) {
-      print('Navigating with email: $email');
-      context.push('${AppRoutes.forgetPasswordScreen}?email=${Uri.encodeComponent(email)}');
-    } else {
-      print('No email provided, navigating without email');
-      context.push(AppRoutes.forgetPasswordScreen);
-    }
-  }
 }

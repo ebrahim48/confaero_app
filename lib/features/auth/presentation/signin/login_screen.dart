@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/config/approutes/app_routes.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../presentations/widgets/custom_button.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 import '../../../../presentations/widgets/custom_text_field.dart';
@@ -143,10 +146,13 @@ class _SignInScreenState extends State<SignInScreen>
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
-                  onTap: () => controller.forgotPassword(
-                    context,
-                    email: controller.emailController.text.trim(),
-                  ),
+                  onTap: (){
+                    if(controller.emailController.text.isEmpty){
+                      ToastMessageHelper.showToastMessage("Please enter your email",title: 'Attention');
+                    }else{
+                      context.pushNamed(AppRoutes.forgetPasswordScreen, extra: controller.emailController.text);
+                    }
+                  },
                   child: CustomText(
                     text: 'Forget password',
                     fontsize: 14.sp,

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/exceptions/app_exceptions.dart';
+import '../../../../../core/helpers/logger_helper.dart';
 import '../../../../../core/helpers/toast_message_helper.dart';
 import '../../../data/repositories/auth_repository.dart';
 
@@ -16,6 +17,8 @@ class SignUpController extends GetxController {
   final signUpFormKey = GlobalKey<FormState>();
   final isLoading = false.obs;
   final selectedTab = 1.obs;
+
+  final LoggerHelper _logger = LoggerHelper('SignUpController');
 
   final AuthRepository _authRepository = AuthRepository(
     connectivityService: Get.find(),
@@ -98,6 +101,8 @@ class SignUpController extends GetxController {
 
     isLoading.value = true;
 
+    _logger.i('Sign up attempt for: ${emailController.text.trim()}');
+
     try {
       final response = await _authRepository.register(
         name: fullNameController.text.trim(),
@@ -112,17 +117,14 @@ class SignUpController extends GetxController {
       final message = response['message'] as String? ?? 'Registration successful';
 
       if (success) {
-        // ToastMessageHelper.showToastMessage(
-        //   message,
-        //   title: 'Success',
-        // );
+        _logger.i('Registration successful for: ${emailController.text.trim()}');
         
-        // Navigate to sign in screen after successful registration
-        // Use GoRouter for navigation since app doesn't use GetMaterialApp
-        await Future.delayed(const Duration(milliseconds: 100)); // Small delay to ensure toast shows
+        await Future.delayed(const Duration(milliseconds: 100));
         if (!context.mounted) return;
+        _logger.i('Navigating to sign in screen');
         context.go(AppRoutes.signInScreen);
       } else {
+        _logger.w('Registration failed: $message');
         ToastMessageHelper.showToastMessage(
           message,
           title: '',
@@ -130,23 +132,26 @@ class SignUpController extends GetxController {
       }
     } on ServerException catch (e) {
       isLoading.value = false;
-      String errorMessage = e.message;
+      _logger.e('ServerException during registration', error: e);
       
+      String errorMessage = e.message;
+
       // Handle "Account already exist" error
       if (errorMessage.toLowerCase().contains('already exist') ||
           errorMessage.toLowerCase().contains('already registered')) {
         errorMessage = "This email is already registered. Please sign in instead.";
       }
-      
+
       ToastMessageHelper.showToastMessage(
         errorMessage,
         title: '',
       );
     } catch (e) {
       isLoading.value = false;
-      
+      _logger.e('Exception during registration', error: e);
+
       String errorMessage = e.toString();
-      
+
       // Handle "Account already exist" error from exception message
       if (errorMessage.toLowerCase().contains('already exist') ||
           errorMessage.toLowerCase().contains('already registered')) {
@@ -158,7 +163,7 @@ class SignUpController extends GetxController {
       } else {
         errorMessage = "Registration failed. Please try again.";
       }
-      
+
       ToastMessageHelper.showToastMessage(
         errorMessage,
         title: '',

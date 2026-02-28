@@ -167,7 +167,7 @@ class _EventsScreenState extends State<EventsScreen>
 
                             SizedBox(height: 24.h),
 
-                            // Upcoming Events Section
+                            ///  Upcoming Events Section
                             CustomText(
                               text: 'Upcoming events(10)',
                               fontsize: 16.sp,

@@ -105,9 +105,15 @@ class TimeoutException extends AppException {
 class ServerException extends AppException {
   /// HTTP status code (e.g., 404, 500)
   final int? statusCode;
+  
+  /// Raw response data from the server
+  final dynamic responseData;
+  
+  /// Stack trace from the original error
+  final StackTrace? stackTrace;
 
-  /// Creates a [ServerException] with a [message], optional [statusCode], and [details].
-  ServerException(super.message, [this.statusCode, super.details]);
+  /// Creates a [ServerException] with a [message], optional [statusCode], [details], [responseData], and [stackTrace].
+  ServerException(super.message, [this.statusCode, super.details, this.responseData, this.stackTrace]);
 
   @override
   String toString() {

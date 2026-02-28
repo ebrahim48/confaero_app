@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../presentations/widgets/custom_button.dart';
 import '../../../../presentations/widgets/custom_text.dart';
@@ -16,11 +17,17 @@ class VerifyScreen extends StatefulWidget {
 
 class _VerifyScreenState extends State<VerifyScreen> {
   late final VerifyController controller;
+  String? _email;
 
   @override
-  void initState() {
-    super.initState();
-    controller = Get.put(VerifyController());
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Get email from GoRouter query parameters
+    if (_email == null) {
+      _email = GoRouterState.of(context).uri.queryParameters['email'] ?? '';
+      controller = Get.put(VerifyController());
+      controller.setEmail(_email!);
+    }
   }
 
   @override

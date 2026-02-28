@@ -380,7 +380,7 @@ class AppRoutes {
         path: forgetPasswordScreen,
         name: forgetPasswordScreen,
         builder: (context, state) {
-          final email = state.uri.queryParameters['email'];
+          String email = state.extra as String;
           return ForgetPasswordScreen(email: email);
         },
       ),
