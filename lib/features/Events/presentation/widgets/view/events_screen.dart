@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
@@ -10,6 +11,7 @@ import '../../../data/models/event_model.dart';
 import '../../../data/models/my_event_model.dart';
 import '../../controllers/events_controller.dart';
 import '../../widgets/event_card_widget.dart';
+import '../event_card_shimmer.dart';
 import '../events_search_widgets.dart';
 import '../events_tab_switcher_widget.dart';
 
@@ -132,13 +134,15 @@ class _EventsScreenState extends State<EventsScreen>
   // ── My Events Tab ─────────────────────────────────────────────────────────
 
   Widget _buildMyEventsTab() {
-    if (controller.isMyEventsLoading.value) return _loadingWidget();
+    if (controller.isMyEventsLoading.value) return _shimmerList();
+
     if (controller.myEventsError.isNotEmpty) {
-      return _errorWidget(controller.myEventsError.value, controller.loadMyEvents);
+      return _errorWidget(
+          controller.myEventsError.value, controller.loadMyEvents);
     }
 
-    final active = controller.filteredActiveEvents;     // List<MyEventModel> — registered
-    final upcoming = controller.filteredUpcomingEvents; // List<EventModel>   — not registered
+    final active = controller.filteredActiveEvents;
+    final upcoming = controller.filteredUpcomingEvents;
 
     if (active.isEmpty && upcoming.isEmpty) {
       return _emptyWidget('No events found');
@@ -147,7 +151,7 @@ class _EventsScreenState extends State<EventsScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Active (registered) events ──────────────────────────────────
+        // Active (registered) events
         if (active.isNotEmpty) ...[
           CustomText(
             text: 'Active events(${active.length})',
@@ -164,7 +168,7 @@ class _EventsScreenState extends State<EventsScreen>
           SizedBox(height: 24.h),
         ],
 
-        // ── Upcoming (not yet registered) events ────────────────────────
+        // Upcoming (not registered) events
         if (upcoming.isNotEmpty) ...[
           CustomText(
             text: 'Upcoming events(${upcoming.length})',
@@ -184,13 +188,10 @@ class _EventsScreenState extends State<EventsScreen>
     );
   }
 
-  /// Registered event card (teal border + "Registered" badge)
   Widget _buildRegisteredCard(MyEventModel m) {
     final e = m.event;
     return EventCard(
-      imageUrl: (e.bannerImageUrl != null && e.bannerImageUrl!.isNotEmpty)
-          ? e.bannerImageUrl!
-          : 'assets/images/myevents.png',
+      imageUrl: e.bannerImageUrl ?? '',
       isNetworkImage: e.bannerImageUrl != null && e.bannerImageUrl!.isNotEmpty,
       title: e.title,
       date: e.formattedDateRange,
@@ -201,12 +202,9 @@ class _EventsScreenState extends State<EventsScreen>
     );
   }
 
-  /// Upcoming event card (grey border + "Join Now" button)
   Widget _buildUpcomingCard(EventModel e) {
     return EventCard(
-      imageUrl: (e.bannerImageUrl != null && e.bannerImageUrl!.isNotEmpty)
-          ? e.bannerImageUrl!
-          : 'assets/images/myevents.png',
+      imageUrl: e.bannerImageUrl ?? '',
       isNetworkImage: e.bannerImageUrl != null && e.bannerImageUrl!.isNotEmpty,
       title: e.title,
       date: e.formattedDateRange,
@@ -220,9 +218,11 @@ class _EventsScreenState extends State<EventsScreen>
   // ── Explore Events Tab ────────────────────────────────────────────────────
 
   Widget _buildExploreEventsTab() {
-    if (controller.isExploreLoading.value) return _loadingWidget();
+    if (controller.isExploreLoading.value) return _shimmerList();
+
     if (controller.exploreError.isNotEmpty) {
-      return _errorWidget(controller.exploreError.value, controller.loadExploreEvents);
+      return _errorWidget(
+          controller.exploreError.value, controller.loadExploreEvents);
     }
 
     final events = controller.filteredExploreEvents;
@@ -242,9 +242,7 @@ class _EventsScreenState extends State<EventsScreen>
         ...events.map((e) => Padding(
           padding: EdgeInsets.only(bottom: 8.h),
           child: EventCard(
-            imageUrl: (e.bannerImageUrl != null && e.bannerImageUrl!.isNotEmpty)
-                ? e.bannerImageUrl!
-                : 'assets/images/myevents.png',
+            imageUrl: e.bannerImageUrl ?? '',
             isNetworkImage:
             e.bannerImageUrl != null && e.bannerImageUrl!.isNotEmpty,
             title: e.title,
@@ -260,63 +258,73 @@ class _EventsScreenState extends State<EventsScreen>
     );
   }
 
-  // ── Shared UI helpers ─────────────────────────────────────────────────────
+  // ── Shared helpers ────────────────────────────────────────────────────────
 
-  Widget _loadingWidget() => SizedBox(
-    height: 300.h,
-    child: const Center(
-      child: CircularProgressIndicator(color: Color(0xff5BB8AE)),
-    ),
-  );
+  Widget _shimmerList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: List.generate(
+        4,
+            (i) => Padding(
+          padding: EdgeInsets.only(bottom: 8.h),
+          child: const ShimmerEventCard(),
+        ),
+      ),
+    );
+  }
 
-  Widget _errorWidget(String message, VoidCallback onRetry) => SizedBox(
-    height: 300.h,
-    child: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, size: 48.sp, color: Colors.red),
-          SizedBox(height: 12.h),
-          CustomText(
-            text: message,
-            fontsize: 14.sp,
-            fontWeight: FontWeight.w400,
-            color: AppColors.textColor7E7F7E,
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 16.h),
-          GestureDetector(
-            onTap: onRetry,
-            child: Container(
-              padding:
-              EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
-              decoration: BoxDecoration(
-                color: const Color(0xff5BB8AE),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: CustomText(
-                text: 'Retry',
-                fontsize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+  Widget _errorWidget(String message, VoidCallback onRetry) {
+    return SizedBox(
+      height: 300.h,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 48.sp, color: Colors.red),
+            SizedBox(height: 12.h),
+            CustomText(
+              text: message,
+              fontsize: 14.sp,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textColor7E7F7E,
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16.h),
+            GestureDetector(
+              onTap: onRetry,
+              child: Container(
+                padding:
+                EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xff5BB8AE),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: CustomText(
+                  text: 'Retry',
+                  fontsize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 
-  Widget _emptyWidget(String message) => SizedBox(
-    height: 300.h,
-    child: Center(
-      child: CustomText(
-        text: message,
-        fontsize: 14.sp,
-        fontWeight: FontWeight.w400,
-        color: AppColors.textColor7E7F7E,
-        textAlign: TextAlign.center,
+  Widget _emptyWidget(String message) {
+    return SizedBox(
+      height: 300.h,
+      child: Center(
+        child: CustomText(
+          text: message,
+          fontsize: 14.sp,
+          fontWeight: FontWeight.w400,
+          color: AppColors.textColor7E7F7E,
+          textAlign: TextAlign.center,
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

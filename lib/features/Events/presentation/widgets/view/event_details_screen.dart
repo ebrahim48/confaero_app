@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:shimmer/shimmer.dart';
+import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_button.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../../../../presentations/widgets/custom_text_field.dart';
 import '../../../data/models/event_model.dart';
-
 import '../../controllers/events_details_controller.dart';
+import '../../widgets/shimmer_event_details.dart';
 import '../event_info_card.dart';
 import '../map_location_widget.dart';
 
@@ -28,8 +29,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   void initState() {
     super.initState();
     controller = Get.put(EventDetailsController());
-
-    // Get event ID passed via GoRouter extra
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final extra = GoRouterState.of(context).extra;
       if (extra is String && extra.isNotEmpty) {
@@ -44,10 +43,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       body: SafeArea(
         child: Obx(() {
           final event = controller.event.value;
-
           return Column(
             children: [
-              // ── Header ──────────────────────────────────────────────────
+              // Header
               Container(
                 width: double.infinity,
                 height: 50.h,
@@ -61,7 +59,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                     ),
                     SizedBox(width: 14.w),
                     Expanded(
-                      child: CustomText(
+                      child: controller.isLoading.value && event == null
+                          ? _shimmerTitle()
+                          : CustomText(
                         text: event?.title ?? 'Event Details',
                         fontsize: 18.sp,
                         fontWeight: FontWeight.w600,
@@ -74,10 +74,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                 ),
               ),
 
-              // ── Body ─────────────────────────────────────────────────────
-              Expanded(
-                child: _buildBody(event),
-              ),
+              // Body
+              Expanded(child: _buildBody(event)),
             ],
           );
         }),
@@ -85,12 +83,25 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     );
   }
 
+  Widget _shimmerTitle() {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: Container(
+        height: 18.h,
+        width: 200.w,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(4.r),
+        ),
+      ),
+    );
+  }
+
   Widget _buildBody(EventModel? event) {
-    // Loading
+    // Shimmer loading
     if (controller.isLoading.value && event == null) {
-      return const Center(
-        child: CircularProgressIndicator(color: Color(0xff5BB8AE)),
-      );
+      return const ShimmerEventDetails();
     }
 
     // Error
@@ -140,21 +151,18 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Banner ────────────────────────────────────────────────────
+          // Banner
           _buildBanner(event),
 
           SizedBox(height: 24.h),
 
-          // ── Event Info Card ───────────────────────────────────────────
+          // Event Info Card
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 12.w),
             child: EventInfoCard(
-              imageUrl: (event.bannerImageUrl != null &&
-                  event.bannerImageUrl!.isNotEmpty)
-                  ? event.bannerImageUrl!
-                  : 'assets/images/myevents.png',
-              isNetworkImage: event.bannerImageUrl != null &&
-                  event.bannerImageUrl!.isNotEmpty,
+              imageUrl: event.bannerImageUrl ?? '',
+              isNetworkImage:
+              event.bannerImageUrl != null && event.bannerImageUrl!.isNotEmpty,
               title: event.title,
               date: event.formattedDateRange,
               location: event.location,
@@ -163,7 +171,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
           SizedBox(height: 16.h),
 
-          // ── Map ───────────────────────────────────────────────────────
+          // Map
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w),
             child: MapLocationCard(
@@ -174,24 +182,24 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
           SizedBox(height: 24.h),
 
-          // ── Description ───────────────────────────────────────────────
+          // Description
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w),
             child: _buildDescription(event),
           ),
 
-          // ── Extra info row (price / type) ─────────────────────────────
-          if (event.price != null || event.eventType != null) ...[
-            SizedBox(height: 16.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: _buildExtraInfo(event),
-            ),
-          ],
+          // // Extra info (price / type)
+          // if (event.price != null || event.eventType != null) ...[
+          //   SizedBox(height: 16.h),
+          //   Padding(
+          //     padding: EdgeInsets.symmetric(horizontal: 24.w),
+          //     child: _buildExtraInfo(event),
+          //   ),
+          // ],
 
           SizedBox(height: 32.h),
 
-          // ── Registration Section ──────────────────────────────────────
+          // Registration
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w),
             child: _buildRegistrationSection(event),
@@ -203,7 +211,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     );
   }
 
-  // ── Banner ──────────────────────────────────────────────────────────────
+  // ── Banner ────────────────────────────────────────────────────────────────
 
   Widget _buildBanner(EventModel event) {
     if (event.bannerImageUrl != null && event.bannerImageUrl!.isNotEmpty) {
@@ -212,22 +220,29 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
         width: double.infinity,
         height: 190.h,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _fallbackBanner(),
+        loadingBuilder: (_, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return _shimmerBanner();
+        },
+        errorBuilder: (_, __, ___) => _shimmerBanner(),
       );
     }
-    return _fallbackBanner();
+    return _shimmerBanner();
   }
 
-  Widget _fallbackBanner() {
-    return Image.asset(
-      'assets/images/banner.png',
-      width: double.infinity,
-      height: 190.h,
-      fit: BoxFit.cover,
+  Widget _shimmerBanner() {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: Container(
+        width: double.infinity,
+        height: 190.h,
+        color: Colors.white,
+      ),
     );
   }
 
-  // ── Description ─────────────────────────────────────────────────────────
+  // ── Description ───────────────────────────────────────────────────────────
 
   Widget _buildDescription(EventModel event) {
     final desc = event.details?.isNotEmpty == true
@@ -255,9 +270,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
         ),
         SizedBox(height: 8.h),
         GestureDetector(
-          onTap: () {
-            // TODO: Show full description dialog
-          },
+          onTap: () {},
           child: CustomText(
             text: 'See More',
             fontsize: 14.sp,
@@ -270,28 +283,25 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     );
   }
 
-  // ── Extra Info (price / type) ────────────────────────────────────────────
+  // ── Extra Info ────────────────────────────────────────────────────────────
 
-  Widget _buildExtraInfo(EventModel event) {
-    return Row(
-      children: [
-        if (event.eventType != null) ...[
-          _infoChip(
-            icon: Icons.event_outlined,
-            label: event.eventType!,
-          ),
-          SizedBox(width: 12.w),
-        ],
-        if (event.price != null)
-          _infoChip(
-            icon: Icons.attach_money,
-            label: event.price == 0
-                ? 'Free'
-                : '\$${event.price!.toStringAsFixed(0)}',
-          ),
-      ],
-    );
-  }
+  // Widget _buildExtraInfo(EventModel event) {
+  //   return Row(
+  //     children: [
+  //       if (event.eventType != null) ...[
+  //         _infoChip(icon: Icons.event_outlined, label: event.eventType!),
+  //         SizedBox(width: 12.w),
+  //       ],
+  //       if (event.price != null)
+  //         _infoChip(
+  //           icon: Icons.attach_money,
+  //           label: event.price == 0
+  //               ? 'Free'
+  //               : '\$${event.price!.toStringAsFixed(0)}',
+  //         ),
+  //     ],
+  //   );
+  // }
 
   Widget _infoChip({required IconData icon, required String label}) {
     return Container(
@@ -299,7 +309,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       decoration: BoxDecoration(
         color: const Color(0xff5BB8AE).withOpacity(0.1),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: const Color(0xff5BB8AE).withOpacity(0.4)),
+        border:
+        Border.all(color: const Color(0xff5BB8AE).withOpacity(0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -317,38 +328,81 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     );
   }
 
-  // ── Registration Section ─────────────────────────────────────────────────
+
 
   Widget _buildRegistrationSection(EventModel event) {
-    // Already registered (VERIFIED or PENDING)
+    // Already registered — show status + Go to Event button
     if (controller.isAlreadyRegistered) {
-      return Container(
-        width: double.infinity,
-        height: 54.h,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: const Color(0xff5BB8AE).withOpacity(0.12),
-          borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(color: const Color(0xff5BB8AE)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.check_circle_outline,
-                color: const Color(0xff5BB8AE), size: 20.sp),
-            SizedBox(width: 8.w),
-            CustomText(
-              text: controller.registrationStatusLabel,
-              fontsize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xff5BB8AE),
+      return Column(
+        children: [
+          // Registered badge
+          Container(
+            width: double.infinity,
+            height: 54.h,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0xff5BB8AE).withOpacity(0.12),
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(color: const Color(0xff5BB8AE)),
             ),
-          ],
-        ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.check_circle_outline,
+                    color: const Color(0xff5BB8AE), size: 20.sp),
+                SizedBox(width: 8.w),
+                CustomText(
+                  text: controller.registrationStatusLabel,
+                  fontsize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xff5BB8AE),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: 12.h),
+
+          // Go to Event button
+          GestureDetector(
+            onTap: () {
+              final event = controller.event.value;
+              if (event != null && event.id.isNotEmpty) {
+                context.pushNamed(
+                  AppRoutes.attendeeHomeScreen,
+                  pathParameters: {'eventId': event.id},
+                );
+              }
+            },
+            child: Container(
+              width: double.infinity,
+              height: 46.h,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: const Color(0xff5BB8AE),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CustomText(
+                    text: 'Go to Event',
+                    fontsize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  SizedBox(width: 8.w),
+                  Icon(Icons.arrow_forward_rounded,
+                      color: Colors.white, size: 18.sp),
+                ],
+              ),
+            ),
+          ),
+        ],
       );
     }
 
-    // Invitation code input visible
+    // Invitation code input
     if (controller.showInvitationInput.value) {
       return Column(
         children: [
@@ -384,7 +438,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
           ),
           child: Row(
             children: [
-              // Left: Not Registered?
               Expanded(
                 child: Container(
                   alignment: Alignment.center,
@@ -403,7 +456,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                   ),
                 ),
               ),
-              // Right: Register Now button
               Expanded(
                 child: GestureDetector(
                   onTap: controller.isRegistering.value
@@ -442,4 +494,126 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       ],
     );
   }
+
+  // Widget _buildRegistrationSection(EventModel event) {
+  //   // Already registered
+  //   if (controller.isAlreadyRegistered) {
+  //     return Container(
+  //       width: double.infinity,
+  //       height: 54.h,
+  //       alignment: Alignment.center,
+  //       decoration: BoxDecoration(
+  //         color: const Color(0xff5BB8AE).withOpacity(0.12),
+  //         borderRadius: BorderRadius.circular(8.r),
+  //         border: Border.all(color: const Color(0xff5BB8AE)),
+  //       ),
+  //       child: Row(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: [
+  //           Icon(Icons.check_circle_outline,
+  //               color: const Color(0xff5BB8AE), size: 20.sp),
+  //           SizedBox(width: 8.w),
+  //           CustomText(
+  //             text: controller.registrationStatusLabel,
+  //             fontsize: 16.sp,
+  //             fontWeight: FontWeight.w600,
+  //             color: const Color(0xff5BB8AE),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
+  //
+  //   // Invitation code input
+  //   if (controller.showInvitationInput.value) {
+  //     return Column(
+  //       children: [
+  //         CustomTextField(
+  //           controller: controller.invitationCodeController,
+  //           hintText: 'Enter event invitation code',
+  //           contentPaddingHorizontal: 16.w,
+  //           contentPaddingVertical: 14.h,
+  //         ),
+  //         SizedBox(height: 16.h),
+  //         CustomButton(
+  //           title: 'Join',
+  //           onpress: controller.joinWithInvitationCode,
+  //           loading: controller.isLoading.value,
+  //           height: 48.h,
+  //           borderRadius: 8.r,
+  //         ),
+  //       ],
+  //     );
+  //   }
+  //
+  //   // Default: Not registered
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       SizedBox(height: 16.h),
+  //       Container(
+  //         width: double.infinity,
+  //         height: 54.h,
+  //         decoration: BoxDecoration(
+  //           borderRadius: BorderRadius.circular(8.r),
+  //           border: Border.all(color: const Color(0xFFD2D2D2), width: 1),
+  //         ),
+  //         child: Row(
+  //           children: [
+  //             Expanded(
+  //               child: Container(
+  //                 alignment: Alignment.center,
+  //                 decoration: const BoxDecoration(
+  //                   color: Colors.white,
+  //                   borderRadius: BorderRadius.only(
+  //                     topLeft: Radius.circular(8),
+  //                     bottomLeft: Radius.circular(8),
+  //                   ),
+  //                 ),
+  //                 child: CustomText(
+  //                   text: 'Not Registered?',
+  //                   fontsize: 14.sp,
+  //                   fontWeight: FontWeight.w400,
+  //                   color: AppColors.textColor424242,
+  //                 ),
+  //               ),
+  //             ),
+  //             Expanded(
+  //               child: GestureDetector(
+  //                 onTap: controller.isRegistering.value
+  //                     ? null
+  //                     : () => controller.registerNow(context),
+  //                 child: Container(
+  //                   alignment: Alignment.center,
+  //                   decoration: const BoxDecoration(
+  //                     color: Color(0xff5BB8AE),
+  //                     borderRadius: BorderRadius.only(
+  //                       topRight: Radius.circular(8),
+  //                       bottomRight: Radius.circular(8),
+  //                     ),
+  //                   ),
+  //                   child: controller.isRegistering.value
+  //                       ? SizedBox(
+  //                     width: 20.w,
+  //                     height: 20.h,
+  //                     child: const CircularProgressIndicator(
+  //                       color: Colors.white,
+  //                       strokeWidth: 2,
+  //                     ),
+  //                   )
+  //                       : CustomText(
+  //                     text: 'Register Now',
+  //                     fontsize: 14.sp,
+  //                     fontWeight: FontWeight.w600,
+  //                     color: Colors.white,
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 }

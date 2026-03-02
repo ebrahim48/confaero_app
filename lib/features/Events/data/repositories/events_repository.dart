@@ -1,4 +1,5 @@
 import '../../../../core/helpers/logger_helper.dart';
+import '../../../attendees/data/event_home_model.dart';
 import '../../domain/services/events_service.dart';
 import '../models/event_model.dart';
 import '../models/my_event_model.dart';
@@ -87,5 +88,16 @@ class EventsRepository {
     final all = await getMyEvents();
     final now = DateTime.now();
     return all.where((m) => m.event.startDate.isAfter(now)).toList();
+  }
+
+
+  Future<EventHomeModel?> getEventHome(String eventId) async {
+    try {
+      _logger.d('getEventHome: $eventId');
+      return await _eventsService.getEventHome(eventId);
+    } catch (e) {
+      _logger.e('getEventHome failed', error: e);
+      throw Exception('Failed to fetch event home data: $e');
+    }
   }
 }

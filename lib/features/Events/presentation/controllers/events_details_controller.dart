@@ -99,24 +99,21 @@ class EventDetailsController extends GetxController {
         if (context.mounted) {
           context.goNamed(AppRoutes.mainNavigationScreen);
         }
-      } else {
-        errorMessage.value = 'Registration failed. Please try again.';
-        Get.snackbar(
-          'Error',
-          errorMessage.value,
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: const Color(0xFFE53935).withOpacity(0.9),
-          colorText: const Color(0xFFFFFFFF),
-        );
       }
     } catch (e) {
-      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      // Cleans "Exception: " prefix and shows the real server message
+      final msg = e.toString()
+          .replaceAll('Exception: ', '')
+          .replaceAll('Exception:', '')
+          .trim();
+      errorMessage.value = msg;
       Get.snackbar(
-        'Error',
-        errorMessage.value,
+        'Registration Failed',
+        msg,
         snackPosition: SnackPosition.TOP,
         backgroundColor: const Color(0xFFE53935).withOpacity(0.9),
         colorText: const Color(0xFFFFFFFF),
+        duration: const Duration(seconds: 4),
       );
     } finally {
       isRegistering.value = false;
@@ -134,7 +131,6 @@ class EventDetailsController extends GetxController {
       return;
     }
     isLoading.value = true;
-    // TODO: API call for invitation code join
     await Future.delayed(const Duration(seconds: 2));
     isLoading.value = false;
   }

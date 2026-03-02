@@ -20,6 +20,7 @@ class ApiConstants {
   static const String getMyAllEvents = '/attendee/my-event';
   static const String getEventDetails = '/attendee/events';
   static const String initiateRegistration = '/attendee/events';
+  static const String getEventHome = '/attendee/events';
 
 
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shimmer/shimmer.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 
@@ -22,32 +24,15 @@ class EventInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 345.w,
+      width: double.infinity,
       padding: EdgeInsets.all(12.w),
       child: Row(
         children: [
-          // Event Image
           ClipRRect(
             borderRadius: BorderRadius.circular(4.r),
-            child: isNetworkImage
-                ? Image.network(
-              imageUrl,
-              width: 84.w,
-              height: 84.h,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _fallback(),
-            )
-                : Image.asset(
-              imageUrl,
-              width: 84.w,
-              height: 84.h,
-              fit: BoxFit.cover,
-            ),
+            child: _buildImage(),
           ),
-
           SizedBox(width: 12.w),
-
-          // Event Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,12 +68,40 @@ class EventInfoCard extends StatelessWidget {
     );
   }
 
-  Widget _fallback() {
+  Widget _buildImage() {
+    if (imageUrl.isEmpty) return _shimmerBox();
+
+    if (isNetworkImage) {
+      return Image.network(
+        imageUrl,
+        width: 84.w,
+        height: 84.h,
+        fit: BoxFit.cover,
+        loadingBuilder: (_, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return _shimmerBox();
+        },
+        errorBuilder: (_, __, ___) => _shimmerBox(),
+      );
+    }
+
     return Image.asset(
-      'assets/images/myevents.png',
+      imageUrl,
       width: 84.w,
       height: 84.h,
       fit: BoxFit.cover,
+    );
+  }
+
+  Widget _shimmerBox() {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: Container(
+        width: 84.w,
+        height: 84.h,
+        color: Colors.white,
+      ),
     );
   }
 }

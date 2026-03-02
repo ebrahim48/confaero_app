@@ -31,7 +31,7 @@ class MapLocationCard extends StatelessWidget {
               end: Alignment.bottomCenter,
               colors: [
                 Colors.transparent,
-                const Color(0x66000000).withOpacity(0.4),
+                const Color(0x66000000).withValues(alpha: 0.4),
               ],
             ),
           ),
@@ -45,13 +45,15 @@ class MapLocationCard extends StatelessWidget {
                 size: 18.sp,
               ),
               SizedBox(width: 8.w),
-              CustomText(
-                text: locationName,
-                fontsize: 16.sp,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xffF6F6F6),
-                textAlign: TextAlign.start,
-                textDecoration: TextDecoration.underline,
+              Expanded(
+                child: CustomText(
+                  text: locationName,
+                  fontsize: 16.sp,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xffF6F6F6),
+                  textAlign: TextAlign.start,
+                  textDecoration: TextDecoration.underline,
+                ),
               ),
             ],
           ),

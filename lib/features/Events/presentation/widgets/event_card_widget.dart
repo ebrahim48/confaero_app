@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 
 class EventCard extends StatelessWidget {
   final String imageUrl;
-  final bool isNetworkImage;   // true → Image.network, false → Image.asset
+  final bool isNetworkImage;
   final String title;
   final String date;
   final String location;
   final bool isRegistered;
-  final String? registrationStatus; // "VERIFIED" | "PENDING" | null
+  final String? registrationStatus;
   final VoidCallback? onRegisterTap;
   final VoidCallback? onCardTap;
 
@@ -34,7 +35,7 @@ class EventCard extends StatelessWidget {
     return GestureDetector(
       onTap: onCardTap,
       child: Container(
-        width: 345.w,
+        width: double.infinity,
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: AppColors.textColorFFFFFF,
@@ -55,35 +56,18 @@ class EventCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // ── Image ────────────────────────────────────────────────────
+            // Image
             ClipRRect(
               borderRadius: BorderRadius.circular(4.r),
-              child: isNetworkImage
-                  ? Image.network(
-                imageUrl,
-                width: 86.w,
-                height: 86.h,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    _assetFallback(),
-              )
-                  : Image.asset(
-                imageUrl,
-                width: 86.w,
-                height: 86.h,
-                fit: BoxFit.cover,
-              ),
+              child: _buildImage(),
             ),
-
             SizedBox(width: 12.w),
-
-            // ── Details ──────────────────────────────────────────────────
+            // Details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Title + arrow
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -110,10 +94,7 @@ class EventCard extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   SizedBox(height: 8.h),
-
-                  // Date
                   CustomText(
                     text: date,
                     fontsize: 12.sp,
@@ -121,10 +102,7 @@ class EventCard extends StatelessWidget {
                     color: AppColors.textColor7E7F7E,
                     textAlign: TextAlign.start,
                   ),
-
                   SizedBox(height: 4.h),
-
-                  // Location + action button
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -151,9 +129,46 @@ class EventCard extends StatelessWidget {
     );
   }
 
+  Widget _buildImage() {
+    // No URL — shimmer placeholder
+    if (imageUrl.isEmpty) return _shimmerBox();
+
+    if (isNetworkImage) {
+      return Image.network(
+        imageUrl,
+        width: 86.w,
+        height: 86.h,
+        fit: BoxFit.cover,
+        loadingBuilder: (_, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return _shimmerBox();
+        },
+        errorBuilder: (_, __, ___) => _shimmerBox(),
+      );
+    }
+
+    return Image.asset(
+      imageUrl,
+      width: 86.w,
+      height: 86.h,
+      fit: BoxFit.cover,
+    );
+  }
+
+  Widget _shimmerBox() {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: Container(
+        width: 86.w,
+        height: 86.h,
+        color: Colors.white,
+      ),
+    );
+  }
+
   Widget _actionButton() {
     if (isRegistered) {
-      // Show status badge
       final label = registrationStatus == 'PENDING' ? 'Pending' : 'Registered';
       final color = registrationStatus == 'PENDING'
           ? const Color(0xFFFFA726)
@@ -190,15 +205,6 @@ class EventCard extends StatelessWidget {
           color: AppColors.textColorFFFFFF,
         ),
       ),
-    );
-  }
-
-  Widget _assetFallback() {
-    return Image.asset(
-      'assets/images/myevents.png',
-      width: 86.w,
-      height: 86.h,
-      fit: BoxFit.cover,
     );
   }
 }
