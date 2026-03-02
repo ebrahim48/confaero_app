@@ -5,6 +5,7 @@ import 'package:confaero_app/features/attendees/presentation/widgets/view/contac
 import 'package:confaero_app/features/attendees/presentation/widgets/view/contact_us_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/event_posters_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/floormap_screen.dart';
+import 'package:confaero_app/features/attendees/presentation/widgets/view/home_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/job_details_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/new_event_proposal_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart';
@@ -91,6 +92,8 @@ class AppRoutes {
   static const String termsConditionScreen = "/termsConditionScreen";
   static const String eventsPostersScreen = "/eventsPostersScreen";
   static const String eventPostersDetailsScreen = "/eventPostersDetailsScreen";
+  static const String attendeeHomeScreen = "/attendeeHomeScreen";
+  static const String attendeeHomeScreenWithId = "/attendeeHomeScreen/:eventId";
   static const String pdfScreen = "/pdfScreen";
   static const String imagePdfScreen = "/imagePdfScreen";
   static const String addPosterScreen = "/addPosterScreen";
@@ -181,6 +184,14 @@ class AppRoutes {
         builder: (context, state) => EventCheckInCheckOutScreen(),
       ),
 
+      GoRoute(
+        path: attendeeHomeScreenWithId,
+        name: attendeeHomeScreen,
+        builder: (context, state) {
+          final eventId = state.pathParameters['eventId'] ?? '';
+          return HomeScreen(eventId: eventId);
+        },
+      ),
 
       GoRoute(
         path: contactUsScreen,

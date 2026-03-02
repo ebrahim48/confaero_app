@@ -1,7 +1,10 @@
+import 'package:dio/dio.dart';
+
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/helpers/logger_helper.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/services/connectivity_service.dart';
+import '../../../attendees/data/event_home_model.dart';
 import '../../data/models/event_model.dart';
 import '../../data/models/my_event_model.dart';
 
@@ -135,6 +138,7 @@ class EventsService {
 
   // ── POST /attendee/events/{id}/initiate-registration ─────────────────────
 
+  /// POST /attendee/events/{id}/initiate-registration
   Future<Map<String, dynamic>?> initiateRegistration(String eventId) async {
     try {
       await _checkConnectivity();
@@ -151,14 +155,57 @@ class EventsService {
           _logger.i('Registration initiated — status: ${(data['data'] as Map)['status']}');
           return data['data'] as Map<String, dynamic>;
         } else {
-          _logger.w('Registration failed: ${data['message']}');
-          return null;
+          // Server returned success:false with a message
+          final msg = data['message'] as String? ?? 'Registration failed';
+          _logger.w('Registration failed: $msg');
+          throw Exception(msg);
         }
       }
       return null;
+    } on DioException catch (e) {
+      // Extract the real server error message from the response body
+      String errorMsg = 'Registration failed';
+      try {
+        final responseData = e.response?.data;
+        if (responseData is Map<String, dynamic>) {
+          errorMsg = responseData['message'] as String? ?? errorMsg;
+        } else if (responseData is String && responseData.isNotEmpty) {
+          errorMsg = responseData;
+        }
+      } catch (_) {}
+      _logger.e('initiateRegistration failed', error: e);
+      throw Exception(errorMsg);
     } catch (e) {
       _logger.e('initiateRegistration failed', error: e);
       rethrow;
     }
   }
+
+
+  Future<EventHomeModel?> getEventHome(String eventId) async {
+    try {
+      await _checkConnectivity();
+      _logger.i('Fetching home data for event: $eventId');
+
+      final response = await _apiService.get(
+        '${ApiConstants.getEventHome}/$eventId/home',
+      );
+      _logger.d('Status: ${response.statusCode}');
+
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        if ((data['success'] as bool? ?? false) && data['data'] != null) {
+          final model = EventHomeModel.fromJson(
+              data['data'] as Map<String, dynamic>);
+          _logger.i('Event home data fetched: ${model.title}');
+          return model;
+        }
+      }
+      return null;
+    } catch (e) {
+      _logger.e('getEventHome failed', error: e);
+      rethrow;
+    }
+  }
+
 }

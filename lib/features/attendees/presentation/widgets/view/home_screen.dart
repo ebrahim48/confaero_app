@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
+
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../controllers/home_controller.dart';
@@ -12,9 +14,10 @@ import '../category_item_widgets.dart';
 import '../sidebar_drawer.dart';
 import '../sponsor_banner_widgets.dart';
 
-
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String eventId;
+  
+  const HomeScreen({super.key, this.eventId = ''});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -22,13 +25,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
-  final HomeController controller = Get.put(HomeController());
+  late final HomeController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // Use widget.eventId directly
+    final eventId = widget.eventId.isNotEmpty ? widget.eventId : '';
+    controller = Get.put(HomeController(eventId: eventId));
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: controller.scaffoldKey,
-
       drawer: const SidebarDrawer(),
       body: SingleChildScrollView(
         child: Column(
@@ -38,31 +48,25 @@ class _HomeScreenState extends State<HomeScreen>
               bottom: false,
               child: Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 23.w, vertical: 16.h),
+                padding:
+                EdgeInsets.symmetric(horizontal: 23.w, vertical: 16.h),
                 color: AppColors.backgroundColor,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Profile Image
                     Container(
                       width: 40.w,
                       height: 42.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: const Color(0xff252525),
-                          width: 0.7,
-                        ),
+                            color: const Color(0xff252525), width: 0.7),
                       ),
                       child: ClipOval(
-                        child: Image.asset(
-                          'assets/images/profile.png',
-                          fit: BoxFit.cover,
-                        ),
+                        child: Image.asset('assets/images/profile.png',
+                            fit: BoxFit.cover),
                       ),
                     ),
-
-                    // Hello Text
                     Expanded(
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 12.w),
@@ -77,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen>
                               textAlign: TextAlign.start,
                             ),
                             CustomText(
-                              text: 'Wed, 5 Jun, 2025',
+                              text: controller.currentDate,
                               fontsize: 12.sp,
                               fontWeight: FontWeight.w400,
                               color: AppColors.textColor7E7F7E,
@@ -87,37 +91,28 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       ),
                     ),
-
-                    // Notification and Menu Icons
                     Row(
                       children: [
                         GestureDetector(
-                          onTap: () {
-                            context.pushNamed(AppRoutes.notificationsScreen);
-                          },
+                          onTap: () =>
+                              context.pushNamed(AppRoutes.notificationsScreen),
                           child: SvgPicture.asset(
                             'assets/icons/notification.svg',
                             width: 24.w,
                             height: 24.h,
                             colorFilter: ColorFilter.mode(
-                              AppColors.textColor424242,
-                              BlendMode.srcIn,
-                            ),
+                                AppColors.textColor424242, BlendMode.srcIn),
                           ),
                         ),
                         SizedBox(width: 16.w),
                         GestureDetector(
-                          onTap: () {
-                            controller.openDrawer();
-                          },
+                          onTap: controller.openDrawer,
                           child: SvgPicture.asset(
                             'assets/icons/menusidebar.svg',
                             width: 24.w,
                             height: 24.h,
                             colorFilter: ColorFilter.mode(
-                              AppColors.textColor424242,
-                              BlendMode.srcIn,
-                            ),
+                                AppColors.textColor424242, BlendMode.srcIn),
                           ),
                         ),
                       ],
@@ -133,96 +128,124 @@ class _HomeScreenState extends State<HomeScreen>
               onTap: () => controller.openSponsorDetails(context),
             ),
 
-            Padding(
-              padding: EdgeInsets.only(
-                  left: 12.w, bottom: 12.w, top: 12.w, right: 12.h),
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    child: Image.asset(
-                      'assets/images/homebanner.png',
-                      width: double.infinity,
-                      height: 289.h,
-                      fit: BoxFit.cover,
+            // Event Banner — dynamic
+            Obx(() {
+              final home = controller.eventHome.value;
+              return Padding(
+                padding: EdgeInsets.only(
+                    left: 12.w, bottom: 12.w, top: 12.w, right: 12.h),
+                child: Stack(
+                  children: [
+                    // Banner image
+                    ClipRRect(
+                      child: home != null &&
+                          home.banner.isNotEmpty
+                          ? Image.network(
+                        home.banner,
+                        width: double.infinity,
+                        height: 289.h,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (_, child, progress) {
+                          if (progress == null) return child;
+                          return _shimmerBanner();
+                        },
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          'assets/images/homebanner.png',
+                          width: double.infinity,
+                          height: 289.h,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                          : controller.isLoading.value
+                          ? _shimmerBanner()
+                          : Image.asset(
+                        'assets/images/homebanner.png',
+                        width: double.infinity,
+                        height: 289.h,
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),
-                  Positioned(
-                    top: 16.h,
-                    left: 16.w,
-                    right: 16.w,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        CustomText(
-                          text: 'The 23nd International Meeting on',
-                          fontsize: 18.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          textAlign: TextAlign.start,
-                        ),
-                        CustomText(
-                          text: 'Lithium Batteries (iMLB 2026)',
-                          fontsize: 16.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          textAlign: TextAlign.start,
-                        ),
-                      ],
+
+                    // Title overlay
+                    Positioned(
+                      top: 16.h,
+                      left: 16.w,
+                      right: 16.w,
+                      child: controller.isLoading.value && home == null
+                          ? _shimmerText(200.w, 20.h)
+                          : Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          CustomText(
+                            text: home?.title ?? '',
+                            fontsize: 18.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            textAlign: TextAlign.start,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Positioned(
-                    bottom: 65.h,
-                    left: 16.w,
-                    right: 16.w,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.calendar_today,
-                              size: 12.sp,
-                              color: Colors.white,
-                            ),
-                            SizedBox(width: 4.w),
-                            CustomText(
-                              text: 'June 14-19,2026',
-                              fontsize: 11.sp,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white,
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 4.h),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.location_on,
-                              size: 12.sp,
-                              color: Colors.white,
-                            ),
-                            SizedBox(width: 4.w),
-                            Expanded(
-                              child: CustomText(
-                                text:
-                                'Venue: palais des congrès de montréal, Conoco',
+
+                    // Date + Venue overlay
+                    Positioned(
+                      bottom: 65.h,
+                      left: 16.w,
+                      right: 16.w,
+                      child: controller.isLoading.value && home == null
+                          ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _shimmerText(120.w, 14.h),
+                          SizedBox(height: 4.h),
+                          _shimmerText(200.w, 14.h),
+                        ],
+                      )
+                          : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.calendar_today,
+                                  size: 12.sp, color: Colors.white),
+                              SizedBox(width: 4.w),
+                              CustomText(
+                                text: home?.formattedDateRange ?? '',
                                 fontsize: 11.sp,
                                 fontWeight: FontWeight.w400,
                                 color: Colors.white,
-                                textAlign: TextAlign.start,
-                                maxline: 1,
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                          SizedBox(height: 4.h),
+                          Row(
+                            children: [
+                              Icon(Icons.location_on,
+                                  size: 12.sp, color: Colors.white),
+                              SizedBox(width: 4.w),
+                              Expanded(
+                                child: CustomText(
+                                  text: home != null
+                                      ? 'Venue: ${home.venue}'
+                                      : '',
+                                  fontsize: 11.sp,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white,
+                                  textAlign: TextAlign.start,
+                                  maxline: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
+                  ],
+                ),
+              );
+            }),
 
-            // Categories Grid
+            // Categories Grid — unchanged
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: GridView.builder(
@@ -240,7 +263,8 @@ class _HomeScreenState extends State<HomeScreen>
                   return CategoryItem(
                     icon: category['icon']!,
                     label: category['label']!,
-                    onTap: () => controller.navigateToCategory(context, index),
+                    onTap: () =>
+                        controller.navigateToCategory(context, index),
                   );
                 },
               ),
@@ -248,6 +272,7 @@ class _HomeScreenState extends State<HomeScreen>
 
             SizedBox(height: 16.h),
 
+            // Tags row — unchanged
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: SingleChildScrollView(
@@ -255,28 +280,27 @@ class _HomeScreenState extends State<HomeScreen>
                 child: Row(
                   children: [
                     GestureDetector(
-                      onTap: () {
-                        context.pushNamed(AppRoutes.photosScreen);
-                      },
-                        child: _buildTag('Photos')),
+                      onTap: () => context.pushNamed(AppRoutes.photosScreen),
+                      child: _buildTag('Photos'),
+                    ),
                     SizedBox(width: 12.w),
                     GestureDetector(
-                        onTap: () {
-                          context.pushNamed(AppRoutes.documentScreen);
-                        },
-                        child: _buildTag('Documents')),
+                      onTap: () =>
+                          context.pushNamed(AppRoutes.documentScreen),
+                      child: _buildTag('Documents'),
+                    ),
                     SizedBox(width: 12.w),
                     GestureDetector(
-                      onTap: () {
-                        context.pushNamed(AppRoutes.eventsPostersScreen);
-                      },
-                        child: _buildTag('Poster')),
+                      onTap: () =>
+                          context.pushNamed(AppRoutes.eventsPostersScreen),
+                      child: _buildTag('Poster'),
+                    ),
                     SizedBox(width: 12.w),
                     GestureDetector(
-                        onTap: () {
-                          context.pushNamed(AppRoutes.jobOpeningsScreen);
-                        },
-                        child: _buildTag('Job')),
+                      onTap: () =>
+                          context.pushNamed(AppRoutes.jobOpeningsScreen),
+                      child: _buildTag('Job'),
+                    ),
                   ],
                 ),
               ),
@@ -284,16 +308,46 @@ class _HomeScreenState extends State<HomeScreen>
 
             SizedBox(height: 24.h),
 
-            AboutEventCard(
-              description:
-              'The iMLB 2026 Scientific and Organizing Committees are pleased to invite you to the 23nd International Meeting on Lithium Batteries, Montreal, Canada from June 14 to 19, 2026.iMLB is the premier forum on lithium-ion batteries as well as current and future applications in electromobili...',
-              onSeeMore: () {
-                // Navigate to full description
-              },
-            ),
+            // About Event — dynamic
+            Obx(() {
+              final home = controller.eventHome.value;
+              return AboutEventCard(
+                description: home?.details ??
+                    'Loading event details...',
+                onSeeMore: () {},
+              );
+            }),
 
             SizedBox(height: 100.h),
           ],
+        ),
+      ),
+    );
+  }
+
+  // Shimmer helpers
+  Widget _shimmerBanner() {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: Container(
+        width: double.infinity,
+        height: 289.h,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget _shimmerText(double width, double height) {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFBDBDBD),
+      highlightColor: const Color(0xFFE0E0E0),
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(4.r),
         ),
       ),
     );
@@ -305,9 +359,7 @@ class _HomeScreenState extends State<HomeScreen>
       decoration: BoxDecoration(
         color: const Color(0x1F7EBBB6).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: const Color(0xffD2D2D2),
-        ),
+        border: Border.all(color: const Color(0xffD2D2D2)),
       ),
       child: CustomText(
         text: label,
