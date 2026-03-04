@@ -9,6 +9,7 @@ import '../../../../../core/services/connectivity_service.dart';
 import '../../../Events/data/repositories/events_repository.dart';
 import '../../../Events/domain/services/events_service.dart';
 import '../../data/event_home_model.dart';
+import 'floormap_controller.dart';
 
 
 class HomeController extends GetxController {
@@ -81,6 +82,11 @@ class HomeController extends GetxController {
         context.pushNamed(AppRoutes.eventSpekarScreen);
         break;
       case 1:
+
+        if (Get.isRegistered<FloorMapController>()) {
+          Get.delete<FloorMapController>(force: true);
+        }
+        Get.put(FloorMapController(eventId: eventId));
         context.pushNamed(AppRoutes.floorMapScreen);
         break;
       case 2:

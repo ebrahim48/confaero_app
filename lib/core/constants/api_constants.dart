@@ -21,6 +21,7 @@ class ApiConstants {
   static const String getEventDetails = '/attendee/events';
   static const String initiateRegistration = '/attendee/events';
   static const String getEventHome = '/attendee/events';
+  static const String getFloorMaps = '/organizer/events';
 
 
 }

@@ -1,7 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
+
 import '../../controllers/floormap_controller.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
@@ -15,221 +16,225 @@ class FloorMapDetailsScreen extends StatefulWidget {
 
 class _FloorMapDetailsScreenState extends State<FloorMapDetailsScreen>
     with SingleTickerProviderStateMixin {
-  late FloorMapController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = Get.put(FloorMapController());
-  }
+  FloorMapController get controller => Get.find<FloorMapController>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      body: Obx(() {
+        final map = controller.selectedMap.value;
 
-      body: Column(
-        children: [
-          // Header
-          Container(
-            width: double.infinity,
-            height: 98.h,
-            color: const Color(0xffF5F5F5),
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: SafeArea(
-              bottom: false,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap:  () => Navigator.of(context).pop(),
-                        child: Icon(
-                          Icons.arrow_back,
-                          size: 24.sp,
-                          color: AppColors.textColor424242,
-                        ),
-                      ),
-                      SizedBox(width: 16.w),
-                      CustomText(
-                        text: 'Floormap',
-                        fontsize: 18.sp,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textColor424242,
-                      ),
-                    ],
-                  ),
-                  Icon(
-                    Icons.search,
-                    size: 24.sp,
-                    color: AppColors.textColor424242,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Main Map Area with Zoom Controls
-          Expanded(
-            child: Stack(
-              children: [
-                // Background Map Image
-                Obx(() => Transform.scale(
-                  scale: controller.scale.value,
-                  child: Image.asset(
-                    'assets/images/map.png',
-                    fit: BoxFit.contain,
-                    width: 519.047607421875.w,
-                    height: 436.0000305175781.h,
-                  ),
-                )),
-
-                // Zoom Buttons (Top Right)
-                Positioned(
-                  top: 20.h,
-                  right: 20.w,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4.r),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: Row(
+        return Column(
+          children: [
+            // ── Header ──────────────────────────────────────────────────────
+            Container(
+              width: double.infinity,
+              height: 98.h,
+              color: const Color(0xffF5F5F5),
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              child: SafeArea(
+                bottom: false,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
                       children: [
-                        IconButton(
-                          onPressed: controller.zoomOut,
-                          icon: Icon(Icons.remove, size: 20.sp),
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Icon(Icons.arrow_back,
+                              size: 24.sp,
+                              color: AppColors.textColor424242),
                         ),
-                        VerticalDivider(
-                          thickness: 1,
-                          color: Colors.grey.shade300,
-                        ),
-                        IconButton(
-                          onPressed: controller.zoomIn,
-                          icon: Icon(Icons.add, size: 20.sp),
+                        SizedBox(width: 16.w),
+                        CustomText(
+                          text: map?.title ?? 'Floormap',
+                          fontsize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textColor424242,
                         ),
                       ],
                     ),
-                  ),
+                    Icon(Icons.search,
+                        size: 24.sp, color: AppColors.textColor424242),
+                  ],
                 ),
+              ),
+            ),
 
-                // CATL Booth Pin (Red Pin + Bubble)
-                Positioned(
-                  top: 332.h,
-                  left: 156.w,
-                  child: GestureDetector(
-                    onTap: () {
-                      // Show tooltip or popup
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          contentPadding: EdgeInsets.zero,
-                          backgroundColor: Colors.transparent,
-                          content: Container(
-                            padding: EdgeInsets.all(12.w),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8.r),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 6.r,
-                                )
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Align(
-                                  alignment: Alignment.topRight,
-                                  child: IconButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    icon: Icon(Icons.close, size: 18.sp),
-                                  ),
-                                ),
-                                CustomText(
-                                  text: 'CATL booth',
-                                  fontsize: 16.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+            // ── Map image with zoom ──────────────────────────────────────────
+            Expanded(
+              child: Stack(
+                children: [
+                  // Map image — network
+                  Obx(() => InteractiveViewer(
+                    minScale: 0.5,
+                    maxScale: 4.0,
+                    child: map != null && map.imageUrl.isNotEmpty
+                        ? Image.network(
+                      map.imageUrl,
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      height: double.infinity,
+                      loadingBuilder: (_, child, progress) {
+                        if (progress == null) return child;
+                        return _shimmerMap();
+                      },
+                      errorBuilder: (_, __, ___) => _errorMap(),
+                    )
+                        : _shimmerMap(),
+                  )),
+
+                  // Zoom buttons (top right)
+                  Positioned(
+                    top: 20.h,
+                    right: 20.w,
                     child: Container(
-                      width: 143.w,
-                      height: 116.h,
                       decoration: BoxDecoration(
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(4.r),
-                        border: Border.all(width: 1.w, color: Colors.grey),
+                        border:
+                        Border.all(color: Colors.grey.shade300),
                       ),
-                      child: Image.asset('assets/images/catl.png'),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            onPressed: controller.zoomOut,
+                            icon: Icon(Icons.remove, size: 20.sp),
+                          ),
+                          VerticalDivider(
+                              thickness: 1,
+                              color: Colors.grey.shade300),
+                          IconButton(
+                            onPressed: controller.zoomIn,
+                            icon: Icon(Icons.add, size: 20.sp),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                // Green Pins (Example positions — adjust as needed)
-                ...[
-                  Positioned(
-                    top: 250.h,
-                    left: 100.w,
-                    child: Icon(Icons.location_on, color: Colors.green, size: 24.sp),
-                  ),
-                  Positioned(
-                    top: 400.h,
-                    left: 300.w,
-                    child: Icon(Icons.location_on, color: Colors.green, size: 24.sp),
-                  ),
-                  Positioned(
-                    top: 300.h,
-                    left: 400.w,
-                    child: Icon(Icons.location_on, color: Colors.green, size: 24.sp),
-                  ),
-                ],
-              ],
-            ),
-          ),
-
-          // Bottom Bar: Recenter & Show All Area
-          Container(
-            height: 60.h,
-            decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: Colors.grey.shade300)),
-              color: Colors.white,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                TextButton(
-                  onPressed: controller.recenter,
-                  child: CustomText(
-                    text: 'Recenter',
-                    fontsize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textColor424242,
-                  ),
-                ),
-                Obx(() => TextButton(
-                  onPressed: controller.toggleShowAllArea,
-                  child: Row(
-                    children: [
-                      CustomText(
-                        text: 'Show all area',
-                        fontsize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textColor424242,
+                  // Floor map list navigation chips (top left)
+                  if (controller.floorMaps.length > 1)
+                    Positioned(
+                      top: 20.h,
+                      left: 20.w,
+                      right: 80.w,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: List.generate(
+                            controller.floorMaps.length,
+                                (i) => Obx(() => GestureDetector(
+                              onTap: () {
+                                controller.selectedMap.value =
+                                controller.floorMaps[i];
+                                controller.selectedIndex.value = i;
+                              },
+                              child: Container(
+                                margin: EdgeInsets.only(right: 8.w),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12.w, vertical: 6.h),
+                                decoration: BoxDecoration(
+                                  color: controller.selectedIndex.value == i
+                                      ? const Color(0xff5BB8AE)
+                                      : Colors.white,
+                                  borderRadius:
+                                  BorderRadius.circular(20.r),
+                                  border: Border.all(
+                                    color: controller.selectedIndex.value == i
+                                        ? const Color(0xff5BB8AE)
+                                        : Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: CustomText(
+                                  text: controller.floorMaps[i].title,
+                                  fontsize: 12.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: controller.selectedIndex.value == i
+                                      ? Colors.white
+                                      : AppColors.textColor424242,
+                                ),
+                              ),
+                            )),
+                          ),
+                        ),
                       ),
-                      SizedBox(width: 4.w),
-                      if (controller.showAllArea.value)
-                        Icon(Icons.check, color: Colors.green, size: 16.sp),
-                    ],
-                  ),
-                )),
-              ],
+                    ),
+                ],
+              ),
             ),
+
+            // ── Bottom bar ───────────────────────────────────────────────────
+            Container(
+              height: 60.h,
+              decoration: BoxDecoration(
+                border:
+                Border(top: BorderSide(color: Colors.grey.shade300)),
+                color: Colors.white,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextButton(
+                    onPressed: controller.recenter,
+                    child: CustomText(
+                      text: 'Recenter',
+                      fontsize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textColor424242,
+                    ),
+                  ),
+                  Obx(() => TextButton(
+                    onPressed: controller.toggleShowAllArea,
+                    child: Row(
+                      children: [
+                        CustomText(
+                          text: 'Show all area',
+                          fontsize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textColor424242,
+                        ),
+                        SizedBox(width: 4.w),
+                        if (controller.showAllArea.value)
+                          Icon(Icons.check,
+                              color: Colors.green, size: 16.sp),
+                      ],
+                    ),
+                  )),
+                ],
+              ),
+            ),
+          ],
+        );
+      }),
+    );
+  }
+
+  Widget _shimmerMap() {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget _errorMap() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.map_outlined,
+              size: 64.sp, color: Colors.grey.shade400),
+          SizedBox(height: 12.h),
+          CustomText(
+            text: 'Failed to load map image',
+            fontsize: 14.sp,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textColor7E7F7E,
           ),
         ],
       ),
