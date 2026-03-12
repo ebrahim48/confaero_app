@@ -1,8 +1,10 @@
 // lib/features/attendees/controllers/attendees_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../domain/services/attendee_service.dart';
 
 class AttendeesController extends GetxController {
+  final AttendeeService _attendeeService = Get.find<AttendeeService>();
   final TextEditingController searchController = TextEditingController();
 
   // Total stats
@@ -10,44 +12,49 @@ class AttendeesController extends GetxController {
   final RxInt bookmarked = 3.obs;
 
   // Attendees list
-  final RxList<Map<String, dynamic>> attendees = <Map<String, dynamic>>[
-    {
-      'id': '1',
-      'name': 'Rachid Amine',
-      'company': 'Tech Corp',
-      'role': 'Organizer',
-      'sessions': '2 sessions',
-      'image': 'assets/images/profile.png',
-      'isBookmarked': false,
-    },
-    {
-      'id': '2',
-      'name': 'Rachid Amine',
-      'company': 'Tech Corp',
-      'role': 'Speakers',
-      'sessions': '2 sessions',
-      'image': 'assets/images/profile.png',
-      'isBookmarked': true,
-    },
-    {
-      'id': '3',
-      'name': 'Rachid Amine',
-      'company': 'Tech Corp',
-      'role': 'Speakers',
-      'sessions': '2 sessions',
-      'image': 'assets/images/profile.png',
-      'isBookmarked': false,
-    },
-    {
-      'id': '4',
-      'name': 'Rachid Amine',
-      'company': 'Tech Corp',
-      'role': 'Attendee',
-      'sessions': '2 sessions',
-      'image': 'assets/images/profile.png',
-      'isBookmarked': true,
-    },
-  ].obs;
+  final RxList<Map<String, dynamic>> attendees = <Map<String, dynamic>>[].obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadAttendees();
+  }
+
+  Future<void> loadAttendees() async {
+    try {
+      // Hardcoded eventId for Phase 2 demo; in auth/real usage, this should come from route args or active event settings
+      final eventId = 'default_event_id';
+      final data = await _attendeeService.getEventAttendees(eventId);
+
+      attendees.value =
+          data
+              .map(
+                (a) => {
+                  'id': a.id,
+                  'name': a.name,
+                  'company': a.company,
+                  'role': a.role,
+                  'sessions': '${a.sessionsCount} sessions',
+                  'image':
+                      a.avatarUrl.isNotEmpty
+                          ? a.avatarUrl
+                          : 'assets/images/profile.png',
+                  'isBookmarked': a.isBookmarked,
+                },
+              )
+              .toList();
+
+      totalAttendees.value = attendees.length;
+      bookmarked.value =
+          attendees.where((a) => a['isBookmarked'] == true).length;
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load attendees',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
 
   @override
   void onClose() {
@@ -56,14 +63,29 @@ class AttendeesController extends GetxController {
   }
 
   // Toggle bookmark
-  void toggleBookmark(String id) {
+  Future<void> toggleBookmark(String id) async {
     final index = attendees.indexWhere((a) => a['id'] == id);
     if (index != -1) {
-      attendees[index]['isBookmarked'] = !attendees[index]['isBookmarked'];
+      final wasBookmarked = attendees[index]['isBookmarked'];
+      attendees[index]['isBookmarked'] = !wasBookmarked;
       attendees.refresh();
+      bookmarked.value =
+          attendees.where((a) => a['isBookmarked'] == true).length;
 
-      // Update bookmarked count
-      bookmarked.value = attendees.where((a) => a['isBookmarked'] == true).length;
+      try {
+        await _attendeeService.bookmarkAttendee('default_event_id', id);
+      } catch (e) {
+        // Revert on error
+        attendees[index]['isBookmarked'] = wasBookmarked;
+        attendees.refresh();
+        bookmarked.value =
+            attendees.where((a) => a['isBookmarked'] == true).length;
+        Get.snackbar(
+          'Error',
+          'Failed to bookmark',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
     }
   }
 

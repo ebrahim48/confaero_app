@@ -1,0 +1,156 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../../core/helpers/snackbar_helper.dart';
+import '../../domain/services/resource_service.dart';
+import '../../data/models/resource_model.dart';
+
+/// Controller for organizer Q&A CRUD and survey analytics.
+class OrganizerResourceController extends GetxController {
+  final ResourceService _service = Get.find<ResourceService>();
+
+  final String eventId;
+  OrganizerResourceController({required this.eventId});
+
+  final RxBool isLoading = false.obs;
+  final RxBool isSaving = false.obs;
+  final RxList<QnAModel> qaList = <QnAModel>[].obs;
+  final RxMap<String, dynamic> surveyAnalytics = <String, dynamic>{}.obs;
+
+  // Forms
+  final questionController = TextEditingController();
+  final answerController = TextEditingController();
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadData();
+  }
+
+  @override
+  void onClose() {
+    questionController.dispose();
+    answerController.dispose();
+    super.onClose();
+  }
+
+  Future<void> loadData() async {
+    isLoading.value = true;
+    try {
+      final qna = await _service.getEventQnA(eventId);
+      qaList.assignAll(qna);
+      final analytics = await _service.getSurveyAnalytics(eventId);
+      surveyAnalytics.assignAll(analytics);
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to load resources');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> createQnA() async {
+    final question = questionController.text.trim();
+    final answer = answerController.text.trim();
+    if (question.isEmpty || answer.isEmpty) {
+      SnackbarHelper.showError(
+        'Validation',
+        'Question and answer are required',
+      );
+      return;
+    }
+    isSaving.value = true;
+    try {
+      await _service.createQnA(eventId, question: question, answer: answer);
+      questionController.clear();
+      answerController.clear();
+      SnackbarHelper.showSuccess('Success', 'Q&A item created');
+      await loadData();
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to create Q&A');
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  Future<void> updateQnA(QnAModel item) async {
+    questionController.text = item.question;
+    answerController.text = item.answer;
+
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Edit Q&A'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: questionController,
+              decoration: const InputDecoration(labelText: 'Question'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: answerController,
+              decoration: const InputDecoration(labelText: 'Answer'),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    isSaving.value = true;
+    try {
+      await _service.updateQnA(
+        item.id,
+        eventId,
+        question: questionController.text.trim(),
+        answer: answerController.text.trim(),
+      );
+      questionController.clear();
+      answerController.clear();
+      SnackbarHelper.showSuccess('Success', 'Q&A item updated');
+      await loadData();
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to update Q&A');
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  Future<void> deleteQnA(QnAModel item) async {
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Delete Q&A'),
+        content: Text('Delete this Q&A item?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await _service.deleteQnA(item.id, eventId);
+      SnackbarHelper.showSuccess('Deleted', 'Q&A item deleted');
+      await loadData();
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to delete Q&A');
+    }
+  }
+}

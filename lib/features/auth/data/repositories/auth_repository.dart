@@ -12,8 +12,8 @@ class AuthRepository {
   AuthRepository({
     required ConnectivityService connectivityService,
     required ApiService apiService,
-  })  : _connectivityService = connectivityService,
-        _apiService = apiService;
+  }) : _connectivityService = connectivityService,
+       _apiService = apiService;
 
   /// Registers a new user with email, password and confirmPassword
   ///
@@ -59,9 +59,10 @@ class AuthRepository {
         _logger.e('Registration response data is null');
         return {
           'success': false,
-          'message': response.statusCode == 200 || response.statusCode == 201
-              ? 'Registration successful'
-              : 'Request failed',
+          'message':
+              response.statusCode == 200 || response.statusCode == 201
+                  ? 'Registration successful'
+                  : 'Request failed',
         };
       }
     } catch (e) {
@@ -93,10 +94,7 @@ class AuthRepository {
 
       final response = await _apiService.post(
         ApiConstants.login,
-        data: {
-          'email': email,
-          'password': password,
-        },
+        data: {'email': email, 'password': password},
       );
 
       _logger.d('Login Response Status: ${response.statusCode}');
@@ -108,13 +106,125 @@ class AuthRepository {
         _logger.e('Login response data is null');
         return {
           'success': false,
-          'message': response.statusCode == 200
-              ? 'Login successful'
-              : 'Request failed',
+          'message':
+              response.statusCode == 200
+                  ? 'Login successful'
+                  : 'Request failed',
         };
       }
     } catch (e) {
       _logger.e('Login Error: $e');
+      rethrow;
+    }
+  }
+
+  /// Change User Password
+  Future<Map<String, dynamic>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    try {
+      final isConnected = await _connectivityService.checkConnectivity();
+      if (!isConnected) {
+        throw Exception('No internet connection');
+      }
+
+      final response = await _apiService.post(
+        ApiConstants.changePassword,
+        data: {
+          'currentPassword': currentPassword,
+          'newPassword': newPassword,
+          'confirmPassword': confirmPassword,
+        },
+      );
+
+      return response.data as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('Change Password Error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get Current User Details
+  Future<Map<String, dynamic>> getMe() async {
+    try {
+      final isConnected = await _connectivityService.checkConnectivity();
+      if (!isConnected) {
+        throw Exception('No internet connection');
+      }
+
+      final response = await _apiService.get(ApiConstants.getMe);
+      return response.data as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('Get Me Error: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete Account
+  Future<Map<String, dynamic>> deleteAccount() async {
+    try {
+      final isConnected = await _connectivityService.checkConnectivity();
+      if (!isConnected) {
+        throw Exception('No internet connection');
+      }
+
+      final response = await _apiService.delete(ApiConstants.deleteAccount);
+      return response.data as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('Delete Account Error: $e');
+      rethrow;
+    }
+  }
+
+  /// Toggle Email Notification
+  Future<Map<String, dynamic>> toggleNotification(bool enable) async {
+    try {
+      final isConnected = await _connectivityService.checkConnectivity();
+      if (!isConnected) {
+        throw Exception('No internet connection');
+      }
+
+      final response = await _apiService.patch(
+        ApiConstants.toggleNotification,
+        data: {'emailNotification': enable},
+      );
+
+      return response.data as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('Toggle Notification Error: $e');
+      rethrow;
+    }
+  }
+
+  /// Change Role
+  Future<Map<String, dynamic>> changeRole(String role) async {
+    try {
+      final isConnected = await _connectivityService.checkConnectivity();
+      if (!isConnected) throw Exception('No internet connection');
+
+      final response = await _apiService.post(
+        ApiConstants.changeRole,
+        data: {'role': role},
+      );
+      return response.data as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('Change Role Error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get My Roles
+  Future<Map<String, dynamic>> getMyRoles() async {
+    try {
+      final isConnected = await _connectivityService.checkConnectivity();
+      if (!isConnected) throw Exception('No internet connection');
+
+      final response = await _apiService.get(ApiConstants.getMyRoles);
+      return response.data as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('Get My Roles Error: $e');
       rethrow;
     }
   }

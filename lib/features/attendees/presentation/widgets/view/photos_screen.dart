@@ -18,27 +18,25 @@ class PhotosScreen extends StatelessWidget {
       body: Column(
         children: [
           // App Bar
-          const CustomAppBarWidget(
-            title: 'Photos',
-          ),
+          const CustomAppBarWidget(title: 'Photos'),
 
           SizedBox(height: 16.h),
 
           // Horizontal Scrollable Filter Chips
           SizedBox(
             height: 28.h,
-            child:
-             ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
-                itemCount: controller.filters.length,
-                itemBuilder: (context, index) {
-                  return PhotoFilterChip(
-                    text: controller.filters[index],
-                    isSelected: controller.selectedFilter.value == index,
-                    onTap: () => controller.changeFilter(index),
-                  );
-            }),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              itemCount: controller.filters.length,
+              itemBuilder: (context, index) {
+                return PhotoFilterChip(
+                  text: controller.filters[index],
+                  isSelected: controller.selectedFilter.value == index,
+                  onTap: () => controller.changeFilter(index),
+                );
+              },
+            ),
           ),
 
           SizedBox(height: 20.h),
@@ -57,8 +55,9 @@ class PhotosScreen extends StatelessWidget {
                 itemCount: controller.allPhotos.length,
                 itemBuilder: (context, index) {
                   return PhotoGridItem(
-                    imagePath: controller.allPhotos[index],
-                    onTap: () => controller.openPhoto(controller.allPhotos[index]),
+                    imagePath: controller.allPhotos[index].imageUrl,
+                    onTap:
+                        () => controller.openPhoto(controller.allPhotos[index]),
                   );
                 },
               );

@@ -16,8 +16,8 @@ class EventsService {
   EventsService({
     required ApiService apiService,
     required ConnectivityService connectivityService,
-  })  : _apiService = apiService,
-        _connectivityService = connectivityService;
+  }) : _apiService = apiService,
+       _connectivityService = connectivityService;
 
   // ── helpers ──────────────────────────────────────────────────────────────
 
@@ -39,9 +39,10 @@ class EventsService {
       if (response.data is Map<String, dynamic>) {
         final data = response.data as Map<String, dynamic>;
         if ((data['success'] as bool? ?? false) && data['data'] is List) {
-          final events = (data['data'] as List)
-              .map((e) => EventModel.fromJson(e as Map<String, dynamic>))
-              .toList();
+          final events =
+              (data['data'] as List)
+                  .map((e) => EventModel.fromJson(e as Map<String, dynamic>))
+                  .toList();
           _logger.i('Parsed ${events.length} upcoming events');
           return events;
         }
@@ -66,9 +67,10 @@ class EventsService {
       if (response.data is Map<String, dynamic>) {
         final data = response.data as Map<String, dynamic>;
         if ((data['success'] as bool? ?? false) && data['data'] is List) {
-          final events = (data['data'] as List)
-              .map((e) => EventModel.fromJson(e as Map<String, dynamic>))
-              .toList();
+          final events =
+              (data['data'] as List)
+                  .map((e) => EventModel.fromJson(e as Map<String, dynamic>))
+                  .toList();
           _logger.i('Parsed ${events.length} explore events');
           return events;
         }
@@ -94,9 +96,10 @@ class EventsService {
       if (response.data is Map<String, dynamic>) {
         final data = response.data as Map<String, dynamic>;
         if ((data['success'] as bool? ?? false) && data['data'] is List) {
-          final myEvents = (data['data'] as List)
-              .map((e) => MyEventModel.fromJson(e as Map<String, dynamic>))
-              .toList();
+          final myEvents =
+              (data['data'] as List)
+                  .map((e) => MyEventModel.fromJson(e as Map<String, dynamic>))
+                  .toList();
           _logger.i('Parsed ${myEvents.length} my events');
           return myEvents;
         }
@@ -123,8 +126,9 @@ class EventsService {
       if (response.data is Map<String, dynamic>) {
         final data = response.data as Map<String, dynamic>;
         if ((data['success'] as bool? ?? false) && data['data'] != null) {
-          final event =
-          EventModel.fromJson(data['data'] as Map<String, dynamic>);
+          final event = EventModel.fromJson(
+            data['data'] as Map<String, dynamic>,
+          );
           _logger.i('Event details: ${event.title}');
           return event;
         }
@@ -152,7 +156,9 @@ class EventsService {
       if (response.data is Map<String, dynamic>) {
         final data = response.data as Map<String, dynamic>;
         if ((data['success'] as bool? ?? false) && data['data'] != null) {
-          _logger.i('Registration initiated — status: ${(data['data'] as Map)['status']}');
+          _logger.i(
+            'Registration initiated — status: ${(data['data'] as Map)['status']}',
+          );
           return data['data'] as Map<String, dynamic>;
         } else {
           // Server returned success:false with a message
@@ -181,7 +187,6 @@ class EventsService {
     }
   }
 
-
   Future<EventHomeModel?> getEventHome(String eventId) async {
     try {
       await _checkConnectivity();
@@ -196,7 +201,8 @@ class EventsService {
         final data = response.data as Map<String, dynamic>;
         if ((data['success'] as bool? ?? false) && data['data'] != null) {
           final model = EventHomeModel.fromJson(
-              data['data'] as Map<String, dynamic>);
+            data['data'] as Map<String, dynamic>,
+          );
           _logger.i('Event home data fetched: ${model.title}');
           return model;
         }
@@ -208,4 +214,74 @@ class EventsService {
     }
   }
 
+  // ── GET /attendee/my-events/:id ─────────────────────────────────────────
+  Future<MyEventModel?> getMyEventDetails(String eventId) async {
+    try {
+      await _checkConnectivity();
+      _logger.i('Fetching my event details for: $eventId');
+      final response = await _apiService.get(
+        '${ApiConstants.getMyEventDetails}/$eventId',
+      );
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        if ((data['success'] as bool? ?? false) && data['data'] != null) {
+          return MyEventModel.fromJson(data['data'] as Map<String, dynamic>);
+        }
+      }
+      return null;
+    } catch (e) {
+      _logger.e('getMyEventDetails failed', error: e);
+      rethrow;
+    }
+  }
+
+  // ── POST /attendee/events/:id/register ──────────────────────────────────
+  Future<Map<String, dynamic>?> registerEvent(String eventId) async {
+    try {
+      await _checkConnectivity();
+      _logger.i('Registering for event: $eventId');
+      final response = await _apiService.post(
+        '${ApiConstants.registerEvent}/$eventId/register',
+      );
+      if (response.data is Map<String, dynamic>) {
+        return response.data as Map<String, dynamic>;
+      }
+      return null;
+    } on DioException catch (e) {
+      String errorMsg = 'Registration failed';
+      try {
+        final rd = e.response?.data;
+        if (rd is Map<String, dynamic>)
+          errorMsg = rd['message'] as String? ?? errorMsg;
+      } catch (_) {}
+      _logger.e('registerEvent failed', error: e);
+      throw Exception(errorMsg);
+    } catch (e) {
+      _logger.e('registerEvent failed', error: e);
+      rethrow;
+    }
+  }
+
+  // ── GET /attendee/events/:id/sessions ───────────────────────────────────
+  Future<List<Map<String, dynamic>>> getEventSessions(String eventId) async {
+    try {
+      await _checkConnectivity();
+      _logger.i('Fetching sessions for event: $eventId');
+      final response = await _apiService.get(
+        '${ApiConstants.getEventSessions}/$eventId/sessions',
+      );
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        if ((data['success'] as bool? ?? false) && data['data'] is List) {
+          return (data['data'] as List)
+              .map((e) => e as Map<String, dynamic>)
+              .toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getEventSessions failed', error: e);
+      rethrow;
+    }
+  }
 }

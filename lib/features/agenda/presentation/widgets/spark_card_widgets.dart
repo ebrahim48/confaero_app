@@ -50,9 +50,10 @@ class SpeakerCard extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 image: DecorationImage(
-                  image: imagePath != null && imagePath!.isNotEmpty
-                      ? AssetImage(imagePath!)
-                      : AssetImage(Assets.images.profile.path),
+                  image:
+                      imagePath.isNotEmpty
+                          ? AssetImage(imagePath)
+                          : AssetImage(Assets.images.profile.path),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -78,7 +79,7 @@ class SpeakerCard extends StatelessWidget {
                   ),
                   SizedBox(height: 2.h),
                   CustomText(
-                     textAlign: TextAlign.start,
+                    textAlign: TextAlign.start,
                     text: company,
                     fontsize: 12.sp,
                     color: const Color(0xff757575),

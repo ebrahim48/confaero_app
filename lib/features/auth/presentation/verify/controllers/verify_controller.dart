@@ -41,7 +41,7 @@ class VerifyController extends GetxController {
   void startResendTimer() {
     canResend.value = false;
     resendTimer.value = 60;
-    
+
     Future.delayed(const Duration(seconds: 1), () async {
       while (resendTimer.value > 0) {
         await Future.delayed(const Duration(seconds: 1));
@@ -81,12 +81,15 @@ class VerifyController extends GetxController {
 
       isLoading.value = false;
 
-      _logger.d('Verify response - Status: ${response.statusCode}, Data: ${response.data}');
+      _logger.d(
+        'Verify response - Status: ${response.statusCode}, Data: ${response.data}',
+      );
 
       if (response.data is Map<String, dynamic>) {
         final data = response.data as Map<String, dynamic>;
         final success = data['success'] as bool? ?? false;
-        final message = data['message'] as String? ?? 'Code verified successfully';
+        final message =
+            data['message'] as String? ?? 'Code verified successfully';
         final resetData = data['data'] as Map<String, dynamic>?;
 
         if (success && resetData != null) {
@@ -95,49 +98,42 @@ class VerifyController extends GetxController {
           ToastMessageHelper.showToastMessage(message, title: 'Success');
           context.pushNamed(
             AppRoutes.resetPasswordScreen,
-            queryParameters: {
-              'email': email.value,
-              'token': resetToken,
-            },
+            queryParameters: {'email': email.value, 'token': resetToken},
           );
         } else {
           _logger.w('Code verification failed: $message');
-          ToastMessageHelper.showToastMessage(
-            message,
-            title: 'Error',
-          );
+          ToastMessageHelper.showToastMessage(message, title: 'Error');
         }
       }
     } on ServerException catch (e) {
       isLoading.value = false;
-      _logger.e('ServerException during code verification', error: e, stackTrace: e.stackTrace);
-      
+      _logger.e(
+        'ServerException during code verification',
+        error: e,
+        stackTrace: e.stackTrace,
+      );
+
       // Check if response has success data despite error status
       if (e.responseData is Map<String, dynamic>) {
         final data = e.responseData as Map<String, dynamic>;
         final success = data['success'] as bool? ?? false;
-        final message = data['message'] as String? ?? 'Code verified successfully';
+        final message =
+            data['message'] as String? ?? 'Code verified successfully';
         final resetData = data['data'] as Map<String, dynamic>?;
-        
+
         if (success && resetData != null) {
           final resetToken = resetData['resetToken'] as String? ?? '';
           _logger.i('Code verified successfully (despite error status)');
           ToastMessageHelper.showToastMessage(message, title: 'Success');
           context.pushNamed(
             AppRoutes.resetPasswordScreen,
-            queryParameters: {
-              'email': email.value,
-              'token': resetToken,
-            },
+            queryParameters: {'email': email.value, 'token': resetToken},
           );
           return;
         }
       }
-      
-      ToastMessageHelper.showToastMessage(
-        e.message ?? 'Invalid or expired code. Please try again.',
-        title: 'Error',
-      );
+
+      ToastMessageHelper.showToastMessage(e.message, title: 'Error');
     } on TimeoutException catch (_) {
       isLoading.value = false;
       _logger.w('Code verification timeout');
@@ -154,7 +150,11 @@ class VerifyController extends GetxController {
       );
     } catch (e, stackTrace) {
       isLoading.value = false;
-      _logger.e('Exception during code verification', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Exception during code verification',
+        error: e,
+        stackTrace: stackTrace,
+      );
       ToastMessageHelper.showToastMessage(
         'Verification failed. Please try again.',
         title: 'Error',
@@ -183,7 +183,9 @@ class VerifyController extends GetxController {
         validateStatus: false,
       );
 
-      _logger.d('Resend code response - Status: ${response.statusCode}, Data: ${response.data}');
+      _logger.d(
+        'Resend code response - Status: ${response.statusCode}, Data: ${response.data}',
+      );
 
       if (response.data is Map<String, dynamic>) {
         final data = response.data as Map<String, dynamic>;
@@ -200,22 +202,28 @@ class VerifyController extends GetxController {
         }
       }
     } on ServerException catch (e) {
-      _logger.e('ServerException during resend code', error: e, stackTrace: e.stackTrace);
-      
+      _logger.e(
+        'ServerException during resend code',
+        error: e,
+        stackTrace: e.stackTrace,
+      );
+
       // Check if response has success data despite error status
       if (e.responseData is Map<String, dynamic>) {
         final data = e.responseData as Map<String, dynamic>;
         final success = data['success'] as bool? ?? false;
         final message = data['message'] as String? ?? 'Verification code sent';
-        
+
         if (success) {
-          _logger.i('Verification code resent successfully (despite error status)');
+          _logger.i(
+            'Verification code resent successfully (despite error status)',
+          );
           ToastMessageHelper.showToastMessage(message, title: 'Success');
           startResendTimer();
           return;
         }
       }
-      
+
       ToastMessageHelper.showToastMessage(
         'Failed to resend code. Please try again.',
         title: 'Error',
@@ -233,7 +241,11 @@ class VerifyController extends GetxController {
         title: 'Error',
       );
     } catch (e, stackTrace) {
-      _logger.e('Exception during resend code', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Exception during resend code',
+        error: e,
+        stackTrace: stackTrace,
+      );
       ToastMessageHelper.showToastMessage(
         'Failed to resend code. Please try again.',
         title: 'Error',

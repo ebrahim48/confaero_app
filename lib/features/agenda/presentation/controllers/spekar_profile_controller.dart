@@ -1,6 +1,9 @@
 import 'package:get/get.dart';
+import '../../domain/services/agenda_service.dart';
 
 class SpeakerProfileController extends GetxController {
+  final AgendaService _agendaService = Get.find<AgendaService>();
+
   // Speaker data
   final RxMap<String, dynamic> speaker = <String, dynamic>{}.obs;
 
@@ -13,52 +16,47 @@ class SpeakerProfileController extends GetxController {
   // Favorite session IDs
   final RxList<String> favoriteSessions = <String>[].obs;
 
+  // Event ID
+  final String currentEventId = 'default_event_id';
+
   @override
   void onInit() {
     super.onInit();
     loadSpeakerData();
   }
 
-  // Load speaker data (from API or arguments)
-  void loadSpeakerData() {
+  // Load speaker data from API or arguments
+  Future<void> loadSpeakerData() async {
     isLoading(true);
 
     // Get speaker data from navigation arguments
     final args = Get.arguments;
     if (args != null && args is Map<String, dynamic>) {
+      // If full data passed via arguments, use it
       speaker.value = args;
-    } else {
-      // Sample data for testing
-      speaker.value = {
-        'id': '1',
-        'name': 'Dr. Jane Doe',
-        'role': 'Chif AI Scientist @ TechCorp',
-        'location': 'San Francisco, CA',
-        'image': 'assets/images/speakers.jpg',
-        'email': 'jane.doe@techcorp.com',
-        'website': 'https://janedoe.com',
-        'linkedin': 'https://linkedin.com/in/janedoe',
-        'bio':
-        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-        'sessions': [
-          {
-            'id': 'session_1',
-            'type': 'KEYNOTE',
-            'title': 'Unlocking higher energy density in LFP cells',
-            'time': '08:30 - 09:00, 15 June 2026',
-            'attendees': 125,
-            'favorites': 0,
-          },
-          {
-            'id': 'session_2',
-            'type': 'KEYNOTE',
-            'title': 'Unlocking higher energy density in LFP cells',
-            'time': '08:30 - 09:00, 15 June 2026',
-            'attendees': 98,
-            'favorites': 0,
-          },
-        ],
-      };
+
+      // If only speakerId passed, fetch from API
+      final speakerId =
+          args['speakerId']?.toString() ??
+          args['_id']?.toString() ??
+          args['id']?.toString();
+      if (speakerId != null && speakerId.isNotEmpty && args.keys.length <= 2) {
+        try {
+          final data = await _agendaService.getSpeakerDetails(
+            currentEventId,
+            speakerId,
+          );
+          if (data != null) {
+            speaker.value = data;
+          }
+        } catch (e) {
+          Get.snackbar(
+            'Error',
+            'Failed to load speaker details',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
+      }
     }
 
     isLoading(false);
@@ -69,22 +67,35 @@ class SpeakerProfileController extends GetxController {
     isBioExpanded.value = !isBioExpanded.value;
   }
 
-  // Toggle session favorite
-  void toggleSessionFavorite(String sessionId) {
+  // Toggle session favorite via API
+  Future<void> toggleSessionFavorite(String sessionId) async {
     if (favoriteSessions.contains(sessionId)) {
       favoriteSessions.remove(sessionId);
+      try {
+        await _agendaService.removeBookmarkSession(currentEventId, sessionId);
+      } catch (e) {
+        favoriteSessions.add(sessionId); // revert
+      }
     } else {
       favoriteSessions.add(sessionId);
+      try {
+        await _agendaService.bookmarkSession(currentEventId, sessionId);
+      } catch (e) {
+        favoriteSessions.remove(sessionId); // revert
+      }
     }
 
     // Update session favorites count in speaker data
-    final sessions = speaker['sessions'] as List;
-    final sessionIndex = sessions.indexWhere((s) => s['id'] == sessionId);
-
-    if (sessionIndex != -1) {
-      final session = sessions[sessionIndex];
-      session['favorites'] = favoriteSessions.contains(sessionId) ? 1 : 0;
-      speaker.refresh();
+    final sessions = speaker['sessions'] as List?;
+    if (sessions != null) {
+      final sessionIndex = sessions.indexWhere(
+        (s) => s['id'] == sessionId || s['_id'] == sessionId,
+      );
+      if (sessionIndex != -1) {
+        final session = sessions[sessionIndex];
+        session['favorites'] = favoriteSessions.contains(sessionId) ? 1 : 0;
+        speaker.refresh();
+      }
     }
   }
 
@@ -93,11 +104,9 @@ class SpeakerProfileController extends GetxController {
     return favoriteSessions.contains(sessionId);
   }
 
-  // Open link (website, LinkedIn, etc.)
+  // Open link
   void openLink(String url) {
-    print('Opening link: $url');
-    // Implement URL launcher here
-    // await launchUrl(Uri.parse(url));
+    // TODO: use url_launcher
   }
 
   // Open LinkedIn profile
@@ -128,18 +137,11 @@ class SpeakerProfileController extends GetxController {
     }
   }
 
-  // Contract speaker (open email)
+  // Contact speaker
   void contractSpeaker() {
     final email = speaker['email'];
     if (email != null && email.toString().isNotEmpty) {
-      print('Opening email to: $email');
-      // Implement email launcher here
-      // final emailUri = Uri(
-      //   scheme: 'mailto',
-      //   path: email.toString(),
-      //   queryParameters: {'subject': 'Speaking Opportunity'},
-      // );
-      // await launchUrl(emailUri);
+      // TODO: use url_launcher to open mailto
     } else {
       Get.snackbar(
         'Not Available',
@@ -151,8 +153,7 @@ class SpeakerProfileController extends GetxController {
 
   // Navigate to session details
   void goToSessionDetails(Map<String, dynamic> session) {
-    print('Navigate to session: ${session['title']}');
-    // Get.toNamed(AppRoutes.sessionDetailsScreen, arguments: session);
+    // TODO: navigate to session details screen
   }
 
   // Get bio text (truncated or full)

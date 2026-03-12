@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../data/announcement_model.dart';
+import '../../../announcements/data/models/announcement_model.dart';
 
 class AnnouncementCard extends StatelessWidget {
   final AnnouncementModel announcement;
@@ -38,7 +38,7 @@ class AnnouncementCard extends StatelessWidget {
           children: [
             // Date
             Text(
-              announcement.date,
+              announcement.createdAt, // Real date
               style: TextStyle(
                 fontSize: 11.sp,
                 color: Colors.grey[500],
@@ -55,13 +55,7 @@ class AnnouncementCard extends StatelessWidget {
                 SizedBox(width: 12.w),
 
                 // Text Content
-                Expanded(
-                  child: _buildTextContent(),
-                ),
-
-                // Secondary Icon (if any)
-                if (announcement.secondaryIcon != null)
-                  _buildSecondaryIcon(),
+                Expanded(child: _buildTextContent()),
               ],
             ),
           ],
@@ -75,14 +69,10 @@ class AnnouncementCard extends StatelessWidget {
       width: 40.w,
       height: 40.h,
       decoration: BoxDecoration(
-        color: announcement.backgroundColor,
+        color: const Color(0xFFE8F5E9),
         borderRadius: BorderRadius.circular(8.r),
       ),
-      child: Icon(
-        announcement.icon,
-        color: announcement.iconColor,
-        size: 20.r,
-      ),
+      child: Icon(Icons.campaign, color: Colors.black, size: 20.r),
     );
   }
 
@@ -103,36 +93,21 @@ class AnnouncementCard extends StatelessWidget {
         SizedBox(height: 2.h),
         Row(
           children: [
-            Text(
-              announcement.subtitle,
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            if (announcement.organizer != null) ...[
-              SizedBox(width: 4.w),
-              Text(
-                announcement.organizer!,
+            Expanded(
+              child: Text(
+                announcement.content,
                 style: TextStyle(
                   fontSize: 13.sp,
-                  color: const Color(0xFF4CAF50),
+                  color: Colors.grey[600],
                   fontWeight: FontWeight.w400,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-            ],
+            ),
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildSecondaryIcon() {
-    return Icon(
-      announcement.secondaryIcon,
-      color: Colors.grey[500],
-      size: 18.r,
     );
   }
 }

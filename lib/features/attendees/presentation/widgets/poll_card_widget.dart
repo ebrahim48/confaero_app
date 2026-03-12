@@ -34,11 +34,7 @@ class PollCardWidget extends StatelessWidget {
                   color: const Color(0xff999999),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.person,
-                  size: 14.sp,
-                  color: Colors.white,
-                ),
+                child: Icon(Icons.person, size: 14.sp, color: Colors.white),
               ),
               SizedBox(width: 8.w),
               Expanded(
@@ -65,32 +61,34 @@ class PollCardWidget extends StatelessWidget {
           SizedBox(height: 16.h),
 
           // Poll Options - Using Obx for reactive updates
-          Obx(() => Column(
-            children: [
-              PollOptionWidget(
-                text: 'Very good',
-                isSelected: controller.pollOptions[0],
-                onTap: () => controller.togglePollOption(0),
-              ),
-              PollOptionWidget(
-                text: 'Very good',
-                isSelected: controller.pollOptions[1],
-                onTap: () => controller.togglePollOption(1),
-              ),
-              PollOptionWidget(
-                text: 'Very good',
-                isSelected: controller.pollOptions[2],
-                onTap: () => controller.togglePollOption(2),
-              ),
-            ],
-          )),
+          Obx(
+            () => Column(
+              children: [
+                PollOptionWidget(
+                  text: 'Very good',
+                  isSelected: controller.pollOptions[0],
+                  onTap: () => controller.togglePollOption(0),
+                ),
+                PollOptionWidget(
+                  text: 'Very good',
+                  isSelected: controller.pollOptions[1],
+                  onTap: () => controller.togglePollOption(1),
+                ),
+                PollOptionWidget(
+                  text: 'Very good',
+                  isSelected: controller.pollOptions[2],
+                  onTap: () => controller.togglePollOption(2),
+                ),
+              ],
+            ),
+          ),
 
           SizedBox(height: 16.h),
 
           // Submit Button
           CustomButton(
             title: 'Submit',
-            onpress: () => controller.submitPollVote(),
+            onpress: () => controller.submitPollVote(pollId: 'poll_default'),
             color: const Color(0xff32A69A),
             height: 48.h,
             borderRadius: 8.r,

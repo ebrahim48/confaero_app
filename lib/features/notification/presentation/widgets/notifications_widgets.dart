@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../presentations/widgets/custom_text.dart';
+import 'package:get/get.dart';
 import '../controller/notifications_controller.dart';
 
 class NotificationItemWidget extends StatelessWidget {
@@ -22,10 +23,7 @@ class NotificationItemWidget extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 12.h),
         decoration: BoxDecoration(
           border: Border(
-            bottom: BorderSide(
-              color: const Color(0xffE0E0E0),
-              width: 1,
-            ),
+            bottom: BorderSide(color: const Color(0xffE0E0E0), width: 1),
           ),
         ),
         child: Row(
@@ -39,23 +37,20 @@ class NotificationItemWidget extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: ClipOval(
-                child: notification.avatarUrl != null
-                    ? Image.asset(
-                  notification.avatarUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(
-                      Icons.person,
-                      size: 28.sp,
-                      color: Colors.white,
-                    );
-                  },
-                )
-                    : Icon(
-                  Icons.person,
-                  size: 28.sp,
-                  color: Colors.white,
-                ),
+                child:
+                    notification.avatarUrl != null
+                        ? Image.asset(
+                          notification.avatarUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.person,
+                              size: 28.sp,
+                              color: Colors.white,
+                            );
+                          },
+                        )
+                        : Icon(Icons.person, size: 28.sp, color: Colors.white),
               ),
             ),
 
@@ -100,6 +95,37 @@ class NotificationItemWidget extends StatelessWidget {
                     maxline: 1,
                     textOverflow: TextOverflow.ellipsis,
                   ),
+
+                  if (notification.title == 'Connection Request') ...[
+                    SizedBox(height: 8.h),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: () {
+                          // The 'id' of NotificationItem here is the request ID.
+                          Get.find<NotificationsController>().acceptConnection(
+                            notification.id,
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 6.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xff32A69A),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: CustomText(
+                            text: 'Accept',
+                            fontsize: 12.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

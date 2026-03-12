@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../auth/data/repositories/auth_repository.dart';
+import '../../../profile/domain/services/profile_service.dart';
+
 // Sidebar Menu Item Model
 class SidebarMenuItem {
   final String icon;
@@ -19,10 +22,14 @@ class SidebarMenuItem {
 }
 
 class SidebarController extends GetxController {
-  // User info
-  final userName = 'Albert Flamingo'.obs;
-  final userEmail = 'albert@example.com'.obs;
+  final AuthRepository _authRepository = Get.find<AuthRepository>();
+  final ProfileService _profileService = Get.find<ProfileService>();
+
+  // User info — loaded from API
+  final userName = ''.obs;
+  final userEmail = ''.obs;
   final userAvatar = 'assets/images/profile.png'.obs;
+  final isLoading = false.obs;
 
   // Sidebar menu items with proper routes
   final List<SidebarMenuItem> menuItems = [
@@ -73,6 +80,39 @@ class SidebarController extends GetxController {
     ),
   ];
 
+  @override
+  void onInit() {
+    super.onInit();
+    loadUserInfo();
+  }
+
+  /// Load user name/email from /auth/me and avatar from profile service
+  Future<void> loadUserInfo() async {
+    try {
+      isLoading.value = true;
+
+      final userResponse = await _authRepository.getMe();
+      final success = userResponse['success'] as bool? ?? false;
+      if (success && userResponse['data'] != null) {
+        final userData = userResponse['data'] as Map<String, dynamic>;
+        userName.value = userData['name'] as String? ?? '';
+        userEmail.value = userData['email'] as String? ?? '';
+      }
+
+      // Try to load profile image
+      final profile = await _profileService.getMyProfile();
+      if (profile != null &&
+          profile.profileImage != null &&
+          profile.profileImage!.isNotEmpty) {
+        userAvatar.value = profile.profileImage!;
+      }
+    } catch (_) {
+      // Fail silently — sidebar still works with defaults
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Handle menu item tap
   void handleMenuTap(BuildContext context, SidebarMenuItem item) {
     // Close drawer first
@@ -84,11 +124,9 @@ class SidebarController extends GetxController {
       if (item.onTap != null) {
         item.onTap!();
       } else if (item.route != null) {
-        // Use pushNamed if route is defined in AppRoutes
         if (item.route == AppRoutes.contactQrScreen) {
           context.pushNamed(AppRoutes.contactQrScreen);
         } else {
-          // Use push for other routes
           context.push(item.route!);
         }
       }
@@ -97,47 +135,6 @@ class SidebarController extends GetxController {
 
   // Logout
   void logout(BuildContext context) {
-
     context.pushNamed(AppRoutes.signInScreen);
-    // Navigator.of(context).pop(); // Close drawer
-    // Get.dialog(
-    //   AlertDialog(
-    //     shape: RoundedRectangleBorder(
-    //       borderRadius: BorderRadius.circular(12),
-    //     ),
-    //     title: const Text('Logout'),
-    //     content: const Text('Are you sure you want to logout?'),
-    //     actions: [
-    //       TextButton(
-    //         onPressed: () => Get.back(),
-    //         child: const Text('Cancel'),
-    //       ),
-    //       TextButton(
-    //         onPressed: () {
-    //           // Get.back();
-    //
-    //           // TODO: Clear user data
-    //           // final prefs = await SharedPreferences.getInstance();
-    //           // await prefs.clear();
-    //
-    //           // Navigate to login (uncomment when login route is ready)
-    //
-    //
-    //           Get.snackbar(
-    //             'Logged Out',
-    //             'You have been logged out successfully',
-    //             snackPosition: SnackPosition.BOTTOM,
-    //             backgroundColor: Colors.green,
-    //             colorText: Colors.white,
-    //           );
-    //         },
-    //         child: const Text('Logout', style: TextStyle(color: Colors.red)),
-    //       ),
-    //     ],
-    //   ),
-    // );
-
-
-
   }
 }

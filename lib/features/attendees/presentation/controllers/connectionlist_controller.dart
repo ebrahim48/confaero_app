@@ -1,36 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-// Connection Model
-class Connection {
-  final String id;
-  final String name;
-  final String company;
-  final String role;
-  final int eventsCount;
-  final int sessionsCount;
-  final String avatarUrl;
-  bool isBookmarked;
-
-  Connection({
-    required this.id,
-    required this.name,
-    required this.company,
-    required this.role,
-    required this.eventsCount,
-    required this.sessionsCount,
-    required this.avatarUrl,
-    this.isBookmarked = false,
-  });
-}
+import '../../../connection/data/models/connection_model.dart';
+import '../../../connection/domain/services/connection_service.dart';
 
 class ConnectionListController extends GetxController {
+  final ConnectionService _connectionService = Get.find<ConnectionService>();
   // Search controller
   final searchController = TextEditingController();
 
   // Connections list
-  final connections = <Connection>[].obs;
-  final filteredConnections = <Connection>[].obs;
+  final connections = <ConnectionModel>[].obs;
+  final filteredConnections = <ConnectionModel>[].obs;
 
   // Stats
   final totalConnections = 0.obs;
@@ -52,46 +33,22 @@ class ConnectionListController extends GetxController {
   }
 
   // Load connections (static data)
-  void loadConnections() {
+  Future<void> loadConnections() async {
     isLoading.value = true;
-
-    // Static connection data - 3 connections
-    connections.value = [
-      Connection(
-        id: '1',
-        name: 'Rachid Amine',
-        company: 'Tech Corp',
-        role: 'Organizer',
-        eventsCount: 2,
-        sessionsCount: 2,
-        avatarUrl: 'assets/images/profile.png',
-        isBookmarked: true,
-      ),
-      Connection(
-        id: '2',
-        name: 'Rachid Amine',
-        company: 'Tech Corp',
-        role: 'Speakers',
-        eventsCount: 2,
-        sessionsCount: 2,
-        avatarUrl: 'assets/images/profile.png',
-        isBookmarked: true,
-      ),
-      Connection(
-        id: '3',
-        name: 'Rachid Amine',
-        company: 'Tech Corp',
-        role: 'Attendee',
-        eventsCount: 2,
-        sessionsCount: 2,
-        avatarUrl: 'assets/images/profile.png',
-        isBookmarked: true,
-      ),
-    ];
-
-    filteredConnections.value = connections;
-    updateStats();
-    isLoading.value = false;
+    try {
+      final data = await _connectionService.getMyConnections();
+      connections.value = data;
+      filteredConnections.value = connections;
+      updateStats();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load connections',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Update stats
@@ -105,22 +62,48 @@ class ConnectionListController extends GetxController {
     if (query.isEmpty) {
       filteredConnections.value = connections;
     } else {
-      filteredConnections.value = connections
-          .where((connection) =>
-      connection.name.toLowerCase().contains(query.toLowerCase()) ||
-          connection.company.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+      filteredConnections.value =
+          connections
+              .where(
+                (connection) =>
+                    connection.name.toLowerCase().contains(
+                      query.toLowerCase(),
+                    ) ||
+                    connection.company.toLowerCase().contains(
+                      query.toLowerCase(),
+                    ),
+              )
+              .toList();
     }
   }
 
   // Toggle bookmark
-  void toggleBookmark(String id) {
-    final index = connections.indexWhere((c) => c.id == id);
-    if (index != -1) {
-      connections[index].isBookmarked = !connections[index].isBookmarked;
-      connections.refresh();
-      filteredConnections.refresh();
-      updateStats();
+  Future<void> toggleBookmark(String id) async {
+    try {
+      final index = connections.indexWhere((c) => c.id == id);
+      if (index != -1) {
+        // Optimistic update
+        connections[index].isBookmarked = !connections[index].isBookmarked;
+        connections.refresh();
+        filteredConnections.refresh();
+        updateStats();
+
+        await _connectionService.bookmarkConnection(id);
+      }
+    } catch (e) {
+      // Revert if error
+      final index = connections.indexWhere((c) => c.id == id);
+      if (index != -1) {
+        connections[index].isBookmarked = !connections[index].isBookmarked;
+        connections.refresh();
+        filteredConnections.refresh();
+        updateStats();
+      }
+      Get.snackbar(
+        'Error',
+        'Could not update bookmark',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 

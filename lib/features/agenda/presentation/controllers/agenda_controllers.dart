@@ -1,7 +1,19 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/snackbar_helper.dart';
+import '../../domain/services/agenda_service.dart';
+import '../../data/models/session_model.dart';
 
 class AgendaController extends GetxController {
+  final AgendaService _agendaService = Get.find<AgendaService>();
+
+  // Loading states
+  final RxBool isLoading = false.obs;
+
+  // Current Event ID — reads from global session state
+  String get currentEventId => SessionController.to.eventId;
+
   // Selected tab (0 = All Sessions, 1 = My Agenda)
   final RxInt selectedTab = 0.obs;
 
@@ -21,62 +33,32 @@ class AgendaController extends GetxController {
   void onInit() {
     super.onInit();
     _generateWeekDays(selectedDate.value);
+    _fetchSessions();
+  }
+
+  Future<void> _fetchSessions() async {
+    isLoading.value = true;
+    try {
+      final all = await _agendaService.getEventAgenda(currentEventId);
+      allSessions.assignAll(all);
+
+      final bookmarked = await _agendaService.getMyAgenda(currentEventId);
+      myAgendaSessions.assignAll(bookmarked);
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to load agenda');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // All sessions (Image 1 - All Sessions Tab)
-  final RxList<Map<String, dynamic>> allSessions = <Map<String, dynamic>>[
-    {
-      'time': '08:30 AM',
-      'type': 'KEYNOTE',
-      'title': 'Unlocking higher energy density in LFP cells',
-      'duration': '08:30 - 09:00',
-      'attendees': 1,
-      'favorites': 0,
-      'isBreak': false,
-    },
-    {
-      'time': '09:00 AM',
-      'type': 'WORKSHOP',
-      'title': 'Unlocking higher energy density in LFP cells',
-      'duration': '9:00 - 11:00',
-      'attendees': 1,
-      'favorites': 0,
-      'isBreak': false,
-    },
-    {
-      'time': '11:00 AM',
-      'type': 'BREAK',
-      'title': 'Coffee Break / Posters & Exhibit',
-      'duration': '11:00 AM - 11:30 AM',
-      'location': 'Exhibit Area',
-      'isBreak': true,
-    },
-  ].obs;
+  final RxList<SessionModel> allSessions = <SessionModel>[].obs;
 
   // My Agenda sessions (Image 2 - My Agenda Tab)
-  final RxList<Map<String, dynamic>> myAgendaSessions = <Map<String, dynamic>>[
-    {
-      'time': '08:30 AM',
-      'type': 'KEYNOTE',
-      'title': 'Unlocking higher energy density in LFP cells',
-      'duration': '08:30 - 09:00',
-      'attendees': 1,
-      'favorites': 0,
-      'isBreak': false,
-    },
-    {
-      'time': '09:00 AM',
-      'type': 'KEYNOTE',
-      'title': 'Unlocking higher energy density in LFP cells',
-      'duration': '08:30 - 09:00',
-      'attendees': 1,
-      'favorites': 0,
-      'isBreak': false,
-    },
-  ].obs;
+  final RxList<SessionModel> myAgendaSessions = <SessionModel>[].obs;
 
   // Get current sessions based on selected tab
-  RxList<Map<String, dynamic>> get currentSessions {
+  RxList<SessionModel> get currentSessions {
     return selectedTab.value == 0 ? allSessions : myAgendaSessions;
   }
 
@@ -137,30 +119,52 @@ class AgendaController extends GetxController {
   // Format DateTime to "MMM YYYY" format
   String _formatMonthYear(DateTime date) {
     const months = [
-      'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
     ];
     return '${months[date.month - 1]} ${date.year}';
   }
 
-  // Toggle favorite
-  void toggleFavorite(int index) {
-    final sessions = currentSessions;
-    if (sessions[index]['isBreak'] != true) {
-      sessions[index]['favorites'] = sessions[index]['favorites'] == 0 ? 1 : 0;
-      sessions.refresh();
+  // Toggle favorite (Like)
+  Future<void> toggleFavorite(int index) async {
+    final session = currentSessions[index];
+    try {
+      await _agendaService.toggleSessionLike(currentEventId, session.id);
+      await _fetchSessions(); // Refresh data to get updated likes count
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to toggle like');
     }
   }
 
-  // Add session to my agenda
-  void addToMyAgenda(Map<String, dynamic> session) {
-    if (!myAgendaSessions.contains(session)) {
-      myAgendaSessions.add(session);
+  // Add session to my agenda (Bookmark)
+  Future<void> addToMyAgenda(SessionModel session) async {
+    try {
+      await _agendaService.bookmarkSession(currentEventId, session.id);
+      SnackbarHelper.showSuccess('Success', 'Added to your agenda');
+      await _fetchSessions();
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to add to agenda');
     }
   }
 
   // Remove session from my agenda
-  void removeFromMyAgenda(Map<String, dynamic> session) {
-    myAgendaSessions.remove(session);
+  Future<void> removeFromMyAgenda(SessionModel session) async {
+    try {
+      await _agendaService.removeBookmarkSession(currentEventId, session.id);
+      SnackbarHelper.showSuccess('Success', 'Removed from your agenda');
+      await _fetchSessions();
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to remove from agenda');
+    }
   }
 }

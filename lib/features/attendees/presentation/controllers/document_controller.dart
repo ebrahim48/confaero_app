@@ -1,75 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/snackbar_helper.dart';
+import '../../../documents/data/models/document_model.dart';
+import '../../../documents/domain/services/document_service.dart';
 
 class DocumentsController extends GetxController {
+  final DocumentService _service = Get.find<DocumentService>();
   final TextEditingController searchController = TextEditingController();
 
   final RxInt selectedFilter = 0.obs;
 
-  // All documents
-  final RxList<Map<String, dynamic>> allDocuments = <Map<String, dynamic>>[
-    {
-      'title': 'Venue & Floor Maps',
-      'subtitle': 'Full conference schedule. Program',
-      'fileSize': '23MB',
-      'type': 'all',
-      'showArrow': false,
-    },
-    {
-      'title': 'Venue & Floor Maps',
-      'subtitle': 'Full conference schedule. Program',
-      'fileSize': '23MB',
-      'type': 'all',
-      'showArrow': false,
-    },
-    {
-      'title': 'Venue & Floor Maps',
-      'subtitle': 'Full conference schedule. Program',
-      'fileSize': '23MB',
-      'type': 'booklet',
-      'showArrow': false,
-    },
-    {
-      'title': 'Venue & Floor Maps',
-      'subtitle': 'Full conference schedule. Program',
-      'fileSize': '23MB',
-      'type': 'floor_map',
-      'showArrow': true,
-    },
-    {
-      'title': 'Venue & Floor Maps',
-      'subtitle': '',
-      'fileSize': '23MB',
-      'type': 'abstracts',
-      'showArrow': true,
-    },
-    {
-      'title': 'Venue & Floor Maps',
-      'subtitle': 'Sample PDF: Ebook: First Steps in Event Marketing',
-      'fileSize': '23MB',
-      'type': 'all',
-      'showArrow': true,
-    },
-    {
-      'title': 'Venue & Floor Maps',
-      'subtitle': 'Full conference schedule. Program',
-      'fileSize': '23MB',
-      'type': 'all',
-      'showArrow': true,
-    },
-  ].obs;
+  // Observable variables
+  final RxList<DocumentModel> allDocuments = <DocumentModel>[].obs;
+  final RxBool isLoading = false.obs;
 
-  // Filtered documents
-  RxList<Map<String, dynamic>> get filteredDocuments {
-    if (selectedFilter.value == 0) {
-      return allDocuments;
-    } else if (selectedFilter.value == 1) {
-      return allDocuments.where((doc) => doc['type'] == 'abstracts').toList().obs;
-    } else if (selectedFilter.value == 2) {
-      return allDocuments.where((doc) => doc['type'] == 'booklet').toList().obs;
-    } else {
-      return allDocuments.where((doc) => doc['type'] == 'floor_map').toList().obs;
+  // Read event ID from global session state
+  String get currentEventId => SessionController.to.eventId;
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchDocuments();
+  }
+
+  Future<void> fetchDocuments() async {
+    isLoading.value = true;
+    try {
+      final docs = await _service.getAllDocuments(currentEventId);
+      allDocuments.assignAll(docs);
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to load documents');
+    } finally {
+      isLoading.value = false;
     }
+  }
+
+  // Filtered documents (simplifying filter since types might not exist on API)
+  RxList<DocumentModel> get filteredDocuments {
+    return allDocuments; // Currently ignoring filters since dummy data filters don't map to real model yet
   }
 
   @override
@@ -84,7 +53,8 @@ class DocumentsController extends GetxController {
   }
 
   // Open document
-  void openDocument(Map<String, dynamic> document) {
-    print('Opening: ${document['title']}');
+  void openDocument(DocumentModel document) {
+    print('Opening: ${document.name} at ${document.fileUrl}');
+    // Ideally use url_launcher to open PDF
   }
 }

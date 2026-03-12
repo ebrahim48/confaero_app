@@ -1,58 +1,75 @@
-// lib/features/attendees/controllers/attendees_controller.dart
+// lib/features/Events/presentation/controllers/events_spekar_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../agenda/domain/services/agenda_service.dart';
 
 class EventSpekarController extends GetxController {
+  final AgendaService _agendaService = Get.find<AgendaService>();
+
   final TextEditingController searchController = TextEditingController();
 
   // Total stats
-  final RxInt totalAttendees = 5.obs;
-  final RxInt bookmarked = 3.obs;
+  final RxInt totalAttendees = 0.obs;
+  final RxInt bookmarked = 0.obs;
 
-  // Attendees list
-  final RxList<Map<String, dynamic>> attendees = <Map<String, dynamic>>[
-    {
-      'id': '1',
-      'name': 'Rachid Amine',
-      'company': 'Tech Corp',
-      'role': 'Organizer',
-      'sessions': '2 sessions',
-      'image': 'assets/images/profile.png',
-      'isBookmarked': false,
-    },
-    {
-      'id': '2',
-      'name': 'Rachid Amine',
-      'company': 'Tech Corp',
-      'role': 'Speakers',
-      'sessions': '2 sessions',
-      'image': 'assets/images/profile.png',
-      'isBookmarked': true,
-    },
-    {
-      'id': '3',
-      'name': 'Rachid Amine',
-      'company': 'Tech Corp',
-      'role': 'Speakers',
-      'sessions': '2 sessions',
-      'image': 'assets/images/profile.png',
-      'isBookmarked': false,
-    },
-    {
-      'id': '4',
-      'name': 'Rachid Amine',
-      'company': 'Tech Corp',
-      'role': 'Attendee',
-      'sessions': '2 sessions',
-      'image': 'assets/images/profile.png',
-      'isBookmarked': true,
-    },
-  ].obs;
+  // Loading state
+  final RxBool isLoading = false.obs;
+
+  // Speakers list
+  final RxList<Map<String, dynamic>> attendees = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> allAttendees =
+      <Map<String, dynamic>>[].obs;
+
+  // Event ID
+  final String currentEventId = 'default_event_id';
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadSpeakers();
+  }
 
   @override
   void onClose() {
     searchController.dispose();
     super.onClose();
+  }
+
+  /// Load speakers from agenda API
+  Future<void> loadSpeakers() async {
+    isLoading.value = true;
+    try {
+      final sessions = await _agendaService.getEventAgenda(currentEventId);
+      // Present sessions as speaker entries
+      // TODO: adapt once a dedicated speakers list API is available
+      final parsed =
+          sessions
+              .map(
+                (s) => <String, dynamic>{
+                  'id': s.id,
+                  'name': s.title,
+                  'company': s.location,
+                  'role': 'Speaker',
+                  'sessions': '1 session',
+                  'image': 'assets/images/profile.png',
+                  'isBookmarked': s.isBookmarked,
+                },
+              )
+              .toList();
+
+      allAttendees.assignAll(parsed);
+      attendees.assignAll(parsed);
+      totalAttendees.value = parsed.length;
+      bookmarked.value = parsed.where((a) => a['isBookmarked'] == true).length;
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load speakers',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Toggle bookmark
@@ -61,19 +78,35 @@ class EventSpekarController extends GetxController {
     if (index != -1) {
       attendees[index]['isBookmarked'] = !attendees[index]['isBookmarked'];
       attendees.refresh();
+      bookmarked.value =
+          attendees.where((a) => a['isBookmarked'] == true).length;
+    }
+  }
 
-      // Update bookmarked count
-      bookmarked.value = attendees.where((a) => a['isBookmarked'] == true).length;
+  // Search
+  void searchSpeakers(String query) {
+    if (query.isEmpty) {
+      attendees.assignAll(allAttendees);
+    } else {
+      attendees.assignAll(
+        allAttendees
+            .where(
+              (a) => a['name'].toString().toLowerCase().contains(
+                query.toLowerCase(),
+              ),
+            )
+            .toList(),
+      );
     }
   }
 
   // Say Hi
   void sayHi(String name) {
-    print('Say Hi to $name');
+    // TODO: implement messaging
   }
 
   // Send Mail
   void sendMail(String name) {
-    print('Send mail to $name');
+    // TODO: implement email
   }
 }

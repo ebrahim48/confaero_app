@@ -1,7 +1,11 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/services/poster_service.dart';
+
 class AddPosterController extends GetxController {
+  final PosterService _posterService = Get.find<PosterService>();
+
   final TextEditingController titleController = TextEditingController();
   final TextEditingController abstractController = TextEditingController();
   final TextEditingController tagController = TextEditingController();
@@ -9,19 +13,15 @@ class AddPosterController extends GetxController {
   final TextEditingController videoLinkController = TextEditingController();
 
   final RxList<String> tags = <String>[].obs;
+  final RxBool isSubmitting = false.obs;
 
-  final RxList<Map<String, dynamic>> attachments = <Map<String, dynamic>>[
-    {
-      'name': '2025_Product_Catalog.pdf',
-      'size': '2.4 MB',
-      'icon': Icons.picture_as_pdf
-    },
-    {
-      'name': 'Poster for the event.jpg',
-      'size': '1.1 MB',
-      'icon': Icons.image
-    },
-  ].obs;
+  // Uploaded file paths
+  final Rx<String?> bannerFilePath = Rx<String?>(null);
+  final RxList<Map<String, dynamic>> attachments = <Map<String, dynamic>>[].obs;
+  final RxList<String> attachmentFilePaths = <String>[].obs;
+
+  // Event ID for poster creation
+  String currentEventId = '';
 
   @override
   void onClose() {
@@ -49,36 +49,91 @@ class AddPosterController extends GetxController {
 
   // Remove Attachment
   void removeAttachment(Map<String, dynamic> attachment) {
+    final index = attachments.indexOf(attachment);
     attachments.remove(attachment);
+    if (index >= 0 && index < attachmentFilePaths.length) {
+      attachmentFilePaths.removeAt(index);
+    }
   }
 
-  // Add Banner
-  void addBanner() {
-    // File picker logic here
-    print('Add banner clicked');
+  /// Upload banner via PosterService
+  Future<void> addBanner() async {
+    // TODO: integrate file_picker to select file, then:
+    // final result = await FilePicker.platform.pickFiles();
+    // if (result != null) {
+    //   bannerFilePath.value = result.files.single.path;
+    //   final response = await _posterService.uploadPosterFile(bannerFilePath.value!);
+    //   // Store uploaded URL
+    // }
+    Get.snackbar('Info', 'Select a banner image');
   }
 
-  // Add Attachment
-  void addAttachment() {
-    // File picker logic here
-    print('Add attachment clicked');
+  /// Upload attachment via PosterService
+  Future<void> addAttachment() async {
+    // TODO: integrate file_picker to select file, then:
+    // final result = await FilePicker.platform.pickFiles();
+    // if (result != null) {
+    //   final path = result.files.single.path!;
+    //   attachmentFilePaths.add(path);
+    //   attachments.add({
+    //     'name': result.files.single.name,
+    //     'size': '${(result.files.single.size / 1024 / 1024).toStringAsFixed(1)} MB',
+    //     'icon': Icons.attach_file,
+    //   });
+    // }
+    Get.snackbar('Info', 'Select an attachment file');
   }
 
-  // Submit Form
-  void submitForm() {
-    print('Title: ${titleController.text}');
-    print('Abstract: ${abstractController.text}');
-    print('Tags: $tags');
-    print('Presenters: ${presentersController.text}');
-    print('Video Link: ${videoLinkController.text}');
-    print('Attachments: ${attachments.length}');
+  /// Submit poster via PosterService.createPoster()
+  Future<void> submitForm() async {
+    if (titleController.text.isEmpty) {
+      Get.snackbar('Error', 'Please enter a title');
+      return;
+    }
+    if (abstractController.text.isEmpty) {
+      Get.snackbar('Error', 'Please enter an abstract');
+      return;
+    }
 
-    Get.snackbar(
-      'Success',
-      'Poster submitted successfully!',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xff32A69A),
-      colorText: Colors.white,
-    );
+    try {
+      isSubmitting.value = true;
+
+      // Upload banner if selected
+      String? bannerUrl;
+      if (bannerFilePath.value != null) {
+        final bannerResponse = await _posterService.uploadPosterFile(
+          bannerFilePath.value!,
+        );
+        bannerUrl = bannerResponse['data']?['url'] as String?;
+      }
+
+      // Upload attachments if any
+      if (attachmentFilePaths.isNotEmpty) {
+        await _posterService.uploadPosterFiles(attachmentFilePaths);
+      }
+
+      // Create poster
+      await _posterService.createPoster(currentEventId, {
+        'title': titleController.text,
+        'abstract': abstractController.text,
+        'tags': tags,
+        'presenters': presentersController.text,
+        'videoLink': videoLinkController.text,
+        if (bannerUrl != null) 'bannerUrl': bannerUrl,
+      });
+
+      Get.snackbar(
+        'Success',
+        'Poster submitted successfully!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xff32A69A),
+        colorText: Colors.white,
+      );
+      Get.back();
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to submit poster');
+    } finally {
+      isSubmitting.value = false;
+    }
   }
 }

@@ -1,13 +1,17 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+
 import '../constants/api_constants.dart';
+import '../constants/app_constants.dart';
 import '../exceptions/app_exceptions.dart';
 import '../helpers/prefs_helper.dart';
-import '../constants/app_constants.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   late Dio _dio;
+
+  bool _isRefreshing = false;
+  Future<String?>? _refreshTokenFuture;
 
   factory ApiService() {
     return _instance;
@@ -26,7 +30,8 @@ class ApiService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          String token = await PrefsHelper.getString(AppConstants.bearerToken);
+          final token = await PrefsHelper.getString(AppConstants.bearerToken);
+
           if (token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
@@ -44,26 +49,78 @@ class ApiService {
             print('└─────────────────────────────────────────');
           }
 
-          return handler.next(options);
+          handler.next(options);
         },
         onResponse: (response, handler) {
           if (kDebugMode) {
             print('┌─────────────────────────────────────────');
-            print('│ RESPONSE[${response.statusCode}] => ${response.requestOptions.path}');
+            print(
+              '│ RESPONSE[${response.statusCode}] => ${response.requestOptions.path}',
+            );
             print('│ Body: ${response.data}');
             print('└─────────────────────────────────────────');
           }
-          return handler.next(response);
+
+          handler.next(response);
         },
-        onError: (error, handler) {
+        onError: (error, handler) async {
           if (kDebugMode) {
             print('┌─────────────────────────────────────────');
-            print('│ ERROR[${error.response?.statusCode}] => ${error.requestOptions.path}');
+            print(
+              '│ ERROR[${error.response?.statusCode}] => ${error.requestOptions.path}',
+            );
             print('│ Message: ${error.message}');
             print('│ Response: ${error.response?.data}');
             print('└─────────────────────────────────────────');
           }
-          return handler.next(error);
+
+          final statusCode = error.response?.statusCode;
+          final requestOptions = error.requestOptions;
+
+          final isRefreshCall =
+              requestOptions.path == ApiConstants.refreshTokenApi;
+
+          if (statusCode == 401 && !isRefreshCall) {
+            try {
+              final newAccessToken = await _handleTokenRefresh();
+
+              if (newAccessToken != null && newAccessToken.isNotEmpty) {
+                final retryOptions = Options(
+                  method: requestOptions.method,
+                  headers: Map<String, dynamic>.from(requestOptions.headers)
+                    ..['Authorization'] = 'Bearer $newAccessToken',
+                  responseType: requestOptions.responseType,
+                  contentType: requestOptions.contentType,
+                  sendTimeout: requestOptions.sendTimeout,
+                  receiveTimeout: requestOptions.receiveTimeout,
+                  extra: requestOptions.extra,
+                  followRedirects: requestOptions.followRedirects,
+                  listFormat: requestOptions.listFormat,
+                  maxRedirects: requestOptions.maxRedirects,
+                  receiveDataWhenStatusError:
+                      requestOptions.receiveDataWhenStatusError,
+                  requestEncoder: requestOptions.requestEncoder,
+                  responseDecoder: requestOptions.responseDecoder,
+                  validateStatus: requestOptions.validateStatus,
+                );
+
+                final clonedResponse = await _dio.request(
+                  requestOptions.path,
+                  data: requestOptions.data,
+                  queryParameters: requestOptions.queryParameters,
+                  options: retryOptions,
+                );
+
+                return handler.resolve(clonedResponse);
+              } else {
+                await _clearSession();
+              }
+            } catch (_) {
+              await _clearSession();
+            }
+          }
+
+          handler.next(error);
         },
       ),
     );
@@ -71,12 +128,77 @@ class ApiService {
 
   Dio get dio => _dio;
 
+  Future<String?> _handleTokenRefresh() async {
+    if (_isRefreshing && _refreshTokenFuture != null) {
+      return _refreshTokenFuture;
+    }
+
+    _isRefreshing = true;
+    _refreshTokenFuture = _refreshAccessToken();
+
+    try {
+      return await _refreshTokenFuture;
+    } finally {
+      _isRefreshing = false;
+      _refreshTokenFuture = null;
+    }
+  }
+
+  Future<String?> _refreshAccessToken() async {
+    try {
+      final refreshToken = await PrefsHelper.getString(
+        AppConstants.refreshToken,
+      );
+
+      if (refreshToken.isEmpty) {
+        return null;
+      }
+
+      final response = await _dio.post(
+        ApiConstants.refreshTokenApi,
+        data: {'refreshToken': refreshToken},
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+
+      final responseData = response.data as Map<String, dynamic>?;
+      final success = responseData?['success'] as bool? ?? false;
+      final data = responseData?['data'] as Map<String, dynamic>?;
+
+      if (!success || data == null) {
+        return null;
+      }
+
+      final newAccessToken = data['accessToken'] as String? ?? '';
+      final newRefreshToken = data['refreshToken'] as String? ?? refreshToken;
+
+      if (newAccessToken.isEmpty) {
+        return null;
+      }
+
+      await PrefsHelper.setString(AppConstants.bearerToken, newAccessToken);
+
+      await PrefsHelper.setString(AppConstants.refreshToken, newRefreshToken);
+
+      return newAccessToken;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _clearSession() async {
+    await PrefsHelper.remove(AppConstants.bearerToken);
+    await PrefsHelper.remove(AppConstants.refreshToken);
+    await PrefsHelper.remove(AppConstants.userRole);
+    await PrefsHelper.remove(AppConstants.email);
+    await PrefsHelper.setBool(AppConstants.isLogged, false);
+  }
+
   Future<Response> get(
-      String path, {
-        Map<String, dynamic>? queryParameters,
-        Options? options,
-        CancelToken? cancelToken,
-      }) async {
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
     try {
       return await _dio.get(
         path,
@@ -92,22 +214,21 @@ class ApiService {
   }
 
   Future<Response> post(
-      String path, {
-        dynamic data,
-        Map<String, dynamic>? queryParameters,
-        Options? options,
-        CancelToken? cancelToken,
-        bool validateStatus = true,
-      }) async {
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    bool validateStatus = true,
+  }) async {
     try {
       return await _dio.post(
         path,
         data: data,
         queryParameters: queryParameters,
-        options: options ??
-            (validateStatus
-                ? null
-                : Options(validateStatus: (status) => true)),
+        options:
+            options ??
+            (validateStatus ? null : Options(validateStatus: (status) => true)),
         cancelToken: cancelToken,
       );
     } on DioException catch (e) {
@@ -118,12 +239,12 @@ class ApiService {
   }
 
   Future<Response> put(
-      String path, {
-        dynamic data,
-        Map<String, dynamic>? queryParameters,
-        Options? options,
-        CancelToken? cancelToken,
-      }) async {
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
     try {
       return await _dio.put(
         path,
@@ -140,12 +261,12 @@ class ApiService {
   }
 
   Future<Response> patch(
-      String path, {
-        dynamic data,
-        Map<String, dynamic>? queryParameters,
-        Options? options,
-        CancelToken? cancelToken,
-      }) async {
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
     try {
       return await _dio.patch(
         path,
@@ -162,12 +283,12 @@ class ApiService {
   }
 
   Future<Response> delete(
-      String path, {
-        dynamic data,
-        Map<String, dynamic>? queryParameters,
-        Options? options,
-        CancelToken? cancelToken,
-      }) async {
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
     try {
       return await _dio.delete(
         path,
@@ -200,7 +321,8 @@ class ApiService {
         String message = 'Server error';
         try {
           if (responseData is Map<String, dynamic>) {
-            message = responseData['message'] as String? ??
+            message =
+                responseData['message'] as String? ??
                 error.response?.statusMessage ??
                 'Server error';
           } else {
@@ -211,7 +333,12 @@ class ApiService {
         }
 
         return ServerException(
-            message, statusCode, error.message, responseData, error.stackTrace);
+          message,
+          statusCode,
+          error.message,
+          responseData,
+          error.stackTrace,
+        );
 
       case DioExceptionType.cancel:
         return UnknownException('Request cancelled');
@@ -220,14 +347,7 @@ class ApiService {
         return ServerException('Bad certificate', null, error.message);
 
       case DioExceptionType.unknown:
-        if (error.message?.contains('SocketException') ?? false) {
-          return NoInternetException(error.message);
-        }
-        return UnknownException(error.message);
+        return UnknownException(error.message ?? 'Unknown error occurred');
     }
-  }
-
-  void dispose() {
-    _dio.close();
   }
 }

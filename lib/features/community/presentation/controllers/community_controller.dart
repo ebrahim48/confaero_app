@@ -1,13 +1,14 @@
-
 import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../data/announcement_model.dart';
-// import 'announcement_model.dart';
+import '../../../../core/controllers/session_controller.dart';
+import '../../../announcements/data/models/announcement_model.dart';
+import '../../../announcements/domain/services/announcement_service.dart';
 
 class CommunityController extends GetxController {
+  final AnnouncementService _service = Get.find<AnnouncementService>();
+
   // Observable variables
   var announcements = <AnnouncementModel>[].obs;
   var isLoading = false.obs;
@@ -25,42 +26,11 @@ class CommunityController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
-      // TODO: Replace with actual API call
-      // final response = await ApiService.getAnnouncements();
+      // Read event ID from global session state
+      final String currentEventId = SessionController.to.eventId;
 
-      // Simulating API call
-      await Future.delayed(const Duration(seconds: 1));
-
-      announcements.value = [
-        AnnouncementModel(
-          icon: Icons.campaign,
-          iconColor: Colors.black,
-          backgroundColor: const Color(0xFFE8F5E9),
-          title: 'Last day registration Announceme...',
-          subtitle: 'Official update from event by',
-          organizer: '(Organizer)',
-          date: 'Last Announcement made 4, Dec 2025',
-        ),
-        AnnouncementModel(
-          icon: Icons.help_outline,
-          iconColor: Colors.black,
-          backgroundColor: const Color(0xFFFFF3E0),
-          title: 'Ask Organizers Anything',
-          subtitle: 'Have questions? Ask here',
-          date: 'Last Announcement made 4, Dec 2025',
-          secondaryIcon: Icons.push_pin,
-        ),
-        AnnouncementModel(
-          icon: Icons.campaign,
-          iconColor: Colors.black,
-          backgroundColor: const Color(0xFFE8F5E9),
-          title: 'Last day registration Announceme...',
-          subtitle: 'Official update from event by',
-          organizer: '(Organizer)',
-          date: 'Last Announcement made 4, Dec 2025',
-        ),
-      ];
-
+      final data = await _service.getAnnouncements(currentEventId);
+      announcements.value = data;
     } catch (e) {
       errorMessage.value = 'Failed to load announcements';
       Get.snackbar(
@@ -82,12 +52,7 @@ class CommunityController extends GetxController {
 
   // Handle announcement tap
   void onAnnouncementTap(BuildContext context) {
-
     context.pushNamed(AppRoutes.organizerAnnouncementsScreen);
-
-
-
-
   }
 
   // Add new announcement (if needed)

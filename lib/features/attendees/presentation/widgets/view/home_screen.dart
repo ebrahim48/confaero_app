@@ -5,8 +5,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
-
 import '../../../../../core/constants/app_colors.dart';
+import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/helpers/prefs_helper.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../controllers/home_controller.dart';
 import '../../widgets/about_event_card_widget.dart';
@@ -16,7 +17,7 @@ import '../sponsor_banner_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   final String eventId;
-  
+
   const HomeScreen({super.key, this.eventId = ''});
 
   @override
@@ -26,13 +27,23 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late final HomeController controller;
+  String _displayName = 'Hello!';
 
   @override
   void initState() {
     super.initState();
-    // Use widget.eventId directly
     final eventId = widget.eventId.isNotEmpty ? widget.eventId : '';
     controller = Get.put(HomeController(eventId: eventId));
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    final name = await PrefsHelper.getString(AppConstants.name);
+    if (mounted && name.isNotEmpty) {
+      setState(() {
+        _displayName = 'Hello $name!';
+      });
+    }
   }
 
   @override
@@ -48,8 +59,7 @@ class _HomeScreenState extends State<HomeScreen>
               bottom: false,
               child: Container(
                 width: double.infinity,
-                padding:
-                EdgeInsets.symmetric(horizontal: 23.w, vertical: 16.h),
+                padding: EdgeInsets.symmetric(horizontal: 23.w, vertical: 16.h),
                 color: AppColors.backgroundColor,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -60,11 +70,15 @@ class _HomeScreenState extends State<HomeScreen>
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: const Color(0xff252525), width: 0.7),
+                          color: const Color(0xff252525),
+                          width: 0.7,
+                        ),
                       ),
                       child: ClipOval(
-                        child: Image.asset('assets/images/profile.png',
-                            fit: BoxFit.cover),
+                        child: Image.asset(
+                          'assets/images/profile.png',
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     Expanded(
@@ -74,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             CustomText(
-                              text: 'Hello Albert!',
+                              text: _displayName,
                               fontsize: 16.sp,
                               fontWeight: FontWeight.w700,
                               color: AppColors.textColor424242,
@@ -94,14 +108,18 @@ class _HomeScreenState extends State<HomeScreen>
                     Row(
                       children: [
                         GestureDetector(
-                          onTap: () =>
-                              context.pushNamed(AppRoutes.notificationsScreen),
+                          onTap:
+                              () => context.pushNamed(
+                                AppRoutes.notificationsScreen,
+                              ),
                           child: SvgPicture.asset(
                             'assets/icons/notification.svg',
                             width: 24.w,
                             height: 24.h,
                             colorFilter: ColorFilter.mode(
-                                AppColors.textColor424242, BlendMode.srcIn),
+                              AppColors.textColor424242,
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                         SizedBox(width: 16.w),
@@ -112,7 +130,9 @@ class _HomeScreenState extends State<HomeScreen>
                             width: 24.w,
                             height: 24.h,
                             colorFilter: ColorFilter.mode(
-                                AppColors.textColor424242, BlendMode.srcIn),
+                              AppColors.textColor424242,
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                       ],
@@ -133,37 +153,42 @@ class _HomeScreenState extends State<HomeScreen>
               final home = controller.eventHome.value;
               return Padding(
                 padding: EdgeInsets.only(
-                    left: 12.w, bottom: 12.w, top: 12.w, right: 12.h),
+                  left: 12.w,
+                  bottom: 12.w,
+                  top: 12.w,
+                  right: 12.h,
+                ),
                 child: Stack(
                   children: [
                     // Banner image
                     ClipRRect(
-                      child: home != null &&
-                          home.banner.isNotEmpty
-                          ? Image.network(
-                        home.banner,
-                        width: double.infinity,
-                        height: 289.h,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (_, child, progress) {
-                          if (progress == null) return child;
-                          return _shimmerBanner();
-                        },
-                        errorBuilder: (_, __, ___) => Image.asset(
-                          'assets/images/homebanner.png',
-                          width: double.infinity,
-                          height: 289.h,
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                          : controller.isLoading.value
-                          ? _shimmerBanner()
-                          : Image.asset(
-                        'assets/images/homebanner.png',
-                        width: double.infinity,
-                        height: 289.h,
-                        fit: BoxFit.cover,
-                      ),
+                      child:
+                          home != null && home.banner.isNotEmpty
+                              ? Image.network(
+                                home.banner,
+                                width: double.infinity,
+                                height: 289.h,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (_, child, progress) {
+                                  if (progress == null) return child;
+                                  return _shimmerBanner();
+                                },
+                                errorBuilder:
+                                    (_, __, ___) => Image.asset(
+                                      'assets/images/homebanner.png',
+                                      width: double.infinity,
+                                      height: 289.h,
+                                      fit: BoxFit.cover,
+                                    ),
+                              )
+                              : controller.isLoading.value
+                              ? _shimmerBanner()
+                              : Image.asset(
+                                'assets/images/homebanner.png',
+                                width: double.infinity,
+                                height: 289.h,
+                                fit: BoxFit.cover,
+                              ),
                     ),
 
                     // Title overlay
@@ -171,20 +196,21 @@ class _HomeScreenState extends State<HomeScreen>
                       top: 16.h,
                       left: 16.w,
                       right: 16.w,
-                      child: controller.isLoading.value && home == null
-                          ? _shimmerText(200.w, 20.h)
-                          : Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          CustomText(
-                            text: home?.title ?? '',
-                            fontsize: 18.sp,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            textAlign: TextAlign.start,
-                          ),
-                        ],
-                      ),
+                      child:
+                          controller.isLoading.value && home == null
+                              ? _shimmerText(200.w, 20.h)
+                              : Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  CustomText(
+                                    text: home?.title ?? '',
+                                    fontsize: 18.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                    textAlign: TextAlign.start,
+                                  ),
+                                ],
+                              ),
                     ),
 
                     // Date + Venue overlay
@@ -192,53 +218,61 @@ class _HomeScreenState extends State<HomeScreen>
                       bottom: 65.h,
                       left: 16.w,
                       right: 16.w,
-                      child: controller.isLoading.value && home == null
-                          ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _shimmerText(120.w, 14.h),
-                          SizedBox(height: 4.h),
-                          _shimmerText(200.w, 14.h),
-                        ],
-                      )
-                          : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.calendar_today,
-                                  size: 12.sp, color: Colors.white),
-                              SizedBox(width: 4.w),
-                              CustomText(
-                                text: home?.formattedDateRange ?? '',
-                                fontsize: 11.sp,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.white,
+                      child:
+                          controller.isLoading.value && home == null
+                              ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _shimmerText(120.w, 14.h),
+                                  SizedBox(height: 4.h),
+                                  _shimmerText(200.w, 14.h),
+                                ],
+                              )
+                              : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_today,
+                                        size: 12.sp,
+                                        color: Colors.white,
+                                      ),
+                                      SizedBox(width: 4.w),
+                                      CustomText(
+                                        text: home?.formattedDateRange ?? '',
+                                        fontsize: 11.sp,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.white,
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 4.h),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.location_on,
+                                        size: 12.sp,
+                                        color: Colors.white,
+                                      ),
+                                      SizedBox(width: 4.w),
+                                      Expanded(
+                                        child: CustomText(
+                                          text:
+                                              home != null
+                                                  ? 'Venue: ${home.venue}'
+                                                  : '',
+                                          fontsize: 11.sp,
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.white,
+                                          textAlign: TextAlign.start,
+                                          maxline: 1,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          SizedBox(height: 4.h),
-                          Row(
-                            children: [
-                              Icon(Icons.location_on,
-                                  size: 12.sp, color: Colors.white),
-                              SizedBox(width: 4.w),
-                              Expanded(
-                                child: CustomText(
-                                  text: home != null
-                                      ? 'Venue: ${home.venue}'
-                                      : '',
-                                  fontsize: 11.sp,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white,
-                                  textAlign: TextAlign.start,
-                                  maxline: 1,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
                     ),
                   ],
                 ),
@@ -263,8 +297,7 @@ class _HomeScreenState extends State<HomeScreen>
                   return CategoryItem(
                     icon: category['icon']!,
                     label: category['label']!,
-                    onTap: () =>
-                        controller.navigateToCategory(context, index),
+                    onTap: () => controller.navigateToCategory(context, index),
                   );
                 },
               ),
@@ -285,20 +318,20 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                     SizedBox(width: 12.w),
                     GestureDetector(
-                      onTap: () =>
-                          context.pushNamed(AppRoutes.documentScreen),
+                      onTap: () => context.pushNamed(AppRoutes.documentScreen),
                       child: _buildTag('Documents'),
                     ),
                     SizedBox(width: 12.w),
                     GestureDetector(
-                      onTap: () =>
-                          context.pushNamed(AppRoutes.eventsPostersScreen),
+                      onTap:
+                          () =>
+                              context.pushNamed(AppRoutes.eventsPostersScreen),
                       child: _buildTag('Poster'),
                     ),
                     SizedBox(width: 12.w),
                     GestureDetector(
-                      onTap: () =>
-                          context.pushNamed(AppRoutes.jobOpeningsScreen),
+                      onTap:
+                          () => context.pushNamed(AppRoutes.jobOpeningsScreen),
                       child: _buildTag('Job'),
                     ),
                   ],
@@ -312,8 +345,7 @@ class _HomeScreenState extends State<HomeScreen>
             Obx(() {
               final home = controller.eventHome.value;
               return AboutEventCard(
-                description: home?.details ??
-                    'Loading event details...',
+                description: home?.details ?? 'Loading event details...',
                 onSeeMore: () {},
               );
             }),

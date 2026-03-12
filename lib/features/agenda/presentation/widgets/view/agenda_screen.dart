@@ -76,7 +76,10 @@ class AgendaScreen extends StatelessWidget {
 
                   // Filters Button
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 6.h,
+                    ),
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: const Color(0xffD2D2D2),
@@ -108,14 +111,16 @@ class AgendaScreen extends StatelessWidget {
               child: Obx(() {
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: controller.weekDays.map((day) {
-                    return DaySelector(
-                      day: day['day'],
-                      date: day['date'],
-                      isSelected: controller.selectedDay.value == day['date'],
-                      onTap: () => controller.changeDay(day['date']),
-                    );
-                  }).toList(),
+                  children:
+                      controller.weekDays.map((day) {
+                        return DaySelector(
+                          day: day['day'],
+                          date: day['date'],
+                          isSelected:
+                              controller.selectedDay.value == day['date'],
+                          onTap: () => controller.changeDay(day['date']),
+                        );
+                      }).toList(),
                 );
               }),
             ),
@@ -170,31 +175,35 @@ class AgendaScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   // Time
-                                  TimelineWidget(
-                                    time: session['time'],
-                                  ),
+                                  TimelineWidget(time: session.startTime),
                                   SizedBox(width: 10.w),
 
                                   // Session Card with all data
                                   Expanded(
                                     child: SessionCard(
-                                      type: session['type'] ?? '',
-                                      title: session['title'] ?? '',
-                                      duration: session['duration'] ?? '',
-                                      attendees: session['attendees'] ?? 0,
-                                      favorites: session['favorites'] ?? 0,
-                                      isBreak: session['isBreak'] ?? false,
-                                      location: session['location'],
-                                      onFavorite: () => controller.toggleFavorite(index),
+                                      type: 'SESSION',
+                                      title: session.title,
+                                      duration:
+                                          '${session.startTime} - ${session.endTime}',
+                                      attendees: 0, // Placeholder
+                                      favorites: session.likesCount,
+                                      isBreak: false, // Placeholder
+                                      location: session.location,
+                                      onFavorite:
+                                          () =>
+                                              controller.toggleFavorite(index),
                                       onTap: () {
-                                        context.pushNamed(AppRoutes.agendaDetailsScreen);
-                                        print('Tapped on: ${session['title']}');
+                                        context.pushNamed(
+                                          AppRoutes.agendaDetailsScreen,
+                                        );
+                                        print('Tapped on: ${session.title}');
                                       },
                                     ),
                                   ),
                                 ],
                               ),
-                              if (index < sessions.length - 1) SizedBox(height: 18.h),
+                              if (index < sessions.length - 1)
+                                SizedBox(height: 18.h),
                             ],
                           ),
                         ),

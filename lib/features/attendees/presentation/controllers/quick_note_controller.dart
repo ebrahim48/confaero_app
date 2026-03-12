@@ -1,11 +1,18 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/controllers/session_controller.dart';
+import '../../../notes/domain/services/note_service.dart';
+import '../../../../core/helpers/snackbar_helper.dart';
 
 class QuickNotesController extends GetxController {
+  final NoteService _noteService = Get.find<NoteService>();
+
   final RxList<Map<String, dynamic>> notes = <Map<String, dynamic>>[].obs;
 
   final RxBool isLoading = false.obs;
+
+  // Read event ID from global session state
+  String get currentEventId => SessionController.to.eventId;
 
   @override
   void onInit() {
@@ -14,99 +21,93 @@ class QuickNotesController extends GetxController {
   }
 
   //  notes
-  void loadNotes() {
+  Future<void> loadNotes() async {
     isLoading.value = true;
-
-    // Dummy data
-    notes.value = [
-      {
-        'id': '1',
-        'title': 'Felt strong today! Increased my s...',
-        'content': 'Struggled with the last set of lunges, might reduce reps next time. Struggled with the last set of lunges, might reduce reps next time. Struggled with the last set of lunges, might reduce reps next time. Struggled with the last set of lunges, might reduce reps next time.',
-        'date': DateTime.now(),
-      },
-      {
-        'id': '2',
-        'title': 'Upper body felt great, but I need...',
-        'content': 'Upper body workout was intense today. Need to work on shoulder mobility.',
-        'date': DateTime.now().subtract(const Duration(days: 1)),
-      },
-      {
-        'id': '3',
-        'title': 'Core stability getting better ever...',
-        'content': 'Core exercises are showing great progress. Plank time increased.',
-        'date': DateTime.now().subtract(const Duration(days: 2)),
-      },
-      {
-        'id': '4',
-        'title': 'Recovery daywith yoga — helped...',
-        'content': 'Yoga session was very relaxing. Helped with muscle recovery.',
-        'date': DateTime.now().subtract(const Duration(days: 3)),
-      },
-      {
-        'id': '5',
-        'title': 'Did the HIIT version — super swe...',
-        'content': 'HIIT workout was challenging but effective. Great cardio session.',
-        'date': DateTime.now().subtract(const Duration(days: 4)),
-      },
-    ];
-
-    isLoading.value = false;
+    try {
+      final data = await _noteService.getNotes();
+      notes.value =
+          data.map((n) {
+            final content = n.content.isNotEmpty ? n.content : 'Empty note';
+            return {
+              'id': n.id,
+              'title':
+                  content.length > 35
+                      ? '${content.substring(0, 35)}...'
+                      : content,
+              'content': content,
+              'date': DateTime.tryParse(n.createdAt) ?? DateTime.now(),
+            };
+          }).toList();
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to load notes');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Add new note
-  void addNote(String content) {
+  Future<void> addNote(String content) async {
     if (content.trim().isEmpty) return;
 
-    final title = content.length > 35
-        ? '${content.substring(0, 35)}...'
-        : content;
+    try {
+      // Optimistic UI update
+      final title =
+          content.length > 35 ? '${content.substring(0, 35)}...' : content;
+      final tempId = DateTime.now().millisecondsSinceEpoch.toString();
 
-    final newNote = {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
-      'title': title,
-      'content': content,
-      'date': DateTime.now(),
-    };
+      final newNote = {
+        'id': tempId,
+        'title': title,
+        'content': content,
+        'date': DateTime.now(),
+      };
 
-    notes.insert(0, newNote);
+      notes.insert(0, newNote);
 
+      await _noteService.createOrUpdateNote(
+        eventId: currentEventId,
+        content: content,
+      );
 
-    Get.snackbar(
-      'Success',
-      'Note saved successfully!',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xff4DB6AC),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
-    );
+      // Reload from server to get actual ID
+      await loadNotes();
+
+      SnackbarHelper.showSuccess('Success', 'Note saved successfully!');
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to save note');
+      // Revert if failed
+      await loadNotes();
+    }
   }
 
   // Update existing note
-  void updateNote(String id, String content) {
+  Future<void> updateNote(String id, String content) async {
     final index = notes.indexWhere((note) => note['id'] == id);
     if (index != -1) {
-      final title = content.length > 35
-          ? '${content.substring(0, 35)}...'
-          : content;
+      try {
+        final title =
+            content.length > 35 ? '${content.substring(0, 35)}...' : content;
 
-      notes[index] = {
-        'id': id,
-        'title': title,
-        'content': content,
-        'date': notes[index]['date'],
-      };
+        // Optimistic update
+        notes[index] = {
+          'id': id,
+          'title': title,
+          'content': content,
+          'date': notes[index]['date'],
+        };
+        notes.refresh();
+        Get.back();
 
-      Get.back();
+        await _noteService.createOrUpdateNote(
+          eventId: currentEventId,
+          content: content,
+        );
 
-      Get.snackbar(
-        'Success',
-        'Note updated successfully!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xff4DB6AC),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
+        SnackbarHelper.showSuccess('Success', 'Note updated successfully!');
+      } catch (e) {
+        SnackbarHelper.showError('Error', 'Failed to update note');
+        await loadNotes(); // Revert on failure
+      }
     }
   }
 
@@ -142,8 +143,18 @@ class QuickNotesController extends GetxController {
 
   String _getMonthName(int month) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return months[month - 1];
   }

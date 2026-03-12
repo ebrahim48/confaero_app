@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../domain/services/message_service.dart';
 
 class ChatMessage {
   final String text;
@@ -18,75 +19,83 @@ class ChatMessage {
 }
 
 class MessageChatController extends GetxController {
+  final MessageService _messageService = Get.find<MessageService>();
+
   final messageController = TextEditingController();
   final scrollController = ScrollController();
 
   // Observable for button state
   final RxString messageText = ''.obs;
 
-  final messages = <ChatMessage>[
-    ChatMessage(
-      text: "Hi, I'm looking to get my backyard pool cleaned. Do you offer that service?",
-      isMe: false,
-      time: "9:00 PM",
-      date: "Yesterday, 9:00 PM",
-    ),
-    ChatMessage(
-      text: "Yes, we do! Can you tell me the size and condition of your pool?",
-      isMe: true,
-      time: "9:00 PM",
-      date: "Today, 9:00 PM",
-    ),
-    ChatMessage(
-      text: "It's medium-sized, 15×30 feet. Haven't cleaned it in months, so there's algae and leaves.",
-      isMe: false,
-      time: "9:01 PM",
-      date: "Today, 9:00 PM",
-    ),
-    ChatMessage(
-      text: "Got it. We recommend a thorough cleaning. When would you like us to come by?",
-      isMe: true,
-      time: "9:02 PM",
-      date: "Today, 9:00 PM",
-    ),
-    ChatMessage(
-      text: "Is Saturday morning possible?",
-      isMe: false,
-      time: "9:03 PM",
-      date: "Today, 9:00 PM",
-    ),
-    ChatMessage(
-      text: "Let me check... Yes, we have a spot at 10 AM. Does that work?",
-      isMe: true,
-      time: "8:39 AM",
-      date: "Today, 9:00 PM",
-      showTime: true,
-    ),
-  ].obs;
+  final messages = <ChatMessage>[].obs;
+
+  // Example conversational constants
+  final String currentEventId = 'default_event_id';
+  final String currentReceiverId = 'default_receiver_id';
+  final String currentConversationId = 'default_conversation_id';
+
+  Future<void> loadMessages() async {
+    try {
+      final messageData = await _messageService.getMessages(
+        currentConversationId,
+        currentEventId,
+      );
+      messages.value =
+          messageData
+              .map(
+                (m) => ChatMessage(
+                  text: m.content,
+                  isMe:
+                      m.isMe, // Assuming MessageModel has senderId to evaluate
+                  time: _formatMessageTime(m.createdAt),
+                  date: _formatMessageDate(m.createdAt),
+                ),
+              )
+              .toList();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scrollToBottom();
+      });
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load messages',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  String _formatMessageTime(DateTime dt) {
+    final hour = dt.hour > 12 ? dt.hour - 12 : dt.hour;
+    final minute = dt.minute.toString().padLeft(2, '0');
+    final p = dt.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute $p';
+  }
+
+  String _formatMessageDate(DateTime dt) {
+    return 'Today'; // Minimal generic format for demo
+  }
 
   @override
   void onInit() {
     super.onInit();
-
-    // Listen to text changes
     messageController.addListener(() {
       messageText.value = messageController.text;
     });
 
-    // Auto scroll to bottom when screen loads
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      scrollToBottom();
-    });
+    // Load initial messages from server
+    loadMessages();
   }
 
-  void sendMessage() {
-    if (messageController.text.trim().isEmpty) return;
+  Future<void> sendMessage() async {
+    final text = messageController.text.trim();
+    if (text.isEmpty) return;
 
     final newMessage = ChatMessage(
-      text: messageController.text.trim(),
+      text: text,
       isMe: true,
       time: _getCurrentTime(),
-      date: "Today, 9:00 PM",
+      date: "Today",
       showTime: true,
     );
 
@@ -94,10 +103,24 @@ class MessageChatController extends GetxController {
     messageController.clear();
     messageText.value = '';
 
-    // Scroll to bottom after sending
     Future.delayed(const Duration(milliseconds: 100), () {
       scrollToBottom();
     });
+
+    try {
+      await _messageService.sendMessage(
+        currentEventId,
+        receiverId: currentReceiverId,
+        content: text,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to send message over network',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      // Could visually indicate unsent text here
+    }
   }
 
   void scrollToBottom() {

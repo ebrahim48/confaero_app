@@ -8,22 +8,21 @@ import '../event_spekar__contact_info.dart';
 import '../event_spekar_action_button.dart';
 import '../event_spekar_profile_header.dart';
 
-
 class EventSpekarDetailsScreen extends StatelessWidget {
   const EventSpekarDetailsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final EventSpekarDetailsController controller = Get.put(EventSpekarDetailsController());
+    final EventSpekarDetailsController controller = Get.put(
+      EventSpekarDetailsController(),
+    );
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         children: [
           // App Bar
-          const CustomAppBarWidget(
-            title: 'Mike Sample',
-          ),
+          const CustomAppBarWidget(title: 'Mike Sample'),
 
           // Content
           Expanded(
@@ -81,10 +80,17 @@ class EventSpekarDetailsScreen extends StatelessWidget {
                             SizedBox(height: 32.h),
 
                             // Request to Connect Button
-                            CustomButton(
-                              title: 'Request to Connect',
-                              onpress: () => controller.requestToConnect(),
-                            ),
+                            controller.isRequesting.value
+                                ? const Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                                : CustomButton(
+                                  title: 'Request to Connect',
+                                  onpress:
+                                      () => controller.requestToConnect(
+                                        'event_id_placeholder',
+                                      ),
+                                ),
                             SizedBox(height: 32.h),
                           ],
                         ),

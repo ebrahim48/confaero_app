@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/services/job_service.dart';
 
 // Job Details Model
 class JobDetails {
@@ -44,9 +45,46 @@ class JobDetails {
     required this.specialization,
     required this.facilities,
   });
+
+  factory JobDetails.fromJson(Map<String, dynamic> json) {
+    return JobDetails(
+      id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
+      companyName:
+          json['companyName']?.toString() ?? json['company']?.toString() ?? '',
+      position: json['position']?.toString() ?? json['title']?.toString() ?? '',
+      jobType: json['jobType']?.toString() ?? 'Full Time',
+      location: json['location']?.toString() ?? '',
+      lastDate:
+          json['lastDate']?.toString() ?? json['deadline']?.toString() ?? '',
+      salary: json['salary']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      requirements:
+          (json['requirements'] as List?)?.map((e) => e.toString()).toList() ??
+          [],
+      locationAddress:
+          json['locationAddress']?.toString() ??
+          json['address']?.toString() ??
+          '',
+      mapImage: json['mapImage']?.toString() ?? 'assets/images/demomap.png',
+      positionInfo:
+          json['positionInfo']?.toString() ??
+          json['position']?.toString() ??
+          '',
+      qualification: json['qualification']?.toString() ?? '',
+      experience: json['experience']?.toString() ?? '',
+      jobTypeInfo:
+          json['jobTypeInfo']?.toString() ?? json['jobType']?.toString() ?? '',
+      specialization: json['specialization']?.toString() ?? '',
+      facilities:
+          (json['facilities'] as List?)?.map((e) => e.toString()).toList() ??
+          [],
+    );
+  }
 }
 
 class JobDetailsController extends GetxController {
+  final JobService _jobService = Get.find<JobService>();
+
   // Job details data
   final jobDetails = Rx<JobDetails?>(null);
 
@@ -56,50 +94,30 @@ class JobDetailsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadJobDetails();
+    // Get job ID from route arguments
+    final args = Get.arguments;
+    if (args != null && args is Map<String, dynamic> && args['jobId'] != null) {
+      loadJobDetails(args['jobId'] as String);
+    }
   }
 
-  // Load job details (static data)
-  void loadJobDetails() {
+  // Load job details from API
+  Future<void> loadJobDetails(String jobId) async {
     isLoading.value = true;
-
-    // Static job details
-    jobDetails.value = JobDetails(
-      id: '1',
-      companyName: 'Betopia Group',
-      position: 'UX/UI Designer',
-      jobType: 'Full Time',
-      location: 'Job Address, Dhaka , bangladesh',
-      lastDate: '12 Feb, 2026',
-      salary: '\$20k/Month',
-      description:
-      'Sed ut perspiciatis unde omnis iste natus error sit voluptatem '
-          'accusantium doloremque laudantium, totam rem aperiam, '
-          'eaque ipsa quae ab illo inventore veritatis et quasi architecto '
-          'beatae vitae dicta sunt explicabo. Nemo enim ipsam volatem '
-          'doloremque laudantium...',
-      requirements: [
-        'Sed ut perspiciatis unde omnis iste natus error sit.',
-        'Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur & adipisci velit.',
-        'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.',
-        'Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur',
-      ],
-      locationAddress: 'Overlook Avenue, Belleville, NJ, USA',
-      mapImage: 'assets/images/demomap.png',
-      positionInfo: 'Senior Designer',
-      qualification: 'Bachelor\'s Degree',
-      experience: '3 Years',
-      jobTypeInfo: 'Full-Time',
-      specialization: 'Design',
-      facilities: [
-        'Medical',
-        'Dental',
-        'Technical Certification',
-        'Meal Allowance',
-      ],
-    );
-
-    isLoading.value = false;
+    try {
+      final data = await _jobService.getJobDetails(jobId);
+      if (data != null) {
+        jobDetails.value = JobDetails.fromJson(data);
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load job details',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Apply for job
@@ -115,8 +133,5 @@ class JobDetailsController extends GetxController {
       borderRadius: 8,
       icon: const Icon(Icons.check_circle, color: Colors.white),
     );
-
-    // TODO: Backend e application pathano
-    // await api.applyJob(jobId);
   }
 }

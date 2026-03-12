@@ -1,4 +1,3 @@
-import 'package:confaero_app/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../presentations/widgets/custom_text.dart';
@@ -50,22 +49,10 @@ class SpeakerSessionCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border(
-                left: BorderSide(
-                  color: const Color(0xff5BB8AE),
-                  width: 5,
-                ),
-                top: BorderSide(
-                  color: const Color(0xffE0E0E0),
-                  width: 0.5,
-                ),
-                right: BorderSide(
-                  color: const Color(0xffE0E0E0),
-                  width: 0.5,
-                ),
-                bottom: BorderSide(
-                  color: const Color(0xffE0E0E0),
-                  width: 0.5,
-                ),
+                left: BorderSide(color: const Color(0xff5BB8AE), width: 5),
+                top: BorderSide(color: const Color(0xffE0E0E0), width: 0.5),
+                right: BorderSide(color: const Color(0xffE0E0E0), width: 0.5),
+                bottom: BorderSide(color: const Color(0xffE0E0E0), width: 0.5),
               ),
             ),
             child: Padding(
@@ -132,9 +119,10 @@ class SpeakerSessionCard extends StatelessWidget {
                         child: Icon(
                           isFavorited ? Icons.favorite : Icons.favorite_border,
                           size: 16.sp,
-                          color: isFavorited
-                              ? const Color(0xffE53935)
-                              : const Color(0xff757575),
+                          color:
+                              isFavorited
+                                  ? const Color(0xffE53935)
+                                  : const Color(0xff757575),
                         ),
                       ),
                       SizedBox(width: 4.w),

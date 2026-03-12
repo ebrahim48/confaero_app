@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/config/approutes/app_routes.dart';
+import '../../../../../core/controllers/session_controller.dart';
 import '../../../../../core/services/api_service.dart';
 import '../../../../../core/services/connectivity_service.dart';
 import '../../data/models/event_model.dart';
@@ -78,7 +79,7 @@ class EventsController extends GetxController {
 
       // Fetch both APIs in parallel
       final results = await Future.wait([
-        _repository.getMyEvents(),         // registered
+        _repository.getMyEvents(), // registered
         _repository.getAllUpcomingEvents(), // all upcoming
       ]);
 
@@ -94,9 +95,8 @@ class EventsController extends GetxController {
         ..addAll(myEvents.map((m) => m.event.id));
 
       // Upcoming = upcoming events that are NOT already registered
-      upcomingMyEvents.value = allUpcoming
-          .where((e) => !_myEventIds.contains(e.id))
-          .toList();
+      upcomingMyEvents.value =
+          allUpcoming.where((e) => !_myEventIds.contains(e.id)).toList();
     } catch (e) {
       myEventsError.value = _cleanError(e.toString());
     } finally {
@@ -127,27 +127,33 @@ class EventsController extends GetxController {
   List<MyEventModel> get filteredActiveEvents {
     if (searchQuery.isEmpty) return activeMyEvents;
     return activeMyEvents
-        .where((m) =>
-    m.event.title.toLowerCase().contains(searchQuery.value) ||
-        m.event.location.toLowerCase().contains(searchQuery.value))
+        .where(
+          (m) =>
+              m.event.title.toLowerCase().contains(searchQuery.value) ||
+              m.event.location.toLowerCase().contains(searchQuery.value),
+        )
         .toList();
   }
 
   List<EventModel> get filteredUpcomingEvents {
     if (searchQuery.isEmpty) return upcomingMyEvents;
     return upcomingMyEvents
-        .where((e) =>
-    e.title.toLowerCase().contains(searchQuery.value) ||
-        e.location.toLowerCase().contains(searchQuery.value))
+        .where(
+          (e) =>
+              e.title.toLowerCase().contains(searchQuery.value) ||
+              e.location.toLowerCase().contains(searchQuery.value),
+        )
         .toList();
   }
 
   List<EventModel> get filteredExploreEvents {
     if (searchQuery.isEmpty) return exploreEvents;
     return exploreEvents
-        .where((e) =>
-    e.title.toLowerCase().contains(searchQuery.value) ||
-        e.location.toLowerCase().contains(searchQuery.value))
+        .where(
+          (e) =>
+              e.title.toLowerCase().contains(searchQuery.value) ||
+              e.location.toLowerCase().contains(searchQuery.value),
+        )
         .toList();
   }
 
@@ -158,10 +164,13 @@ class EventsController extends GetxController {
   }
 
   void openEventDetails(BuildContext context, String eventId) {
+    // Persist the selected event so all controllers can use it.
+    SessionController.to.setEvent(eventId);
     context.pushNamed(AppRoutes.eventsDetailsScreen, extra: eventId);
   }
 
   void registerEvent(BuildContext context, String eventId) {
+    SessionController.to.setEvent(eventId);
     context.pushNamed(AppRoutes.eventsDetailsScreen, extra: eventId);
   }
 

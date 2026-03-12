@@ -8,22 +8,21 @@ import '../attendee_action_button.dart';
 import '../attendee_contact_info.dart';
 import '../attendee_profile_header.dart';
 
-
 class AttendeeDetailsScreen extends StatelessWidget {
   const AttendeeDetailsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final AttendeeDetailsController controller = Get.put(AttendeeDetailsController());
+    final AttendeeDetailsController controller = Get.put(
+      AttendeeDetailsController(),
+    );
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         children: [
           // App Bar
-          const CustomAppBarWidget(
-            title: 'Mike Sample',
-          ),
+          const CustomAppBarWidget(title: 'Mike Sample'),
 
           // Content
           Expanded(
@@ -81,10 +80,17 @@ class AttendeeDetailsScreen extends StatelessWidget {
                             SizedBox(height: 32.h),
 
                             // Request to Connect Button
-                            CustomButton(
-                              title: 'Request to Connect',
-                              onpress: () => controller.requestToConnect(),
-                            ),
+                            controller.isRequesting.value
+                                ? const Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                                : CustomButton(
+                                  title: 'Request to Connect',
+                                  onpress:
+                                      () => controller.requestToConnect(
+                                        'event_id_placeholder',
+                                      ),
+                                ),
                             SizedBox(height: 32.h),
                           ],
                         ),

@@ -15,13 +15,10 @@ class DocumentScreen extends StatelessWidget {
     final DocumentsController controller = Get.put(DocumentsController());
 
     return Scaffold(
-
       body: Column(
         children: [
           // App Bar
-          const CustomAppBarWidget(
-            title: 'Documents',
-          ),
+          const CustomAppBarWidget(title: 'Documents'),
 
           // Search Field
           Padding(
@@ -98,11 +95,11 @@ class DocumentScreen extends StatelessWidget {
                     return Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12.w),
                       child: DocumentItem(
-                        title: document['title'],
-                        subtitle: document['subtitle'],
-                        fileSize: document['fileSize'],
+                        title: document.name,
+                        subtitle: document.createdAt,
+                        fileSize: 'N/A', // Or size calculation if available
                         iconPath: 'assets/images/pdf1.png',
-                        showArrow: document['showArrow'],
+                        showArrow: true,
                         onTap: () => controller.openDocument(document),
                       ),
                     );

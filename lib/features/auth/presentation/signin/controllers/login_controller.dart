@@ -40,7 +40,6 @@ class SignInController extends GetxController {
     }
   }
 
-
   void clearFields() {
     emailController.clear();
     passwordController.clear();
@@ -89,17 +88,24 @@ class SignInController extends GetxController {
 
       if (success && data != null) {
         _logger.i('Login successful for: ${emailController.text.trim()}');
-        
+
         // Save tokens to local storage
         final accessToken = data['accessToken'] as String? ?? '';
         final refreshToken = data['refreshToken'] as String? ?? '';
         final activeRole = data['activeRole'] as String? ?? 'ATTENDEE';
 
-        _logger.d('Tokens received - AccessToken: ${accessToken.substring(0, 20)}...');
+        _logger.d(
+          'Tokens received - AccessToken: ${accessToken.substring(0, 20)}...',
+        );
 
         await PrefsHelper.setString(AppConstants.bearerToken, accessToken);
         await PrefsHelper.setString(AppConstants.refreshToken, refreshToken);
         await PrefsHelper.setString(AppConstants.userRole, activeRole);
+        await PrefsHelper.setBool(AppConstants.isLogged, true);
+        await PrefsHelper.setString(
+          AppConstants.email,
+          emailController.text.trim(),
+        );
 
         await Future.delayed(const Duration(milliseconds: 100));
         if (!context.mounted) return;
@@ -108,15 +114,12 @@ class SignInController extends GetxController {
       } else {
         final errorMessage = response['message'] as String? ?? 'Login failed';
         _logger.w('Login failed: $errorMessage');
-        ToastMessageHelper.showToastMessage(
-          errorMessage,
-          title: '',
-        );
+        ToastMessageHelper.showToastMessage(errorMessage, title: '');
       }
     } on ServerException catch (e) {
       isLoading.value = false;
       _logger.e('ServerException during login', error: e);
-      
+
       String errorMessage = e.message;
 
       // Handle specific error cases
@@ -129,10 +132,7 @@ class SignInController extends GetxController {
         errorMessage = "Please verify your email before signing in.";
       }
 
-      ToastMessageHelper.showToastMessage(
-        errorMessage,
-        title: '',
-      );
+      ToastMessageHelper.showToastMessage(errorMessage, title: '');
     } catch (e) {
       isLoading.value = false;
       _logger.e('Exception during login', error: e);
@@ -148,17 +148,15 @@ class SignInController extends GetxController {
           errorMessage.toLowerCase().contains('verify your email')) {
         errorMessage = "Please verify your email before signing in.";
       } else if (errorMessage.toLowerCase().contains('no internet')) {
-        errorMessage = "No internet connection. Please check your network and try again.";
+        errorMessage =
+            "No internet connection. Please check your network and try again.";
       } else if (errorMessage.toLowerCase().contains('timeout')) {
         errorMessage = "Request timed out. Please try again.";
       } else {
         errorMessage = "Login failed. Please try again.";
       }
 
-      ToastMessageHelper.showToastMessage(
-        errorMessage,
-        title: '',
-      );
+      ToastMessageHelper.showToastMessage(errorMessage, title: '');
     }
   }
 
@@ -167,5 +165,4 @@ class SignInController extends GetxController {
     await Future.delayed(const Duration(seconds: 2));
     isLoading.value = false;
   }
-
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
@@ -58,91 +57,91 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        title: Row(
-          children: [
-            Icon(
-              Icons.check_circle,
-              color: Colors.green,
-              size: 28.sp,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.r),
             ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: CustomText(
-                text: 'Scanned Successfully',
-                fontsize: 18.sp,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textColor424242,
+            title: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 28.sp),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: CustomText(
+                    text: 'Scanned Successfully',
+                    fontsize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textColor424242,
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomText(
+                  text: 'Attendee Information:',
+                  fontsize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textColor424242,
+                ),
+                SizedBox(height: 8.h),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffF5F5F5),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: CustomText(
+                    text: data,
+                    fontsize: 12.sp,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textColor7E7F7E,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  setState(() {
+                    isScanned = false;
+                  });
+                },
+                child: CustomText(
+                  text: 'Scan Again',
+                  fontsize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xff32A69A),
+                ),
               ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CustomText(
-              text: 'Attendee Information:',
-              fontsize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textColor424242,
-            ),
-            SizedBox(height: 8.h),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: const Color(0xffF5F5F5),
-                borderRadius: BorderRadius.circular(8.r),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(data);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xff32A69A),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20.w,
+                    vertical: 12.h,
+                  ),
+                ),
+                child: CustomText(
+                  text: 'Done',
+                  fontsize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
-              child: CustomText(
-                text: data,
-                fontsize: 12.sp,
-                fontWeight: FontWeight.w400,
-                color: AppColors.textColor7E7F7E,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              setState(() {
-                isScanned = false;
-              });
-            },
-            child: CustomText(
-              text: 'Scan Again',
-              fontsize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xff32A69A),
-            ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop(data);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xff32A69A),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-            ),
-            child: CustomText(
-              text: 'Done',
-              fontsize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -153,16 +152,10 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       body: Stack(
         children: [
           // Camera Preview
-          MobileScanner(
-            controller: cameraController,
-            onDetect: _onDetect,
-          ),
+          MobileScanner(controller: cameraController, onDetect: _onDetect),
 
           // Overlay with scanning area
-          CustomPaint(
-            painter: ScannerOverlayPainter(),
-            child: Container(),
-          ),
+          CustomPaint(painter: ScannerOverlayPainter(), child: Container()),
 
           // Top Bar
           SafeArea(
@@ -238,10 +231,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             right: 0,
             child: Center(
               child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 24.w,
-                  vertical: 12.h,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(24.r),
@@ -275,32 +265,35 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 class ScannerOverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black.withOpacity(0.6)
-      ..style = PaintingStyle.fill;
+    final paint =
+        Paint()
+          ..color = Colors.black.withOpacity(0.6)
+          ..style = PaintingStyle.fill;
 
     final scanAreaSize = size.width * 0.7;
     final left = (size.width - scanAreaSize) / 2;
     final top = (size.height - scanAreaSize) / 2;
 
     // Draw the overlay with transparent center
-    final path = Path()
-      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..addRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(left, top, scanAreaSize, scanAreaSize),
-          const Radius.circular(16),
-        ),
-      )
-      ..fillType = PathFillType.evenOdd;
+    final path =
+        Path()
+          ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
+          ..addRRect(
+            RRect.fromRectAndRadius(
+              Rect.fromLTWH(left, top, scanAreaSize, scanAreaSize),
+              const Radius.circular(16),
+            ),
+          )
+          ..fillType = PathFillType.evenOdd;
 
     canvas.drawPath(path, paint);
 
     // Draw corner borders
-    final borderPaint = Paint()
-      ..color = const Color(0xff32A69A)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4;
+    final borderPaint =
+        Paint()
+          ..color = const Color(0xff32A69A)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4;
 
     final cornerLength = 30.0;
 

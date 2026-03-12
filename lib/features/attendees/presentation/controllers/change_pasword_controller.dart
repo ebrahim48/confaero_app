@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../auth/data/repositories/auth_repository.dart';
 
 class ChangePasswordController extends GetxController {
   // Text Controllers
@@ -24,7 +25,10 @@ class ChangePasswordController extends GetxController {
     isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value;
   }
 
-  void changePassword() {
+  final RxBool isLoading = false.obs;
+  final AuthRepository _authRepository = Get.find<AuthRepository>();
+
+  Future<void> changePassword() async {
     // Validation
     if (currentPasswordController.text.isEmpty) {
       Get.snackbar('Error', 'Please enter current password');
@@ -47,7 +51,9 @@ class ChangePasswordController extends GetxController {
     }
 
     // Password validation regex
-    final passwordRegex = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$');
+    final passwordRegex = RegExp(
+      r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$',
+    );
     if (!passwordRegex.hasMatch(newPasswordController.text)) {
       Get.snackbar(
         'Error',
@@ -56,12 +62,29 @@ class ChangePasswordController extends GetxController {
       return;
     }
 
-    // API call to change password
-    print('Current: ${currentPasswordController.text}');
-    print('New: ${newPasswordController.text}');
+    try {
+      isLoading.value = true;
+      final response = await _authRepository.changePassword(
+        currentPassword: currentPasswordController.text,
+        newPassword: newPasswordController.text,
+        confirmPassword: confirmPasswordController.text,
+      );
 
-    Get.snackbar('Success', 'Password changed successfully!');
-    Get.back();
+      final success = response['success'] as bool? ?? false;
+      if (success) {
+        Get.snackbar('Success', 'Password changed successfully!');
+        Get.back();
+      } else {
+        Get.snackbar(
+          'Error',
+          response['message'] ?? 'Failed to change password',
+        );
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'An error occurred while changing password');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   @override

@@ -19,9 +19,7 @@ class DeleteAccountScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          CustomAppBarWidget(
-            title: 'Delete Account',
-          ),
+          CustomAppBarWidget(title: 'Delete Account'),
           Expanded(
             child: Padding(
               padding: EdgeInsets.all(24.w),
@@ -30,7 +28,8 @@ class DeleteAccountScreen extends StatelessWidget {
                 children: [
                   // Info Text
                   CustomText(
-                    text: 'Please enter your password to confirm account removal',
+                    text:
+                        'Please enter your password to confirm account removal',
                     fontsize: 12.sp,
                     fontWeight: FontWeight.w400,
                     color: const Color(0xFF666666),
@@ -40,19 +39,21 @@ class DeleteAccountScreen extends StatelessWidget {
                   SizedBox(height: 16.h),
 
                   // Current Password
-                  Obx(() => PasswordFieldWidget(
-                    hint: 'Current password',
-                    controller: controller.passwordController,
-                    isVisible: controller.isPasswordVisible.value,
-                    onToggleVisibility: controller.togglePasswordVisibility,
-                  )),
+                  Obx(
+                    () => PasswordFieldWidget(
+                      hint: 'Current password',
+                      controller: controller.passwordController,
+                      isVisible: controller.isPasswordVisible.value,
+                      onToggleVisibility: controller.togglePasswordVisibility,
+                    ),
+                  ),
 
                   SizedBox(height: 80.sp),
 
                   // Warning Text
                   CustomText(
                     text:
-                    'This will permanently delete your account and all personal data from our system. This action cannot be undone.',
+                        'This will permanently delete your account and all personal data from our system. This action cannot be undone.',
                     fontsize: 12.sp,
                     fontWeight: FontWeight.w400,
                     color: const Color(0xFF666666),
@@ -61,18 +62,19 @@ class DeleteAccountScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 24.h),
 
-
-
-                  CustomButton(
-                      title: 'Delete Account',
-                      onpress: () {
-
-                      },
-                    color: AppColors.redColorAC1F1F,
-                    borderColor: AppColors.redColorAC1F1F,
+                  Obx(
+                    () =>
+                        controller.isLoading.value
+                            ? const Center(child: CircularProgressIndicator())
+                            : CustomButton(
+                              title: 'Delete Account',
+                              onpress: controller.showDeleteConfirmationDialog,
+                              color: AppColors.redColorAC1F1F,
+                              borderColor: AppColors.redColorAC1F1F,
+                            ),
                   ),
-                  // Delete Account Button
 
+                  // Delete Account Button
                 ],
               ),
             ),

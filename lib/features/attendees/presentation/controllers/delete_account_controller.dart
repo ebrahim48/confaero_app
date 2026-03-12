@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../auth/data/repositories/auth_repository.dart';
 
 class DeleteAccountController extends GetxController {
   // Text Controller
@@ -25,10 +26,7 @@ class DeleteAccountController extends GetxController {
           'Are you sure you want to delete your account? This action cannot be undone.',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
           TextButton(
             onPressed: () {
               Get.back();
@@ -44,13 +42,31 @@ class DeleteAccountController extends GetxController {
     );
   }
 
-  void deleteAccount() {
-    // API call to delete account
-    print('Deleting account with password: ${passwordController.text}');
+  final AuthRepository _authRepository = Get.find<AuthRepository>();
 
-    Get.snackbar('Success', 'Account deleted successfully');
-    // Navigate to login or splash screen
-    Get.offAllNamed('/login');
+  final RxBool isLoading = false.obs;
+
+  void deleteAccount() async {
+    try {
+      isLoading.value = true;
+      final response = await _authRepository.deleteAccount();
+
+      final success = response['success'] as bool? ?? false;
+      if (success) {
+        // Assume API service and pref clears here or via another service
+        Get.snackbar('Success', 'Account deleted successfully');
+        Get.offAllNamed('/login');
+      } else {
+        Get.snackbar(
+          'Error',
+          response['message'] ?? 'Failed to delete account',
+        );
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'An error occurred while deleting account');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   @override

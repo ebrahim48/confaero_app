@@ -18,9 +18,7 @@ class ChangePasswordScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          CustomAppBarWidget(
-            title: 'Change Password',
-          ),
+          CustomAppBarWidget(title: 'Change Password'),
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(24.w),
@@ -30,7 +28,7 @@ class ChangePasswordScreen extends StatelessWidget {
                   // Info Text
                   CustomText(
                     text:
-                    'Your password must be at least 6 characters and should include a combination of numbers, letters and special characters (!@#\$%)',
+                        'Your password must be at least 6 characters and should include a combination of numbers, letters and special characters (!@#\$%)',
                     fontsize: 12.sp,
                     fontWeight: FontWeight.w400,
                     color: const Color(0xFF666666),
@@ -40,36 +38,50 @@ class ChangePasswordScreen extends StatelessWidget {
                   SizedBox(height: 24.h),
 
                   // Current Password
-                  Obx(() => PasswordFieldWidget(
-                    hint: 'Current password',
-                    controller: controller.currentPasswordController,
-                    isVisible: controller.isCurrentPasswordVisible.value,
-                    onToggleVisibility: controller.toggleCurrentPasswordVisibility,
-                  )),
+                  Obx(
+                    () => PasswordFieldWidget(
+                      hint: 'Current password',
+                      controller: controller.currentPasswordController,
+                      isVisible: controller.isCurrentPasswordVisible.value,
+                      onToggleVisibility:
+                          controller.toggleCurrentPasswordVisibility,
+                    ),
+                  ),
                   SizedBox(height: 16.h),
 
                   // New Password
-                  Obx(() => PasswordFieldWidget(
-                    hint: 'New password',
-                    controller: controller.newPasswordController,
-                    isVisible: controller.isNewPasswordVisible.value,
-                    onToggleVisibility: controller.toggleNewPasswordVisibility,
-                  )),
+                  Obx(
+                    () => PasswordFieldWidget(
+                      hint: 'New password',
+                      controller: controller.newPasswordController,
+                      isVisible: controller.isNewPasswordVisible.value,
+                      onToggleVisibility:
+                          controller.toggleNewPasswordVisibility,
+                    ),
+                  ),
                   SizedBox(height: 16.h),
 
                   // Re-type New Password
-                  Obx(() => PasswordFieldWidget(
-                    hint: 'Re-type new password',
-                    controller: controller.confirmPasswordController,
-                    isVisible: controller.isConfirmPasswordVisible.value,
-                    onToggleVisibility: controller.toggleConfirmPasswordVisibility,
-                  )),
+                  Obx(
+                    () => PasswordFieldWidget(
+                      hint: 'Re-type new password',
+                      controller: controller.confirmPasswordController,
+                      isVisible: controller.isConfirmPasswordVisible.value,
+                      onToggleVisibility:
+                          controller.toggleConfirmPasswordVisibility,
+                    ),
+                  ),
                   SizedBox(height: 32.h),
 
                   // Change Password Button
-                  CustomButton(
-                    title: 'Change Password',
-                    onpress: controller.changePassword,
+                  Obx(
+                    () =>
+                        controller.isLoading.value
+                            ? const Center(child: CircularProgressIndicator())
+                            : CustomButton(
+                              title: 'Change Password',
+                              onpress: controller.changePassword,
+                            ),
                   ),
                 ],
               ),

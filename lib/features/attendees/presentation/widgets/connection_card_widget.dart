@@ -4,9 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 import '../controllers/connectionlist_controller.dart';
+import '../../../connection/data/models/connection_model.dart';
 
 class ConnectionCardWidget extends StatelessWidget {
-  final Connection connection;
+  final ConnectionModel connection;
   final VoidCallback onBookmarkTap;
   final VoidCallback onSayHi;
   final VoidCallback onSendMail;
@@ -27,10 +28,7 @@ class ConnectionCardWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(
-          color: const Color(0xff9E9E9E),
-          width: 0.3,
-        ),
+        border: Border.all(color: const Color(0xff9E9E9E), width: 0.3),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.15),
@@ -48,9 +46,7 @@ class ConnectionCardWidget extends StatelessWidget {
               Container(
                 width: 48.w,
                 height: 48.h,
-                decoration: BoxDecoration(
-                  shape: BoxShape.rectangle,
-                ),
+                decoration: BoxDecoration(shape: BoxShape.rectangle),
                 child: ClipOval(
                   child: Image.asset(
                     connection.avatarUrl,
@@ -95,7 +91,12 @@ class ConnectionCardWidget extends StatelessWidget {
 
               // Bookmark Icon
               Padding(
-                padding:  EdgeInsets.only(top: 12,left: 12,right: 12,bottom: 34),
+                padding: EdgeInsets.only(
+                  top: 12,
+                  left: 12,
+                  right: 12,
+                  bottom: 34,
+                ),
                 child: GestureDetector(
                   onTap: onBookmarkTap,
                   child: SvgPicture.asset(
@@ -119,11 +120,7 @@ class ConnectionCardWidget extends StatelessWidget {
           SizedBox(height: 12.h),
 
           // Divider
-          Divider(
-            height: 1,
-            thickness: 0.5,
-            color: const Color(0xff9E9E9E),
-          ),
+          Divider(height: 1, thickness: 0.5, color: const Color(0xff9E9E9E)),
 
           SizedBox(height: 12.h),
 

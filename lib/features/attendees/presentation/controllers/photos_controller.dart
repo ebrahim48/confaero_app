@@ -1,6 +1,11 @@
 import 'package:get/get.dart';
+import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/snackbar_helper.dart';
+import '../../../photos/data/models/photo_model.dart';
+import '../../../photos/domain/services/photo_service.dart';
 
 class PhotosController extends GetxController {
+  final PhotoService _service = Get.find<PhotoService>();
   // Selected filter
   final RxInt selectedFilter = 0.obs;
 
@@ -14,20 +19,29 @@ class PhotosController extends GetxController {
   ];
 
   // All photos
-  final RxList<String> allPhotos = <String>[
-    'assets/images/photo1.jpg',
-    'assets/images/photo2.jpg',
-    'assets/images/photo1.jpg',
-    'assets/images/photo2.jpg',
-    'assets/images/photo1.jpg',
-    'assets/images/photo2.jpg',
-    'assets/images/photo1.jpg',
-    'assets/images/photo2.jpg',
-    'assets/images/photo1.jpg',
-    'assets/images/photo2.jpg',
-    'assets/images/photo1.jpg',
-    'assets/images/photo2.jpg',
-  ].obs;
+  final RxList<PhotoModel> allPhotos = <PhotoModel>[].obs;
+  final RxBool isLoading = false.obs;
+
+  // Read event ID from global session state
+  String get currentEventId => SessionController.to.eventId;
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchPhotos();
+  }
+
+  Future<void> fetchPhotos() async {
+    isLoading.value = true;
+    try {
+      final photos = await _service.getEventPhotos(currentEventId);
+      allPhotos.assignAll(photos);
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to load photos');
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
   // Change filter
   void changeFilter(int index) {
@@ -35,7 +49,7 @@ class PhotosController extends GetxController {
   }
 
   // Open photo
-  void openPhoto(String imagePath) {
-    print('Opening photo: $imagePath');
+  void openPhoto(PhotoModel photo) {
+    print('Opening photo: ${photo.imageUrl}');
   }
 }

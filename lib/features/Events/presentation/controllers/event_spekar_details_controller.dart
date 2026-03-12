@@ -1,47 +1,98 @@
-// lib/features/attendees/controllers/attendee_details_controller.dart
+// lib/features/Events/presentation/controllers/event_spekar_details_controller.dart
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter/material.dart';
+import '../../../agenda/domain/services/agenda_service.dart';
+import '../../../connection/domain/services/connection_service.dart';
 
 class EventSpekarDetailsController extends GetxController {
-  // Attendee details
-  final RxMap<String, dynamic> attendeeDetails = <String, dynamic>{
-    'name': 'Rachid Amine',
-    'company': 'Tech Corp',
-    'role': 'Attendee',
-    'sessions': '2 sessions',
-    'image': 'assets/images/attendee1.jpg',
-    'email': 'example@gmail.com',
-    'phone': '65415456546541',
-    'location': 'Dhaka, Bangladesh',
-    'isBookmarked': false,
-  }.obs;
+  final AgendaService _agendaService = Get.find<AgendaService>();
+  final ConnectionService _connectionService = Get.find<ConnectionService>();
+
+  // Attendee/speaker details
+  final RxMap<String, dynamic> attendeeDetails = <String, dynamic>{}.obs;
+  final RxBool isLoading = false.obs;
+  final RxBool isRequesting = false.obs;
+
+  // Event ID
+  final String currentEventId = 'default_event_id';
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Get speaker ID from route arguments
+    final args = Get.arguments;
+    if (args != null && args is Map<String, dynamic>) {
+      if (args['speakerId'] != null) {
+        loadSpeakerDetails(args['speakerId'] as String);
+      } else {
+        attendeeDetails.value = args;
+      }
+    }
+  }
+
+  /// Load speaker details from API
+  Future<void> loadSpeakerDetails(String speakerId) async {
+    isLoading.value = true;
+    try {
+      final data = await _agendaService.getSpeakerDetails(
+        currentEventId,
+        speakerId,
+      );
+      if (data != null) {
+        attendeeDetails.value = data;
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load speaker details',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
   // Toggle bookmark
   void toggleBookmark() {
-    attendeeDetails['isBookmarked'] = !attendeeDetails['isBookmarked'];
+    attendeeDetails['isBookmarked'] =
+        !(attendeeDetails['isBookmarked'] ?? false);
     attendeeDetails.refresh();
   }
 
   // Say Hi
   void sayHi() {
-    print('Say Hi');
+    // TODO: implement messaging
   }
 
   // Send Mail
   void sendMail() {
-    print('Send Mail to ${attendeeDetails['email']}');
+    // TODO: use url_launcher for mailto
   }
 
   // Request to Connect
-  void requestToConnect() {
-    Get.snackbar(
-      'Success',
-      'Connection request sent!',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xff32A69A),
-      colorText: Colors.white,
-    );
+  Future<void> requestToConnect(String eventId) async {
+    isRequesting.value = true;
+    try {
+      await _connectionService.sendRequest(eventId);
+      Get.snackbar(
+        'Success',
+        'Connection request sent!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xff32A69A),
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to send request: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isRequesting.value = false;
+    }
   }
 }

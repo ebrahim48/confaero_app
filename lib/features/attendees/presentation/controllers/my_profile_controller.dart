@@ -1,11 +1,18 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../core/helpers/logger_helper.dart';
+import '../../../auth/data/repositories/auth_repository.dart';
+import '../../../profile/domain/services/profile_service.dart';
 import '../widgets/view/affiliation_form_screen.dart';
 import '../widgets/view/all_forms_screen.dart';
 
 class MyProfileController extends GetxController {
+  final ProfileService _profileService = Get.find<ProfileService>();
+  final AuthRepository _authRepository = Get.find<AuthRepository>();
+  final _logger = LoggerHelper('MyProfileController');
   // User profile data
   final userName = 'Albert Flamingo'.obs;
   final userAvatar = 'assets/images/profile.png'.obs;
@@ -33,13 +40,41 @@ class MyProfileController extends GetxController {
   }
 
   // Load profile data
-  void loadProfileData() {
-    isLoading.value = true;
+  Future<void> loadProfileData() async {
+    try {
+      isLoading.value = true;
 
-    // Simulate loading from API
-    // In real app: await api.getProfile()
+      // Load user profile and user info
+      final profile = await _profileService.getMyProfile();
+      final user = await _authRepository.getMe();
 
-    isLoading.value = false;
+      if (profile != null) {
+        bio.value = profile.bio;
+        location.value = profile.title; // map jobTitle to location for now
+        resumeUploaded.value =
+            profile.resumeUrl != null && profile.resumeUrl!.isNotEmpty;
+
+        if (profile.profileImage != null && profile.profileImage!.isNotEmpty) {
+          userAvatar.value = profile.profileImage!;
+        }
+
+        // Additional profile fields
+        // affiliations.value = profile.company.isNotEmpty ? [profile.company] : [];
+        // socialLinks.value = profile.socialLinks;
+      }
+
+      // Parse AuthRepository.getMe() response
+      final success = user['success'] as bool? ?? false;
+      if (success && user['data'] != null) {
+        final userData = user['data'] as Map<String, dynamic>;
+        userName.value = userData['name'] as String? ?? 'Unknown User';
+      }
+    } catch (e) {
+      _logger.e('Failed to load profile data: $e');
+      Get.snackbar('Error', 'Failed to load profile details');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Change profile picture
@@ -52,17 +87,25 @@ class MyProfileController extends GetxController {
       );
 
       if (image != null) {
-        // Upload to server
-        // userAvatar.value = image.path;
+        isSaving.value = true;
+        Get.snackbar('Processing...', 'Uploading profile image');
 
-        Get.snackbar(
-          'Success',
-          'Profile picture updated',
-          snackPosition: SnackPosition.BOTTOM,
+        final File file = File(image.path);
+        final updatedProfile = await _profileService.updateProfile(
+          avatarFile: file,
         );
+
+        if (updatedProfile != null && updatedProfile.profileImage != null) {
+          userAvatar.value = updatedProfile.profileImage!;
+        }
+
+        Get.snackbar('Success', 'Profile picture updated');
       }
     } catch (e) {
+      _logger.e('Failed to upload image: $e');
       Get.snackbar('Error', 'Failed to upload image');
+    } finally {
+      isSaving.value = false;
     }
   }
 
@@ -71,9 +114,7 @@ class MyProfileController extends GetxController {
     // Navigate to affiliation form
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AffiliationFormScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const AffiliationFormScreen()),
     );
   }
 
@@ -81,9 +122,7 @@ class MyProfileController extends GetxController {
   void addEducation(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const EducationFormScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const EducationFormScreen()),
     );
   }
 
@@ -91,9 +130,7 @@ class MyProfileController extends GetxController {
   void addLocation(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const LocationFormScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const LocationFormScreen()),
     );
   }
 
@@ -101,37 +138,48 @@ class MyProfileController extends GetxController {
   void addContact(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const ContactFormScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const ContactFormScreen()),
     );
   }
 
-  // Add resume
+  // Add/remove resume
   Future<void> addResume(BuildContext context) async {
-    Get.snackbar(
-      'Info',
-      'Opening file picker...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
-
-    await Future.delayed(const Duration(seconds: 1));
-    resumeUploaded.value = true;
-
-    Get.snackbar(
-      'Success',
-      'Resume uploaded successfully',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    if (resumeUploaded.value) {
+      // Delete resume
+      try {
+        isSaving.value = true;
+        await _profileService.deleteResume();
+        resumeUploaded.value = false;
+        Get.snackbar(
+          'Success',
+          'Resume removed',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } catch (e) {
+        _logger.e('Failed to delete resume: $e');
+        Get.snackbar(
+          'Error',
+          'Failed to remove resume',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } finally {
+        isSaving.value = false;
+      }
+    } else {
+      Get.snackbar(
+        'Info',
+        'Opening file picker...',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      // TODO: Implement file picker and call _profileService.updateProfile(resumeFile: file)
+    }
   }
 
   // Add bio
   void addBio(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AboutFormScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const AboutFormScreen()),
     );
   }
 
@@ -139,9 +187,7 @@ class MyProfileController extends GetxController {
   void addSocialLink(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const SocialLinkFormScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const SocialLinkFormScreen()),
     );
   }
 
@@ -149,9 +195,7 @@ class MyProfileController extends GetxController {
   void addWebpage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const WebpageFormScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const WebpageFormScreen()),
     );
   }
 
@@ -160,30 +204,18 @@ class MyProfileController extends GetxController {
     try {
       isSaving.value = true;
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-
-      // In real app:
-      // await api.updateProfile({
-      //   'affiliations': affiliations,
-      //   'education': education,
-      //   'location': location.value,
-      //   ...
-      // });
-
-      isSaving.value = false;
-
-      Get.snackbar(
-        'Success',
-        'Profile saved successfully',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: const Color(0xff32A69A),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
+      // Update basic fields like bio
+      await _profileService.updateProfile(
+        bio: bio.value,
+        title: location.value,
       );
+
+      Get.snackbar('Success', 'Profile saved successfully');
     } catch (e) {
-      isSaving.value = false;
+      _logger.e('Failed to save profile: $e');
       Get.snackbar('Error', 'Failed to save profile');
+    } finally {
+      isSaving.value = false;
     }
   }
 
@@ -207,10 +239,7 @@ class MyProfileController extends GetxController {
         maxLines: maxLines,
       ),
       actions: [
-        TextButton(
-          onPressed: () => Get.back(),
-          child: Text('Cancel'),
-        ),
+        TextButton(onPressed: () => Get.back(), child: Text('Cancel')),
         TextButton(
           onPressed: () => onSubmit(controller.text),
           child: Text('Add'),

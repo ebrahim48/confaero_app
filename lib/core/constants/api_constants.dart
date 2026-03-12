@@ -2,19 +2,26 @@ class ApiConstants {
   static const String baseUrl = 'https://reaz8080.syedbipul.me/api/v1';
   static const String imageUrl = "https://reaz8080.syedbipul.me";
 
-  static Map<String, String> headers = {
-    'Content-Type': 'application/json',
-  };
+  static Map<String, String> headers = {'Content-Type': 'application/json'};
 
-
+  //---------------------------Auth-----------------------------
   static const String register = '/auth/register';
   static const String login = '/auth/login';
+  static const String refreshTokenApi = '/auth/refresh-token';
   static const String forgetPassword = '/auth/forgot-password';
   static const String verifyResetCode = '/auth/verify-reset-code';
   static const String resetPassword = '/auth/reset-password';
+  static const String changePassword = '/auth/change-password';
+  static const String getMe = '/auth/me';
+  static const String deleteAccount = '/auth/delete-account';
+  static const String toggleNotification = '/auth/notification';
 
+  //---------------------------User Profile---------------------
+  static const String getMyProfile = '/user/my-profile';
+  static const String updateProfile = '/user/update-profile';
+  static const String deleteResume = '/user/delete-resume';
 
-  /// Events
+  //--------------------------Events----------------------------
   static const String getAllUpcomingEvents = '/attendee/events';
   static const String getExploreEvents = '/superAdmin/events';
   static const String getMyAllEvents = '/attendee/my-event';
@@ -23,10 +30,282 @@ class ApiConstants {
   static const String getEventHome = '/attendee/events';
   static const String getFloorMaps = '/organizer/events';
 
+  //--------------------------Connections-------------------------
+  static const String sendConnectionRequest = '/connection/request';
+  static const String acceptConnectionRequest =
+      '/connection/requests'; // append /:id/accept
+  static const String getPendingRequests = '/connection/requests';
+  static const String getMyConnections = '/connection';
+  static const String getConnectionDetails = '/connection'; // append /:id
+  static const String bookmarkConnection =
+      '/connection'; // append /:id/bookmark
 
+  //--------------------------Attendees---------------------------
+  static const String getEventAttendees = '/eventAttendee/events';
+  static const String getAttendeeDetails =
+      '/eventAttendee/events'; // append /:id
+  static const String bookmarkAttendee =
+      '/eventAttendee/events'; // append /:eid/attendees/:aid/bookmark
+
+  //--------------------------Messaging---------------------------
+  static const String sendMessage = '/message/send'; // append /:eventId
+  static const String getConversations =
+      '/message/conversations'; // append /:eventId
+  static const String getMessages = '/message'; // append /:convId/:eventId
+  static const String markMessageSeen =
+      '/message/seen'; // append /:msgId/:eventId
+  static const String uploadChatAttachment = '/upload/chat-attachment';
+
+  //--------------------------Agenda/Sessions-----------------------
+  static const String getEventAgenda =
+      '/organizer-sessions/events'; // append /:id/agenda
+  static const String getMyAgenda =
+      '/organizer-sessions/events'; // append /:id/my-agenda
+  static const String bookmarkSession =
+      '/organizer-sessions/events'; // append /:id/my-agenda/:idx
+  static const String removeBookmarkSession =
+      '/organizer-sessions/events'; // append /:id/my-agenda/:idx
+  static const String toggleSessionLike =
+      '/organizer-sessions/agenda'; // append /:id/:idx/toggle-like
+  static const String getSessionDetails =
+      '/organizer-sessions/events'; // append /:id/agenda/:idx
+  static const String getSpeakerDetails =
+      '/organizer-sessions/events'; // append /:id/speakers/:id
+
+  //--------------------------Announcements-------------------------
+  static const String getAnnouncements =
+      '/announcement/event'; // append /:eventId
+  static const String createAnnouncement = '/announcement'; // POST /:eventId
+  static const String updateAnnouncement =
+      '/announcement'; // PATCH /:id/:eventId
+  static const String deleteAnnouncement =
+      '/announcement'; // DELETE /:id/:eventId
+
+  //--------------------------Notes-------------------------------
+  static const String createNote = '/note/create';
+  static const String getNotes = '/note/notes';
+
+  //--------------------------Sponsors----------------------------
+  static const String getAllSponsors =
+      '/organizerSponsor/all-sponsors'; // append /:eventId
+  static const String getSponsorDetails =
+      '/organizerSponsor/sponsor'; // append /:id
+  static const String incrementSponsorView = '/sponsor/view'; // append /:id
+
+  //--------------------------Documents---------------------------
+  static const String getAllDocuments = '/document'; // append /:eventId/all
+  static const String getMyDocuments = '/document'; // append /:eventId/my
+  static const String uploadDocument = '/document'; // append /:eventId
+  static const String deleteMyDocument = '/document/my'; // append /:id
+
+  //--------------------------Photos------------------------------
+  static const String uploadPhoto = '/photo/events'; // append /:id/photos
+  static const String getEventPhotos = '/photo/events'; // append /:id/photos
+  static const String getPublicPhotos =
+      '/photo/public/events'; // append /:id/photos
+
+  //--------------------------Resources (Q&A/Polls)---------------
+  static const String getEventQnA = '/resouce/event/qna'; // append /:eventId
+  static const String getEventPolls = '/resouce/event/poll'; // append /:eventId
+  static const String submitPollVote =
+      '/resouce/poll'; // append /:id/:eventId/submit
+
+  //--------------------------Resources CRUD (Organizer)----------
+  static const String createQnA = '/resouce/qna'; // POST /:eventId
+  static const String updateQnA = '/resouce/qna'; // PATCH /:id/:eventId
+  static const String deleteQnA = '/resouce/qna'; // DELETE /:id/:eventId
+  static const String submitSurvey = '/resouce/survey'; // POST /:eventId/submit
+  static const String getSurveyAnalytics =
+      '/resouce/survey'; // GET /:eventId/analytics
+
+  //--------------------------Verified Email (Organizer)----------
+  static const String getVerifiedEmails = '/verifyEmail/events'; // GET /:id
+  static const String addVerifiedEmails =
+      '/verifyEmail/events'; // POST /:id/add-emails
+  static const String uploadEmailsCsv =
+      '/verifyEmail/events'; // POST /:id/upload-csv
+  static const String deleteVerifiedEmail =
+      '/verifyEmail/events'; // DELETE /:id/:emailId
+
+  //--------------------------QR Exhibitor Leads-----------------
+  static const String getExhibitorLeads = '/qr/exhibitor'; // GET /:id/leads
+  static const String addLeadNote = '/qr/exhibitor/leads'; // PATCH /:id/note
+  static const String tagLead = '/qr/exhibitor/leads'; // PATCH /:id/tags
+
+  //--------------------------Organizer Attendee Management------
+  static const String getOrganizerAttendeeDetail =
+      '/organizer/attendee'; // GET /:eventId/:attendeeId
+  static const String removeOrganizerAttendee =
+      '/organizer/attendee'; // DELETE /:eventId/:attendeeId
+  static const String getAllRegistrations =
+      '/organizer/all-register'; // GET /:eventId
+
+  //--------------------------Event Registration-------------------
+  static const String getMyEventDetails = '/attendee/my-events'; // append /:id
+  static const String registerEvent =
+      '/attendee/events'; // append /:id/register
+  static const String getEventSessions =
+      '/attendee/events'; // append /:id/sessions
+
+  //--------------------------Roles---------------------------------
+  static const String changeRole = '/auth/change-role';
+  static const String getMyRoles = '/auth/my-roles';
+
+  //--------------------------Terms & Content-----------------------
+  static const String getTermsCondition = '/appContent/TERMS_CONDITION';
+
+  //--------------------------QR Code-------------------------------
+  static const String generateQR = '/qr/generate'; // append /:eventId
+  static const String scanQR = '/qr/scan'; // append /:eventId
+
+  //--------------------------Jobs----------------------------------
+  static const String getJobs = '/job/';
+  static const String getJobDetails = '/job'; // append /:id
+
+  //--------------------------Invitations---------------------------
+  static const String getMyInvitations =
+      '/invitation/my-invitations'; // append /:eventId
+  static const String acceptInvitation =
+      '/invitation'; // append /:id/accept/:eventId
+  static const String rejectInvitation =
+      '/invitation'; // append /:id/reject/:eventId
+
+  // ======================== ROLE-SPECIFIC APIs ========================
+
+  //--------------------------Organizer Sessions-----------------------
+  static const String createSession =
+      '/organizer-sessions/events'; // POST /:id/agenda
+  static const String updateSession =
+      '/organizer-sessions/events'; // PATCH /:id/agenda/:sessionId
+  static const String deleteSession =
+      '/organizer-sessions/events'; // DELETE /:id/agenda/:sessionId
+  static const String addSpeaker =
+      '/organizer-sessions/events'; // POST /:id/speakers
+
+  //--------------------------Booth (Organizer)------------------------
+  static const String getOrganizerBooths =
+      '/organizerBooth/events'; // GET /:eventId/booths
+  static const String getBoothDetails = '/organizerBooth/booths'; // GET /:id
+  static const String acceptBooth =
+      '/organizerBooth/booths'; // PATCH /:id/number
+  static const String cancelBooth =
+      '/organizerBooth/booths'; // PATCH /:id/cancel
+
+  //--------------------------Booth (Exhibitor)------------------------
+  static const String getMyBooth = '/booth/me';
+  static const String updateMyBooth = '/booth/me';
+  static const String createBooth = '/booth/create';
+  static const String addBoothStaff = '/booth/staff';
+  static const String getBoothStaff = '/booth/staff';
+
+  //--------------------------Sponsor Dashboard------------------------
+  static const String createSponsor = '/sponsor/create';
+  static const String updateSponsor = '/sponsor/update'; // PATCH /:id
+  static const String getMySponsor = '/sponsor/get-my-sponsor'; // GET /:eventId
+  static const String getSponsorDashboard =
+      '/sponsor/dashboard'; // GET /:eventId
+  static const String approveSponsor =
+      '/organizerSponsor'; // PATCH /:id/approve
+  static const String rejectSponsor = '/organizerSponsor'; // PATCH /:id/reject
+
+  //--------------------------Poster----------------------------------
+  static const String uploadPosterFile = '/poster/upload-file';
+  static const String uploadPosterFiles = '/poster/upload-files';
+  static const String createPoster = '/poster/create'; // POST /:eventId
+  static const String getAcceptedPosters = '/poster/accepted';
+  static const String getRevisedPosters = '/poster/revised';
+  static const String updatePosterAttachment =
+      '/poster/author/attachments'; // PATCH /:id
+  static const String getSinglePoster = '/poster/accepted'; // GET /:id
+
+  //--------------------------Poster Assign----------------------------
+  static const String assignPoster = '/poster-assign/create'; // POST /:eventId
+  static const String sendPosterReminder =
+      '/poster-assign/send-reminder'; // POST /:id
+  static const String searchReviewer =
+      '/poster-assign/speakers/search'; // GET /:eventId
+  static const String searchUnassigned =
+      '/poster-assign/unassigned/search'; // GET /:eventId
+  static const String reassignPoster =
+      '/poster-assign/reassign'; // POST /:eventId
+  static const String getUnassignedPosters =
+      '/poster-assign/unassigned'; // GET /:eventId
+  static const String getAssignedPosters =
+      '/poster-assign/assigned'; // GET /:eventId
+  static const String submitPosterReview =
+      '/poster-assign/review'; // POST /:eventId
+  static const String getReportedPosters =
+      '/poster-assign/reported'; // GET /:eventId
+
+  //--------------------------Reviewer---------------------------------
+  static const String getReviewerDashboard =
+      '/reviewer/dashboard'; // GET /:eventId
+  static const String getReviewerAuthors = '/reviewer/authors'; // GET /:eventId
+  static const String getAuthorSubmissions =
+      '/reviewer/authors'; // GET /:id/submissions
+  static const String getAttachmentDetails =
+      '/reviewer/attachments'; // GET /:id
+  static const String approveAttachment =
+      '/reviewer/attachments'; // PATCH /:id/approve
+  static const String rejectAttachment =
+      '/reviewer/attachments'; // PATCH /:id/reject
+  static const String reviseAttachment =
+      '/reviewer/attachments'; // PATCH /:id/revise
+  static const String flagAttachmentAdmin =
+      '/reviewer/attachments'; // PATCH /:id/flag-admin
+  static const String reviewPosterImage =
+      '/reviewer/attachments'; // POST /:id/image-review
+
+  //--------------------------Volunteer/Task----------------------------
+  static const String createTask = '/volunteer/create';
+  static const String getMyTasks = '/volunteer/my-tasks';
+  static const String getTaskDetail = '/volunteer/my-task'; // GET /:id
+  static const String searchVolunteer =
+      '/volunteer'; // GET /:eventId/volunteer/search
+  static const String getTodayProgress = '/volunteer/today-progress';
+  static const String getVolunteerDashboard = '/volunteer/volunteers';
+  static const String getReportDetail = '/volunteer'; // GET /:id
+  static const String completeTask = '/volunteer'; // PATCH /:id/complete
+  static const String submitReport = '/report/report';
+
+  //--------------------------Video Conference--------------------------
+  static const String getLiveSession = '/eventLive/live'; // GET /:eventId
+  static const String startLiveSession = '/eventLive/start'; // POST /:eventId
+  static const String joinLiveSession = '/eventLive/join'; // POST /:eventId
+  static const String endLiveSession = '/eventLive/end'; // POST /:eventId
+
+  //--------------------------Organizer Messaging-----------------------
+  static const String sendOrganizerMessage =
+      '/messageOrganizer/send'; // POST /:eventId
+  static const String getOrganizerConversations =
+      '/messageOrganizer/conversations'; // GET /:eventId
+  static const String getOrganizerMessages =
+      '/messageOrganizer/messages'; // GET /:convId/:eventId
+  static const String getOrganizerPresence =
+      '/messageOrganizer/presence'; // GET /:userId/:eventId
+  static const String markOrganizerSeen =
+      '/messageOrganizer/seen'; // PATCH /:msgId/:eventId
+  static const String getOrganizerNotifications =
+      '/messageOrganizer/notifications'; // GET /:eventId
+
+  //--------------------------Document (Organizer)---------------------
+  static const String getPendingDocuments =
+      '/document'; // GET /:eventId/pending
+  static const String getDocumentDetails =
+      '/document'; // GET /:eventId/details/:id
+  static const String approveDocument = '/document/status'; // PATCH /:id
+
+  //--------------------------Photo (Delete)----------------------------
+  static const String deletePhoto = '/photo/photos'; // DELETE /:id
+
+  //--------------------------Job (Organizer/Exhibitor)------------------
+  static const String createJob = '/job';
+  static const String getMyJobPosts = '/job/my';
+  static const String getJobReview = '/job/review';
+  static const String updateJobStatus = '/job'; // PATCH /:id/status
+  static const String updateJob = '/job'; // PATCH /:id
+  static const String deleteJob = '/job'; // DELETE /:id
+
+  //--------------------------App Content-------------------------------
+  static const String createAppContent = '/appContent/create';
 }
-
-
-
-
-

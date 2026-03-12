@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../connection/domain/services/connection_service.dart';
 
 // Notification Model
 class NotificationItem {
@@ -45,47 +46,60 @@ class NotificationsController extends GetxController {
     super.onClose();
   }
 
-  // Load notifications (static data)
-  void loadNotifications() {
+  final ConnectionService _connectionService = Get.find<ConnectionService>();
+
+  // Load notifications (Pending Connection Requests)
+  Future<void> loadNotifications() async {
     isLoading.value = true;
+    try {
+      final requests = await _connectionService.getPendingRequests();
 
-    // Static notification template
-    final notificationTemplate = {
-      'title': 'Rehearsal for Event!',
-      'message': 'Rehearsal for Event will be held tomorrow...',
-      'avatarUrl': 'assets/images/profile.png',
-    };
+      notifications.value =
+          requests.map((req) {
+            return NotificationItem(
+              id: req.id,
+              title: 'Connection Request',
+              message: '${req.sender.name} has sent you a connection request.',
+              time:
+                  'Just now', // Can be derived from req.createdAt if available
+              avatarUrl:
+                  req.sender.avatarUrl.isNotEmpty
+                      ? req.sender.avatarUrl
+                      : 'assets/images/sampleprofile.png',
+            );
+          }).toList();
 
-    // Generate 9 notifications (6 with "5:35 pm", 3 with "29/12/26")
-    notifications.value = [
-      // 6 notifications with time "5:35 pm"
-      ...List.generate(
-        6,
-            (index) => NotificationItem(
-          id: '${index + 1}',
-          title: notificationTemplate['title']!,
-          message: notificationTemplate['message']!,
-          time: '5:35 pm',
-          avatarUrl: notificationTemplate['avatarUrl'],
-          isRead: false,
-        ),
-      ),
-      // 3 notifications with date "29/12/26"
-      ...List.generate(
-        3,
-            (index) => NotificationItem(
-          id: '${index + 7}',
-          title: notificationTemplate['title']!,
-          message: notificationTemplate['message']!,
-          time: '29/12/26',
-          avatarUrl: notificationTemplate['avatarUrl'],
-          isRead: false,
-        ),
-      ),
-    ];
+      filteredNotifications.value = notifications;
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Could not load connection requests',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
-    filteredNotifications.value = notifications;
-    isLoading.value = false;
+  Future<void> acceptConnection(String requestId) async {
+    try {
+      await _connectionService.acceptRequest(requestId);
+      Get.snackbar(
+        'Success',
+        'Connection request accepted!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xff32A69A),
+        colorText: Colors.white,
+      );
+      // Refresh the list after accepting
+      loadNotifications();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to accept request: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   // Search notifications
@@ -93,11 +107,18 @@ class NotificationsController extends GetxController {
     if (query.isEmpty) {
       filteredNotifications.value = notifications;
     } else {
-      filteredNotifications.value = notifications
-          .where((notification) =>
-      notification.title.toLowerCase().contains(query.toLowerCase()) ||
-          notification.message.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+      filteredNotifications.value =
+          notifications
+              .where(
+                (notification) =>
+                    notification.title.toLowerCase().contains(
+                      query.toLowerCase(),
+                    ) ||
+                    notification.message.toLowerCase().contains(
+                      query.toLowerCase(),
+                    ),
+              )
+              .toList();
     }
   }
 

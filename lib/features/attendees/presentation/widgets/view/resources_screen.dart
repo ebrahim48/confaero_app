@@ -26,9 +26,7 @@ class ResourcesScreen extends StatelessWidget {
       body: Column(
         children: [
           // App Bar
-          const CustomAppBarWidget(
-            title: 'Resources',
-          ),
+          const CustomAppBarWidget(title: 'Resources'),
 
           // Tabs
           Container(
@@ -65,10 +63,7 @@ class ResourcesScreen extends StatelessWidget {
           ),
 
           // Divider
-          Container(
-            height: 1.h,
-            color: const Color(0xffE0E0E0),
-          ),
+          Container(height: 1.h, color: const Color(0xffE0E0E0)),
 
           // Content
           Expanded(
@@ -80,16 +75,17 @@ class ResourcesScreen extends StatelessWidget {
                   itemCount: controller.qaList.length,
                   itemBuilder: (context, index) {
                     final qa = controller.qaList[index];
-                    return QAExpansionTile(
-                      question: qa['question'],
-                      answer: qa['answer'],
-                      isExpanded: qa['isExpanded'],
-                      onTap: () => controller.toggleQA(index),
+                    return Obx(
+                      () => QAExpansionTile(
+                        question: qa.question,
+                        answer: qa.answer,
+                        isExpanded: controller.expandedQaIds.contains(qa.id),
+                        onTap: () => controller.toggleQA(qa.id),
+                      ),
                     );
                   },
                 );
               }
-
               // Polls Tab
               else if (controller.selectedTabIndex.value == 1) {
                 return ListView.builder(
@@ -97,11 +93,16 @@ class ResourcesScreen extends StatelessWidget {
                   itemCount: controller.pollsList.length,
                   itemBuilder: (context, index) {
                     final poll = controller.pollsList[index];
+                    final totalVotes = poll.options.fold<int>(
+                      0,
+                      (sum, option) => sum + option.votes,
+                    );
                     return PollCard(
-                      title: poll['title'],
-                      creator: poll['creator'],
-                      responses: poll['responses'],
+                      title: poll.question,
+                      creator: poll.isActive ? 'Active Poll' : 'Closed Poll',
+                      responses: '$totalVotes response(s)',
                       onAnswerTap: () {
+                        // Pass poll data to PollScreen in the future
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -116,10 +117,8 @@ class ResourcesScreen extends StatelessWidget {
                   },
                 );
               }
-
               // resources_screen.dart এর Survey tab এ এই code দিন:
-
-// Survey Tab
+              // Survey Tab
               else {
                 return SingleChildScrollView(
                   padding: EdgeInsets.all(24.w),
@@ -176,12 +175,14 @@ class ResourcesScreen extends StatelessWidget {
                           children: [
                             RadioOption(
                               text: 'Yes',
-                              isSelected: controller.selectedOption.value == 'Yes',
+                              isSelected:
+                                  controller.selectedOption.value == 'Yes',
                               onTap: () => controller.setOption('Yes'),
                             ),
                             RadioOption(
                               text: 'No',
-                              isSelected: controller.selectedOption.value == 'No',
+                              isSelected:
+                                  controller.selectedOption.value == 'No',
                               onTap: () => controller.setOption('No'),
                             ),
                           ],
@@ -210,9 +211,7 @@ class ResourcesScreen extends StatelessWidget {
                       const CharacterLimitText(limit: 80),
                       SizedBox(height: 32.h),
 
-                      CustomButton(title: 'Submit Survey', onpress: () {
-
-                      },)
+                      CustomButton(title: 'Submit Survey', onpress: () {}),
                     ],
                   ),
                 );

@@ -51,27 +51,48 @@ import '../../../features/mainattendees/presentation/widgets/view/attendees_deta
 import '../../../features/message/presentation/widgets/view/message_chat_screen.dart';
 import '../../../features/notification/presentation/widgets/view/notifications_screen.dart';
 import '../../../features/onboarding/presentation/widgets/view/onboarding_screen.dart';
+import '../../../features/organizer/presentation/widgets/organizer_dashboard_screen.dart';
+import '../../../features/organizer/presentation/widgets/session_form_screen.dart';
+import '../../../features/booth_management/presentation/widgets/booth_management_screen.dart';
+import '../../../features/sponsor_dashboard/presentation/widgets/sponsor_dashboard_screen.dart';
+import '../../../features/sponsor_dashboard/presentation/widgets/sponsor_form_screen.dart';
+import '../../../features/poster_assign/presentation/widgets/poster_assign_screen.dart';
+import '../../../features/reviewer/presentation/widgets/reviewer_dashboard_screen.dart';
+import '../../../features/volunteer/presentation/widgets/volunteer_dashboard_screen.dart';
+import '../../../features/volunteer/presentation/widgets/task_form_screen.dart';
+import '../../../features/video_conference/presentation/widgets/live_session_screen.dart';
+import '../../../features/organizer_messaging/presentation/widgets/organizer_conversations_screen.dart';
+import '../../../features/organizer_messaging/presentation/widgets/organizer_chat_screen.dart';
+import '../../../features/invitations/presentation/widgets/invitations_screen.dart';
+import '../../../features/announcements/presentation/widgets/view/organizer_announcements_screen.dart'
+    as org_annc;
+import '../../../features/resources/presentation/widgets/view/organizer_resources_screen.dart';
+import '../../../features/invitations/presentation/widgets/view/verified_email_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/exhibitor_leads_screen.dart';
+import '../../../features/organizer/presentation/widgets/organizer_attendee_screen.dart';
 import '../../../core/constants/api_constants.dart';
-
+import '../../../core/constants/app_constants.dart';
+import '../../../core/helpers/prefs_helper.dart';
 
 class AppRoutes {
-
   static const String onBoardingScreen = "/onBoardingScreen";
   static const String signUpScreen = "/signUpScreen";
   static const String signInScreen = "/signInScreen";
-  
+
   // Password reset routes - using API constants paths
   static const String forgetPasswordScreen = ApiConstants.forgetPassword;
   static const String verifyScreen = ApiConstants.verifyResetCode;
   static const String resetPasswordScreen = ApiConstants.resetPassword;
-  
+
   static const String eventsScreen = "/eventsScreen";
   static const String eventsDetailsScreen = "/eventsDetailsScreen";
-  static const String eventsDetailsScreenWithId = "/eventsDetailsScreen/:eventId";
+  static const String eventsDetailsScreenWithId =
+      "/eventsDetailsScreen/:eventId";
   static const String mainNavigationScreen = "/mainNavigationScreen";
   static const String floorMapScreen = "/floorMapScreen";
   static const String floorMapDetailsScreen = "/floorMapDetailsScreen";
-  static const String eventCheckInCheckOutScreen = "/eventCheckInCheckOutScreen";
+  static const String eventCheckInCheckOutScreen =
+      "/eventCheckInCheckOutScreen";
   static const String contactUsScreen = "/contactUsScreen";
   static const String contactQrScreen = "/contactQrScreen";
   static const String qrScannerScreen = "/qrScannerScreen";
@@ -83,7 +104,8 @@ class AppRoutes {
   static const String connectionListScreen = "/connectionListScreen";
   static const String quickNotesScreen = "/quickNotesScreen";
   static const String writeNoteScreen = "/writeNoteScreen";
-  static const String organizserGuidelinesScreen = "/organizserGuidelinesScreen";
+  static const String organizserGuidelinesScreen =
+      "/organizserGuidelinesScreen";
   static const String aboutUsScreen = "/aboutUsScreen";
   static const String newEventProposalScreen = "/newEventProposalScreen";
   static const String settingsScreen = "/settingsScreen";
@@ -105,25 +127,72 @@ class AppRoutes {
   static const String agendaDetailsScreen = "/agendaDetailsScreen";
   static const String speakarProfileScreen = "/speakarProfileScreen";
   static const String eventSpekarScreen = "/eventSpekarScreen";
-  static const String organizerAnnouncementsScreen = "/organizerAnnouncementsScreen";
+  static const String organizerAnnouncementsScreen =
+      "/organizerAnnouncementsScreen";
   static const String messageChatScreen = "/messageChatScreen";
   static const String attendeeDetailsScreen = "/attendeeDetailsScreen";
   static const String sponsorsScreen = "/sponsorsScreen";
   static const String sponsorsDetailsScreen = "/sponsorsDetailsScreen";
   static const String exHabitorsScreen = "/exHabitorsScreen";
   static const String exhibitorDetailsScreen = "/exhibitorDetailsScreen";
-  // verifyScreen and resetPasswordScreen already defined above with API constants
 
+  // Role-specific screens
+  static const String organizerDashboardScreen = "/organizerDashboardScreen";
+  static const String sessionFormScreen = "/sessionFormScreen";
+  static const String boothManagementScreen = "/boothManagementScreen";
+  static const String sponsorDashboardScreen = "/sponsorDashboardScreen";
+  static const String sponsorFormScreen = "/sponsorFormScreen";
+  static const String posterAssignScreen = "/posterAssignScreen";
+  static const String reviewerDashboardScreen = "/reviewerDashboardScreen";
+  static const String volunteerDashboardScreen = "/volunteerDashboardScreen";
+  static const String taskFormScreen = "/taskFormScreen";
+  static const String liveSessionScreen = "/liveSessionScreen";
+  static const String organizerConversationsScreen =
+      "/organizerConversationsScreen";
+  static const String organizerChatScreen = "/organizerChatScreen";
+  static const String invitationsScreen = "/invitationsScreen";
+
+  // --- New screens for 18 remaining endpoints ---
+  static const String organizerAnnouncementsCrudScreen =
+      "/organizerAnnouncementsCrudScreen";
+  static const String organizerResourcesCrudScreen =
+      "/organizerResourcesCrudScreen";
+  static const String verifiedEmailScreen = "/verifiedEmailScreen";
+  static const String exhibitorLeadsScreen = "/exhibitorLeadsScreen";
+  static const String organizerAttendeeScreen = "/organizerAttendeeScreen";
+
+  // verifyScreen and resetPasswordScreen already defined above with API constants
 
   static final GoRouter goRouter = GoRouter(
     initialLocation: onBoardingScreen,
     redirect: (context, state) async {
+      final token = await PrefsHelper.getString(AppConstants.bearerToken);
+      final isLogged = await PrefsHelper.getBool(AppConstants.isLogged);
 
+      final authRoutes = <String>{
+        AppRoutes.onBoardingScreen,
+        AppRoutes.signInScreen,
+        AppRoutes.signUpScreen,
+        AppRoutes.forgetPasswordScreen,
+        AppRoutes.verifyScreen,
+        AppRoutes.resetPasswordScreen,
+      };
 
+      final currentPath = state.matchedLocation;
+      final isGoingToAuth = authRoutes.contains(currentPath);
+
+      if (token.isNotEmpty && isLogged && isGoingToAuth) {
+        return AppRoutes.mainNavigationScreen;
+      }
+
+      if (token.isEmpty && !isGoingToAuth) {
+        return AppRoutes.signInScreen;
+      }
+
+      return null;
     },
 
     routes: [
-
       GoRoute(
         path: onBoardingScreen,
         name: onBoardingScreen,
@@ -158,7 +227,6 @@ class AppRoutes {
         builder: (context, state) => EventDetailsScreen(),
       ),
 
-
       GoRoute(
         path: mainNavigationScreen,
         name: mainNavigationScreen,
@@ -170,7 +238,6 @@ class AppRoutes {
         name: floorMapScreen,
         builder: (context, state) => FloorMapScreen(),
       ),
-
 
       GoRoute(
         path: floorMapDetailsScreen,
@@ -205,20 +272,17 @@ class AppRoutes {
         builder: (context, state) => ContactQrScreen(),
       ),
 
-
       GoRoute(
         path: qrScannerScreen,
         name: qrScannerScreen,
         builder: (context, state) => QrScannerScreen(),
       ),
 
-
       GoRoute(
         path: liveMeetingScreen,
         name: liveMeetingScreen,
         builder: (context, state) => LiveMeetingScreen(),
       ),
-
 
       GoRoute(
         path: jobOpeningsScreen,
@@ -394,6 +458,116 @@ class AppRoutes {
         name: exhibitorDetailsScreen,
         builder: (context, state) => ExhibitorDetailsScreen(),
       ),
+
+      // =================== Role-Specific Routes ===================
+      GoRoute(
+        path: organizerDashboardScreen,
+        name: organizerDashboardScreen,
+        builder: (context, state) => const OrganizerDashboardScreen(),
+      ),
+      GoRoute(
+        path: sessionFormScreen,
+        name: sessionFormScreen,
+        builder: (context, state) => const SessionFormScreen(),
+      ),
+      GoRoute(
+        path: boothManagementScreen,
+        name: boothManagementScreen,
+        builder: (context, state) => const BoothManagementScreen(),
+      ),
+      GoRoute(
+        path: sponsorDashboardScreen,
+        name: sponsorDashboardScreen,
+        builder: (context, state) => const SponsorDashboardScreen(),
+      ),
+      GoRoute(
+        path: sponsorFormScreen,
+        name: sponsorFormScreen,
+        builder: (context, state) => const SponsorFormScreen(),
+      ),
+      GoRoute(
+        path: posterAssignScreen,
+        name: posterAssignScreen,
+        builder: (context, state) => const PosterAssignScreen(),
+      ),
+      GoRoute(
+        path: reviewerDashboardScreen,
+        name: reviewerDashboardScreen,
+        builder: (context, state) => const ReviewerDashboardScreen(),
+      ),
+      GoRoute(
+        path: volunteerDashboardScreen,
+        name: volunteerDashboardScreen,
+        builder: (context, state) => const VolunteerDashboardScreen(),
+      ),
+      GoRoute(
+        path: taskFormScreen,
+        name: taskFormScreen,
+        builder: (context, state) => const TaskFormScreen(),
+      ),
+      GoRoute(
+        path: liveSessionScreen,
+        name: liveSessionScreen,
+        builder: (context, state) => const LiveSessionScreen(),
+      ),
+      GoRoute(
+        path: organizerConversationsScreen,
+        name: organizerConversationsScreen,
+        builder: (context, state) => const OrganizerConversationsScreen(),
+      ),
+      GoRoute(
+        path: organizerChatScreen,
+        name: organizerChatScreen,
+        builder: (context, state) => const OrganizerChatScreen(),
+      ),
+      GoRoute(
+        path: invitationsScreen,
+        name: invitationsScreen,
+        builder: (context, state) => const InvitationsScreen(),
+      ),
+
+      // --- New routes for 18 remaining endpoints ---
+      GoRoute(
+        path: organizerAnnouncementsCrudScreen,
+        name: organizerAnnouncementsCrudScreen,
+        builder: (context, state) {
+          final eventId = state.extra as String? ?? '';
+          return org_annc.OrganizerAnnouncementCrudScreen(eventId: eventId);
+        },
+      ),
+      GoRoute(
+        path: organizerResourcesCrudScreen,
+        name: organizerResourcesCrudScreen,
+        builder: (context, state) {
+          final eventId = state.extra as String? ?? '';
+          return OrganizerResourcesScreen(eventId: eventId);
+        },
+      ),
+      GoRoute(
+        path: verifiedEmailScreen,
+        name: verifiedEmailScreen,
+        builder: (context, state) {
+          final eventId = state.extra as String? ?? '';
+          return VerifiedEmailScreen(eventId: eventId);
+        },
+      ),
+      GoRoute(
+        path: exhibitorLeadsScreen,
+        name: exhibitorLeadsScreen,
+        builder: (context, state) {
+          final boothId = state.extra as String? ?? '';
+          return ExhibitorLeadsScreen(boothId: boothId);
+        },
+      ),
+      GoRoute(
+        path: organizerAttendeeScreen,
+        name: organizerAttendeeScreen,
+        builder: (context, state) {
+          final eventId = state.extra as String? ?? '';
+          return OrganizerAttendeeScreen(eventId: eventId);
+        },
+      ),
+
       GoRoute(
         path: forgetPasswordScreen,
         name: forgetPasswordScreen,
@@ -412,16 +586,13 @@ class AppRoutes {
         name: resetPasswordScreen,
         builder: (context, state) => ResetPasswordScreen(),
       ),
-
-
-
     ],
   );
 
   static Page<dynamic> _customTransitionPage(
-      Widget child,
-      GoRouterState state,
-      ) {
+    Widget child,
+    GoRouterState state,
+  ) {
     return CustomTransitionPage(
       key: state.pageKey,
       child: child,
@@ -440,6 +611,4 @@ class AppRoutes {
       },
     );
   }
-
-
 }

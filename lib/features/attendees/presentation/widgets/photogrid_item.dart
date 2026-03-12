@@ -20,12 +20,12 @@ class PhotoGridItem extends StatelessWidget {
         height: 118.h,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: const Color(0xffD2D2D2),
-            width: 0.5,
-          ),
+          border: Border.all(color: const Color(0xffD2D2D2), width: 0.5),
           image: DecorationImage(
-            image: AssetImage(imagePath),
+            image:
+                imagePath.startsWith('http')
+                    ? NetworkImage(imagePath) as ImageProvider
+                    : AssetImage(imagePath),
             fit: BoxFit.cover,
           ),
         ),

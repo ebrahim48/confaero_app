@@ -1,4 +1,3 @@
-import 'package:confaero_app/features/Events/presentation/controllers/events_controller.dart';
 import 'package:confaero_app/features/Events/presentation/widgets/view/event_spaker_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,7 +9,6 @@ import '../../../../attendees/presentation/widgets/document_search_field_widget.
 import '../../controllers/events_spekar_controller.dart';
 import '../event_spekar_card.dart';
 import '../state_events_spekar_card.dart';
-
 
 class EventSpekarScreen extends StatelessWidget {
   const EventSpekarScreen({super.key});
@@ -94,10 +92,7 @@ class EventSpekarScreen extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
-                    child: Center(
-                        child: Assets.icons
-                            .filter.svg()
-                    ),
+                    child: Center(child: Assets.icons.filter.svg()),
                   ),
                 ],
               ),
@@ -140,14 +135,16 @@ class EventSpekarScreen extends StatelessWidget {
                       sessions: attendee['sessions'],
                       imagePath: attendee['image'],
                       isBookmarked: attendee['isBookmarked'],
-                      onBookmarkTap: () => controller.toggleBookmark(attendee['id']),
+                      onBookmarkTap:
+                          () => controller.toggleBookmark(attendee['id']),
                       onSayHi: () => controller.sayHi(attendee['name']),
                       onSendMail: () => controller.sendMail(attendee['name']),
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const EventSpekarDetailsScreen(),
+                            builder:
+                                (context) => const EventSpekarDetailsScreen(),
                           ),
                         );
                       },

@@ -1,6 +1,4 @@
-import '../../../../core/exceptions/app_exceptions.dart';
-// import '../../../../core/services/connectivity_service.dart';
-import '../../data/repositories/auth_repository.dart';
+// Auth service placeholder — business logic is handled directly in AuthRepository.
 
 /// Service layer that handles business logic for the auth feature.
 ///

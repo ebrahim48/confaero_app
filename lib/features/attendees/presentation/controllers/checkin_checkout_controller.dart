@@ -2,24 +2,30 @@ import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/services/qr_service.dart';
 
 class CheckInOutController extends GetxController {
+  final QrService _qrService = Get.find<QrService>();
+
   final isLoading = false.obs;
   final checkInTime = ''.obs;
   final checkOutTime = ''.obs;
   final scannedAttendees = <String>[].obs;
+  final qrData = ''.obs;
 
   // Contact Us controllers
   final emailController = TextEditingController();
   final messageController = TextEditingController();
   final contactFormKey = GlobalKey<FormState>();
 
+  /// Always reads the latest active eventId from the global SessionController.
+  String get currentEventId => SessionController.to.eventId;
+
   @override
   void onInit() {
     super.onInit();
-    // Load check in/out times if available
-    checkInTime.value = '10:01 am, June 10, 2025';
-    checkOutTime.value = '1:01 pm, June 10, 2025';
+    loadQrCode();
   }
 
   @override
@@ -29,21 +35,34 @@ class CheckInOutController extends GetxController {
     super.onClose();
   }
 
+  /// Generate QR code for this event
+  Future<void> loadQrCode() async {
+    try {
+      isLoading.value = true;
+      final response = await _qrService.generateQR(currentEventId);
+      if (response['success'] == true && response['data'] != null) {
+        qrData.value = response['data']['qrCode']?.toString() ?? '';
+        checkInTime.value = response['data']['checkInTime']?.toString() ?? '';
+        checkOutTime.value = response['data']['checkOutTime']?.toString() ?? '';
+      }
+    } catch (e) {
+      // Fallback to static values if API fails
+      checkInTime.value = '';
+      checkOutTime.value = '';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   void checkInViaQRCode(BuildContext context) async {
     context.pushNamed(AppRoutes.contactQrScreen);
-    // isLoading.value = true;
-    // await Future.delayed(const Duration(seconds: 2));
-    // isLoading.value = false;
-    //
-    // // Update check in time
-    // checkInTime.value = DateTime.now().toString();
   }
 
   void checkInVirtual(BuildContext context) async {
     context.pushNamed(AppRoutes.liveMeetingScreen);
   }
 
-  // New method to handle QR scanning
+  // Handle QR scanning and send to API
   void scanAttendeeQR(BuildContext context) async {
     final result = await context.pushNamed(AppRoutes.qrScannerScreen);
 
@@ -53,44 +72,45 @@ class CheckInOutController extends GetxController {
         scannedAttendees.add(result);
       }
 
-      // Show success message
-      Get.snackbar(
-        'Success',
-        'Attendee scanned successfully!',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: const Color(0xff32A69A),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
-        icon: const Icon(Icons.check_circle, color: Colors.white),
-      );
-
-      // You can also call an API here to save the scanned data
-      // await saveScannedAttendee(result);
+      // Send scan result to API
+      try {
+        await _qrService.scanQR(currentEventId, result);
+        Get.snackbar(
+          'Success',
+          'Attendee scanned successfully!',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: const Color(0xff32A69A),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+          margin: const EdgeInsets.all(16),
+          borderRadius: 8,
+          icon: const Icon(Icons.check_circle, color: Colors.white),
+        );
+      } catch (e) {
+        Get.snackbar(
+          'Error',
+          'Failed to process scan',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
     }
   }
 
   void submitContactForm() async {
     if (contactFormKey.currentState!.validate()) {
       isLoading.value = true;
-
-      // Simulate API call
       await Future.delayed(const Duration(seconds: 2));
       isLoading.value = false;
 
-      // Clear form
       emailController.clear();
       messageController.clear();
 
-      // Show success message
       Get.snackbar(
         'Success',
         'Your message has been sent successfully!',
         snackPosition: SnackPosition.BOTTOM,
       );
 
-      // Navigate back
       Get.back();
     }
   }
@@ -99,12 +119,10 @@ class CheckInOutController extends GetxController {
     context.pushNamed(AppRoutes.contactUsScreen);
   }
 
-  // Method to get scanned attendees list
   List<String> getScannedAttendees() {
     return scannedAttendees.toList();
   }
 
-  // Method to clear scanned attendees
   void clearScannedAttendees() {
     scannedAttendees.clear();
   }

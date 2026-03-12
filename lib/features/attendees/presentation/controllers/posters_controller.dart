@@ -3,7 +3,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/services/poster_service.dart';
+
 class PostersController extends GetxController {
+  final PosterService _posterService = Get.find<PosterService>();
+
   // Search controller
   final searchController = TextEditingController();
 
@@ -25,43 +29,50 @@ class PostersController extends GetxController {
     });
   }
 
-  void loadPosters() {
-    // Dummy data - Replace with API call
-    posters.value = List.generate(
-      10,
-          (index) => PosterModel(
-        id: index.toString(),
-        authorName: 'Dr. L. Chen - University Lab',
-        authorImage: 'assets/images/profile.png',
-        title: 'Engineering of the FRB domain of the...',
-        description: 'Lorem Ipsum is simply dummy text of the printing and...',
-        uploadDate: '12 Feb, 2026',
-        posterImage: 'assets/images/cardbanner.png',
-      ),
-    );
-    filteredPosters.value = posters;
+  /// Load accepted posters from API
+  Future<void> loadPosters() async {
+    try {
+      isLoading.value = true;
+      final response = await _posterService.getAcceptedPosters();
+
+      final success = response['success'] as bool? ?? false;
+      if (success && response['data'] is List) {
+        posters.value =
+            (response['data'] as List)
+                .map((e) => PosterModel.fromJson(e as Map<String, dynamic>))
+                .toList();
+      }
+      filteredPosters.value = posters;
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load posters');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void filterPosters(String query) {
     if (query.isEmpty) {
       filteredPosters.value = posters;
     } else {
-      filteredPosters.value = posters
-          .where((poster) =>
-      poster.title.toLowerCase().contains(query.toLowerCase()) ||
-          poster.authorName.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+      filteredPosters.value =
+          posters
+              .where(
+                (poster) =>
+                    poster.title.toLowerCase().contains(query.toLowerCase()) ||
+                    poster.authorName.toLowerCase().contains(
+                      query.toLowerCase(),
+                    ),
+              )
+              .toList();
     }
   }
 
   void downloadPoster(String posterId) {
-    print('Downloading poster: $posterId');
     Get.snackbar('Download', 'Poster download started');
   }
 
   void viewPoster(BuildContext context) {
     context.pushNamed(AppRoutes.eventPostersDetailsScreen);
-
   }
 
   @override
@@ -90,4 +101,22 @@ class PosterModel {
     required this.uploadDate,
     required this.posterImage,
   });
+
+  factory PosterModel.fromJson(Map<String, dynamic> json) {
+    return PosterModel(
+      id: json['_id'] as String? ?? '',
+      authorName:
+          json['authorName'] as String? ??
+          json['author']?['name'] as String? ??
+          '',
+      authorImage:
+          json['authorImage'] as String? ?? 'assets/images/profile.png',
+      title: json['title'] as String? ?? '',
+      description:
+          json['abstract'] as String? ?? json['description'] as String? ?? '',
+      uploadDate: json['createdAt'] as String? ?? '',
+      posterImage:
+          json['bannerUrl'] as String? ?? 'assets/images/cardbanner.png',
+    );
+  }
 }
