@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/controllers/session_controller.dart';
 import '../../../agenda/domain/services/agenda_service.dart';
 import '../../../connection/domain/services/connection_service.dart';
 
@@ -15,8 +16,8 @@ class EventSpekarDetailsController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isRequesting = false.obs;
 
-  // Event ID
-  final String currentEventId = 'default_event_id';
+  // Event ID from global session state
+  String get currentEventId => SessionController.to.eventId;
 
   @override
   void onInit() {

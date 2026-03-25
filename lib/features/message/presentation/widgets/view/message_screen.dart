@@ -90,7 +90,13 @@ class MessageScreen extends StatelessWidget {
                       message: msg,
                       onTap: () {
                         controller.markAsRead(msg.id);
-                        context.pushNamed(AppRoutes.messageChatScreen);
+                        context.pushNamed(
+                          AppRoutes.messageChatScreen,
+                          extra: {
+                            'conversationId': msg.id,
+                            'receiverId': msg.id, // MessageModel.id is the conversation id; actual receiverId comes from ConversationModel
+                          },
+                        );
                       },
                     );
                   },

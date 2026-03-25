@@ -64,10 +64,16 @@ class MyProfileController extends GetxController {
       }
 
       // Parse AuthRepository.getMe() response
+      // API shape: { data: { account: {...}, profile: { name, ... } } }
       final success = user['success'] as bool? ?? false;
       if (success && user['data'] != null) {
         final userData = user['data'] as Map<String, dynamic>;
-        userName.value = userData['name'] as String? ?? 'Unknown User';
+        final profileData = userData['profile'] as Map<String, dynamic>?;
+        final accountData = userData['account'] as Map<String, dynamic>?;
+        userName.value =
+            profileData?['name'] as String? ??
+            accountData?['name'] as String? ??
+            'Unknown User';
       }
     } catch (e) {
       _logger.e('Failed to load profile data: $e');

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/controllers/session_controller.dart';
 import '../../domain/models/message_model.dart';
 import '../../domain/services/message_service.dart';
 
@@ -12,8 +13,8 @@ class MessageController extends GetxController {
   RxList<MessageModel> messages = <MessageModel>[].obs;
   RxList<MessageModel> filteredMessages = <MessageModel>[].obs;
 
-  // Default event ID — should be replaced with actual event context
-  final String currentEventId = 'default_event_id';
+  // Event ID from global session state
+  String get currentEventId => SessionController.to.eventId;
 
   @override
   void onInit() {

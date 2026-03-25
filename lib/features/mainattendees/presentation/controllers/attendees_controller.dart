@@ -1,6 +1,7 @@
 // lib/features/attendees/controllers/attendees_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/controllers/session_controller.dart';
 import '../../domain/services/attendee_service.dart';
 
 class AttendeesController extends GetxController {
@@ -8,8 +9,8 @@ class AttendeesController extends GetxController {
   final TextEditingController searchController = TextEditingController();
 
   // Total stats
-  final RxInt totalAttendees = 5.obs;
-  final RxInt bookmarked = 3.obs;
+  final RxInt totalAttendees = 0.obs;
+  final RxInt bookmarked = 0.obs;
 
   // Attendees list
   final RxList<Map<String, dynamic>> attendees = <Map<String, dynamic>>[].obs;
@@ -22,8 +23,8 @@ class AttendeesController extends GetxController {
 
   Future<void> loadAttendees() async {
     try {
-      // Hardcoded eventId for Phase 2 demo; in auth/real usage, this should come from route args or active event settings
-      final eventId = 'default_event_id';
+      final eventId = SessionController.to.eventId;
+      if (eventId.isEmpty) return;
       final data = await _attendeeService.getEventAttendees(eventId);
 
       attendees.value =
@@ -73,7 +74,7 @@ class AttendeesController extends GetxController {
           attendees.where((a) => a['isBookmarked'] == true).length;
 
       try {
-        await _attendeeService.bookmarkAttendee('default_event_id', id);
+        await _attendeeService.bookmarkAttendee(SessionController.to.eventId, id);
       } catch (e) {
         // Revert on error
         attendees[index]['isBookmarked'] = wasBookmarked;

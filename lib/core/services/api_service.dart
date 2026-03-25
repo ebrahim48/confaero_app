@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:get/get.dart' hide Response;
+import 'package:go_router/go_router.dart';
 
 import '../constants/api_constants.dart';
 import '../constants/app_constants.dart';
@@ -80,7 +82,21 @@ class ApiService {
           final isRefreshCall =
               requestOptions.path == ApiConstants.refreshTokenApi;
 
-          if (statusCode == 401 && !isRefreshCall) {
+          // Backend incorrectly returns 500 for expired JWT instead of 401.
+          // Detect jwt expired by checking the response message.
+          final responseData = error.response?.data;
+          final serverMessage =
+              (responseData is Map ? responseData['message'] : null)
+                  ?.toString()
+                  .toLowerCase() ??
+              '';
+          final isJwtExpired = serverMessage.contains('jwt expired') ||
+              serverMessage.contains('token expired');
+
+          final isAuthError =
+              (statusCode == 401) || (statusCode == 500 && isJwtExpired);
+
+          if (isAuthError && !isRefreshCall) {
             try {
               final newAccessToken = await _handleTokenRefresh();
 
@@ -191,6 +207,13 @@ class ApiService {
     await PrefsHelper.remove(AppConstants.userRole);
     await PrefsHelper.remove(AppConstants.email);
     await PrefsHelper.setBool(AppConstants.isLogged, false);
+
+    // Redirect to login — use a small delay so any in-flight UI settles first
+    await Future.delayed(const Duration(milliseconds: 300));
+    final context = Get.context;
+    if (context != null && context.mounted) {
+      context.go('/signInScreen');
+    }
   }
 
   Future<Response> get(

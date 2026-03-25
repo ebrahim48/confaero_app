@@ -11,11 +11,20 @@ import '../chat_bubble_widget.dart';
 import '../../controllers/message_chat_controller.dart';
 
 class MessageChatScreen extends StatelessWidget {
-  const MessageChatScreen({super.key});
+  final Map<String, dynamic>? args;
+  const MessageChatScreen({super.key, this.args});
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(MessageChatController());
+    // If args were passed via GoRouter extra, inject them before onInit reads
+    if (args != null && controller.currentConversationId.isEmpty) {
+      controller.currentConversationId = args!['conversationId'] as String? ?? '';
+      controller.currentReceiverId = args!['receiverId'] as String? ?? '';
+      if (controller.currentConversationId.isNotEmpty) {
+        controller.loadMessages();
+      }
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,

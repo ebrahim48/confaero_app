@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/controllers/session_controller.dart';
 import '../../../connection/domain/services/connection_service.dart';
 import '../../domain/services/attendee_service.dart';
 
@@ -69,7 +70,7 @@ class AttendeeDetailsController extends GetxController {
 
     try {
       await _attendeeService.bookmarkAttendee(
-        'default_event_id',
+        SessionController.to.eventId,
         attendeeDetails['id'] ?? '',
       );
     } catch (e) {

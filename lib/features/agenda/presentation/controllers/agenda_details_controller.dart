@@ -2,6 +2,7 @@ import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/controllers/session_controller.dart';
 import '../../domain/services/agenda_service.dart';
 
 class AgendaDetailsController extends GetxController {
@@ -12,8 +13,8 @@ class AgendaDetailsController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isLiked = false.obs;
 
-  // Event and session IDs
-  final String currentEventId = 'default_event_id';
+  // Event ID from global session state
+  String get currentEventId => SessionController.to.eventId;
 
   @override
   void onInit() {

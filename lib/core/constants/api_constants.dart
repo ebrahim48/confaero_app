@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = 'https://reaz8080.syedbipul.me/api/v1';
+  static const String baseUrl = 'http://206.162.244.11:8078/api/v1';
   static const String imageUrl = "https://reaz8080.syedbipul.me";
 
   static Map<String, String> headers = {'Content-Type': 'application/json'};

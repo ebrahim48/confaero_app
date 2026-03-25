@@ -11,6 +11,7 @@ import 'package:confaero_app/features/attendees/presentation/widgets/view/new_ev
 import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../features/Events/presentation/widgets/view/event_speaker_screen.dart';
 import '../../../features/agenda/presentation/widgets/view/agenda_details_screen.dart';
@@ -431,7 +432,15 @@ class AppRoutes {
       GoRoute(
         path: messageChatScreen,
         name: messageChatScreen,
-        builder: (context, state) => MessageChatScreen(),
+        builder: (context, state) {
+          // extra is passed from MessageScreen as { conversationId, receiverId }
+          if (state.extra != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Get.arguments ?? state.extra;
+            });
+          }
+          return MessageChatScreen(args: state.extra as Map<String, dynamic>?);
+        },
       ),
       GoRoute(
         path: attendeeDetailsScreen,

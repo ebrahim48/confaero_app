@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class SnackbarHelper {
+  /// Returns true only when GetX has a valid navigator context to attach to.
+  static bool get _canShow =>
+      Get.isSnackbarOpen == false && Get.context != null;
+
   static void showSuccess(String title, String message) {
+    if (!_canShow) return;
     Get.snackbar(
       title,
       message,
@@ -16,6 +21,7 @@ class SnackbarHelper {
   }
 
   static void showError(String title, String message) {
+    if (!_canShow) return;
     Get.snackbar(
       title,
       message,
@@ -29,6 +35,7 @@ class SnackbarHelper {
   }
 
   static void showInfo(String title, String message) {
+    if (!_canShow) return;
     Get.snackbar(
       title,
       message,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/controllers/session_controller.dart';
 import '../../domain/services/message_service.dart';
 
 class ChatMessage {
@@ -30,9 +31,10 @@ class MessageChatController extends GetxController {
   final messages = <ChatMessage>[].obs;
 
   // Example conversational constants
-  final String currentEventId = 'default_event_id';
-  final String currentReceiverId = 'default_receiver_id';
-  final String currentConversationId = 'default_conversation_id';
+  // Event ID from global session state; conversationId + receiverId from route args
+  String get currentEventId => SessionController.to.eventId;
+  String currentReceiverId = '';
+  String currentConversationId = '';
 
   Future<void> loadMessages() async {
     try {
@@ -79,12 +81,20 @@ class MessageChatController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
+    // Read conversationId and receiverId from navigation args
+    // Navigator must pass: { 'conversationId': '...', 'receiverId': '...' }
+    final args = Get.arguments as Map<String, dynamic>? ?? {};
+    currentConversationId = args['conversationId'] as String? ?? '';
+    currentReceiverId = args['receiverId'] as String? ?? '';
+
     messageController.addListener(() {
       messageText.value = messageController.text;
     });
 
-    // Load initial messages from server
-    loadMessages();
+    if (currentConversationId.isNotEmpty) {
+      loadMessages();
+    }
   }
 
   Future<void> sendMessage() async {

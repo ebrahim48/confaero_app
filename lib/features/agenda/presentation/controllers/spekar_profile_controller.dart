@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../../../../core/controllers/session_controller.dart';
 import '../../domain/services/agenda_service.dart';
 
 class SpeakerProfileController extends GetxController {
@@ -16,8 +17,8 @@ class SpeakerProfileController extends GetxController {
   // Favorite session IDs
   final RxList<String> favoriteSessions = <String>[].obs;
 
-  // Event ID
-  final String currentEventId = 'default_event_id';
+  // Event ID from global session state
+  String get currentEventId => SessionController.to.eventId;
 
   @override
   void onInit() {
