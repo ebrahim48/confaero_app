@@ -9,12 +9,18 @@ class ChangePasswordController extends GetxController {
   final confirmPasswordController = TextEditingController();
 
   final RxBool isLoading = false.obs;
-  final AuthRepository _authRepository = Get.find<AuthRepository>();
+  late final AuthRepository _authRepository;
 
   // Password visibility
   final RxBool isCurrentPasswordVisible = false.obs;
   final RxBool isNewPasswordVisible = false.obs;
   final RxBool isConfirmPasswordVisible = false.obs;
+
+  @override
+  void onInit(){
+    super.onInit();
+    _authRepository = Get.find<AuthRepository>();
+  }
 
   void toggleCurrentPasswordVisibility() {
     isCurrentPasswordVisible.value = !isCurrentPasswordVisible.value;

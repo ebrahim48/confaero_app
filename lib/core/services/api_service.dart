@@ -18,7 +18,7 @@ class ApiService {
   factory ApiService() {
     return _instance;
   }
-
+  //*------------------ Singleton Implementation ------------------*//
   ApiService._internal() {
     _dio = Dio(
       BaseOptions(
@@ -144,6 +144,7 @@ class ApiService {
 
   Dio get dio => _dio;
 
+  //*---------------- Handle Refresh Token ----------------*//
   Future<String?> _handleTokenRefresh() async {
     if (_isRefreshing && _refreshTokenFuture != null) {
       return _refreshTokenFuture;
@@ -159,7 +160,7 @@ class ApiService {
       _refreshTokenFuture = null;
     }
   }
-
+  //*------------ Access Token Refresh Logic ------------*//
   Future<String?> _refreshAccessToken() async {
     try {
       final refreshToken = await PrefsHelper.getString(
@@ -200,7 +201,7 @@ class ApiService {
       return null;
     }
   }
-
+  //*---------Clear Session and Redirect to Login --------*//
   Future<void> _clearSession() async {
     await PrefsHelper.remove(AppConstants.bearerToken);
     await PrefsHelper.remove(AppConstants.refreshToken);
@@ -215,7 +216,9 @@ class ApiService {
       context.go('/signInScreen');
     }
   }
-
+  //------------------ API Methods ------------------*//
+  //__________________________________________________//
+  //*_________________GET___________________*//
   Future<Response> get(
     String path, {
     Map<String, dynamic>? queryParameters,
@@ -235,7 +238,7 @@ class ApiService {
       throw UnknownException(e.toString());
     }
   }
-
+  //*_________________POST___________________*//
   Future<Response> post(
     String path, {
     dynamic data,
@@ -260,7 +263,7 @@ class ApiService {
       throw UnknownException(e.toString());
     }
   }
-
+  //*_________________PUT___________________*//
   Future<Response> put(
     String path, {
     dynamic data,
@@ -282,7 +285,7 @@ class ApiService {
       throw UnknownException(e.toString());
     }
   }
-
+  //*_________________PATCH___________________*//
   Future<Response> patch(
     String path, {
     dynamic data,
@@ -304,7 +307,7 @@ class ApiService {
       throw UnknownException(e.toString());
     }
   }
-
+  //*_________________DELETE___________________*//
   Future<Response> delete(
     String path, {
     dynamic data,
@@ -326,7 +329,7 @@ class ApiService {
       throw UnknownException(e.toString());
     }
   }
-
+  //*------------------ Error Handling ------------------*//
   AppException _handleDioError(DioException error) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
