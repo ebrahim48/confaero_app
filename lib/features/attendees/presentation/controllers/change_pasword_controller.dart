@@ -8,6 +8,9 @@ class ChangePasswordController extends GetxController {
   final newPasswordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
+  final RxBool isLoading = false.obs;
+  final AuthRepository _authRepository = Get.find<AuthRepository>();
+
   // Password visibility
   final RxBool isCurrentPasswordVisible = false.obs;
   final RxBool isNewPasswordVisible = false.obs;
@@ -24,9 +27,6 @@ class ChangePasswordController extends GetxController {
   void toggleConfirmPasswordVisibility() {
     isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value;
   }
-
-  final RxBool isLoading = false.obs;
-  final AuthRepository _authRepository = Get.find<AuthRepository>();
 
   Future<void> changePassword() async {
     // Validation

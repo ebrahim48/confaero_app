@@ -15,8 +15,7 @@ class AuthRepository {
   }) : _connectivityService = connectivityService,
        _apiService = apiService;
 
-  /// Registers a new user with email, password and confirmPassword
-  ///
+  //*-------------- Register----------------//
   /// Request Body:
   /// {
   ///   "name": "test user1",
@@ -71,7 +70,7 @@ class AuthRepository {
     }
   }
 
-  /// Login user with email and password
+  //*---------------Login-----------------//
   ///
   /// Request Body:
   /// {
@@ -118,7 +117,7 @@ class AuthRepository {
     }
   }
 
-  /// Change User Password
+  //*------------Change Password----------------//
   Future<Map<String, dynamic>> changePassword({
     required String currentPassword,
     required String newPassword,
@@ -146,7 +145,7 @@ class AuthRepository {
     }
   }
 
-  /// Get Current User Details
+  //*------------Get Current User Details----------------//
   Future<Map<String, dynamic>> getMe() async {
     try {
       final isConnected = await _connectivityService.checkConnectivity();
@@ -162,7 +161,7 @@ class AuthRepository {
     }
   }
 
-  /// Delete Account
+  //*------------Delete Account----------------//
   Future<Map<String, dynamic>> deleteAccount() async {
     try {
       final isConnected = await _connectivityService.checkConnectivity();
@@ -178,7 +177,7 @@ class AuthRepository {
     }
   }
 
-  /// Toggle Email Notification
+  //*------------Toggle Email Notification----------------//
   Future<Map<String, dynamic>> toggleNotification(bool enable) async {
     try {
       final isConnected = await _connectivityService.checkConnectivity();
@@ -198,7 +197,7 @@ class AuthRepository {
     }
   }
 
-  /// Change Role
+  //*------------Change Role----------------//
   Future<Map<String, dynamic>> changeRole(String role) async {
     try {
       final isConnected = await _connectivityService.checkConnectivity();
@@ -215,7 +214,7 @@ class AuthRepository {
     }
   }
 
-  /// Get My Roles
+  //*------------Get My Roles----------------//
   Future<Map<String, dynamic>> getMyRoles() async {
     try {
       final isConnected = await _connectivityService.checkConnectivity();
