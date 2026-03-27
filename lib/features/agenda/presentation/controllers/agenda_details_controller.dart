@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../domain/services/agenda_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class AgendaDetailsController extends GetxController {
   final AgendaService _agendaService = Get.find<AgendaService>();
@@ -41,11 +42,7 @@ class AgendaDetailsController extends GetxController {
         isLiked.value = data['isLiked'] as bool? ?? false;
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load session details',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Failed to load session details', title: 'Error');
     } finally {
       isLoading.value = false;
     }

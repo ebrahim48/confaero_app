@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/helpers/snackbar_helper.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../domain/services/resource_service.dart';
 import '../../data/models/resource_model.dart';
 
@@ -41,7 +41,7 @@ class OrganizerResourceController extends GetxController {
       final analytics = await _service.getSurveyAnalytics(eventId);
       surveyAnalytics.assignAll(analytics);
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to load resources');
+      ToastMessageHelper.showToastMessage('Failed to load resources', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -51,9 +51,9 @@ class OrganizerResourceController extends GetxController {
     final question = questionController.text.trim();
     final answer = answerController.text.trim();
     if (question.isEmpty || answer.isEmpty) {
-      SnackbarHelper.showError(
-        'Validation',
+      ToastMessageHelper.showToastMessage(
         'Question and answer are required',
+        title: 'Validation',
       );
       return;
     }
@@ -62,10 +62,10 @@ class OrganizerResourceController extends GetxController {
       await _service.createQnA(eventId, question: question, answer: answer);
       questionController.clear();
       answerController.clear();
-      SnackbarHelper.showSuccess('Success', 'Q&A item created');
+      ToastMessageHelper.showToastMessage('Q&A item created', title: 'Success');
       await loadData();
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to create Q&A');
+      ToastMessageHelper.showToastMessage('Failed to create Q&A', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -117,10 +117,10 @@ class OrganizerResourceController extends GetxController {
       );
       questionController.clear();
       answerController.clear();
-      SnackbarHelper.showSuccess('Success', 'Q&A item updated');
+      ToastMessageHelper.showToastMessage('Q&A item updated', title: 'Success');
       await loadData();
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to update Q&A');
+      ToastMessageHelper.showToastMessage('Failed to update Q&A', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -147,10 +147,10 @@ class OrganizerResourceController extends GetxController {
 
     try {
       await _service.deleteQnA(item.id, eventId);
-      SnackbarHelper.showSuccess('Deleted', 'Q&A item deleted');
+      ToastMessageHelper.showToastMessage('Q&A item deleted', title: 'Deleted');
       await loadData();
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to delete Q&A');
+      ToastMessageHelper.showToastMessage('Failed to delete Q&A', title: 'Error');
     }
   }
 }

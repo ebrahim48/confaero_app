@@ -28,10 +28,11 @@ class ApiConstants {
   static const String getEventDetails = '/attendee/events';
   static const String initiateRegistration = '/attendee/events';
   static const String getEventHome = '/attendee/events';
-  static const String getFloorMaps = '/organizer/events';
+  // REMOVED: getFloorMaps no longer in backend API
+  // static const String getFloorMaps = '/organizer/events';
 
   //--------------------------Connections-------------------------
-  static const String sendConnectionRequest = '/connection/request';
+  static const String sendConnectionRequest = '/connection/request'; // append /:eventId
   static const String acceptConnectionRequest =
       '/connection/requests'; // append /:id/accept
   static const String getPendingRequests = '/connection/requests';
@@ -75,6 +76,8 @@ class ApiConstants {
   //--------------------------Announcements-------------------------
   static const String getAnnouncements =
       '/announcement/event'; // append /:eventId
+  static const String getOrganizerAnnouncements =
+      '/announcement/get-all'; // GET /:eventId
   static const String createAnnouncement = '/announcement'; // POST /:eventId
   static const String updateAnnouncement =
       '/announcement'; // PATCH /:id/:eventId
@@ -94,6 +97,7 @@ class ApiConstants {
 
   //--------------------------Documents---------------------------
   static const String getAllDocuments = '/document'; // append /:eventId/all
+  static const String getOrganizerDocuments = '/document'; // GET /:eventId (organizer view)
   static const String getMyDocuments = '/document'; // append /:eventId/my
   static const String uploadDocument = '/document'; // append /:eventId
   static const String deleteMyDocument = '/document/my'; // append /:id
@@ -114,18 +118,20 @@ class ApiConstants {
   static const String createQnA = '/resouce/qna'; // POST /:eventId
   static const String updateQnA = '/resouce/qna'; // PATCH /:id/:eventId
   static const String deleteQnA = '/resouce/qna'; // DELETE /:id/:eventId
+  static const String createPoll = '/resouce/poll'; // POST /:eventId
+  static const String updatePoll = '/resouce/poll'; // PATCH /:id/:eventId
+  static const String deletePoll = '/resouce/poll'; // DELETE /:id/:eventId
+  static const String getPollVotes = '/resouce/poll'; // GET /:id/:eventId/votes
   static const String submitSurvey = '/resouce/survey'; // POST /:eventId/submit
   static const String getSurveyAnalytics =
       '/resouce/survey'; // GET /:eventId/analytics
 
   //--------------------------Verified Email (Organizer)----------
-  static const String getVerifiedEmails = '/verifyEmail/events'; // GET /:id
-  static const String addVerifiedEmails =
-      '/verifyEmail/events'; // POST /:id/add-emails
-  static const String uploadEmailsCsv =
-      '/verifyEmail/events'; // POST /:id/upload-csv
-  static const String deleteVerifiedEmail =
-      '/verifyEmail/events'; // DELETE /:id/:emailId
+  // REMOVED: verifyEmail endpoints no longer in backend API
+  // static const String getVerifiedEmails = '/verifyEmail/events';
+  // static const String addVerifiedEmails = '/verifyEmail/events';
+  // static const String uploadEmailsCsv = '/verifyEmail/events';
+  // static const String deleteVerifiedEmail = '/verifyEmail/events';
 
   //--------------------------QR Exhibitor Leads-----------------
   static const String getExhibitorLeads = '/qr/exhibitor'; // GET /:id/leads
@@ -133,12 +139,10 @@ class ApiConstants {
   static const String tagLead = '/qr/exhibitor/leads'; // PATCH /:id/tags
 
   //--------------------------Organizer Attendee Management------
-  static const String getOrganizerAttendeeDetail =
-      '/organizer/attendee'; // GET /:eventId/:attendeeId
-  static const String removeOrganizerAttendee =
-      '/organizer/attendee'; // DELETE /:eventId/:attendeeId
-  static const String getAllRegistrations =
-      '/organizer/all-register'; // GET /:eventId
+  // REMOVED: organizer attendee management endpoints no longer in backend API
+  // static const String getOrganizerAttendeeDetail = '/organizer/attendee';
+  // static const String removeOrganizerAttendee = '/organizer/attendee';
+  // static const String getAllRegistrations = '/organizer/all-register';
 
   //--------------------------Event Registration-------------------
   static const String getMyEventDetails = '/attendee/my-events'; // append /:id
@@ -152,11 +156,13 @@ class ApiConstants {
   static const String getMyRoles = '/auth/my-roles';
 
   //--------------------------Terms & Content-----------------------
-  static const String getTermsCondition = '/appContent/TERMS_CONDITION';
+  // REMOVED: appContent endpoints no longer in backend API
+  // static const String getTermsCondition = '/appContent/TERMS_CONDITION';
 
   //--------------------------QR Code-------------------------------
   static const String generateQR = '/qr/generate'; // append /:eventId
   static const String scanQR = '/qr/scan'; // append /:eventId
+  static const String getVolunteerAttendance = '/qr/volunteer'; // GET /:eventId
 
   //--------------------------Jobs----------------------------------
   static const String getJobs = '/job/';
@@ -169,18 +175,32 @@ class ApiConstants {
       '/invitation'; // append /:id/accept/:eventId
   static const String rejectInvitation =
       '/invitation'; // append /:id/reject/:eventId
+  static const String createInvitation =
+      '/invitation/create'; // POST /:eventId
+  static const String deleteInvitation =
+      '/invitation'; // DELETE /:id/:eventId
+  static const String resendInvitation =
+      '/invitation'; // POST /:id/resend/:eventId
+  static const String makeSpeaker =
+      '/invitation'; // POST /:id/make-speaker
+  static const String getOrganizerInvitations =
+      '/invitation/event'; // GET /:eventId
+  static const String getInvitationSessions =
+      '/invitation'; // GET /:eventId/sessions
 
   // ======================== ROLE-SPECIFIC APIs ========================
 
   //--------------------------Organizer Sessions-----------------------
-  static const String createSession =
-      '/organizer-sessions/events'; // POST /:id/agenda
-  static const String updateSession =
-      '/organizer-sessions/events'; // PATCH /:id/agenda/:sessionId
-  static const String deleteSession =
-      '/organizer-sessions/events'; // DELETE /:id/agenda/:sessionId
+  // REMOVED: session CRUD endpoints no longer in backend API
+  // static const String createSession = '/organizer-sessions/events';
+  // static const String updateSession = '/organizer-sessions/events';
+  // static const String deleteSession = '/organizer-sessions/events';
   static const String addSpeaker =
-      '/organizer-sessions/events'; // POST /:id/speakers
+      '/organizer-sessions/events'; // POST /:id/agenda/:idx/speakers/:speakerId
+  static const String removeSpeaker =
+      '/organizer-sessions/events'; // DELETE /:id/agenda/:idx/speakers/:speakerId
+  static const String searchSpeakerByEmail =
+      '/organizer-sessions/event'; // GET /:eventId/speakers/search
 
   //--------------------------Booth (Organizer)------------------------
   static const String getOrganizerBooths =
@@ -275,18 +295,13 @@ class ApiConstants {
   static const String endLiveSession = '/eventLive/end'; // POST /:eventId
 
   //--------------------------Organizer Messaging-----------------------
-  static const String sendOrganizerMessage =
-      '/messageOrganizer/send'; // POST /:eventId
-  static const String getOrganizerConversations =
-      '/messageOrganizer/conversations'; // GET /:eventId
-  static const String getOrganizerMessages =
-      '/messageOrganizer/messages'; // GET /:convId/:eventId
-  static const String getOrganizerPresence =
-      '/messageOrganizer/presence'; // GET /:userId/:eventId
-  static const String markOrganizerSeen =
-      '/messageOrganizer/seen'; // PATCH /:msgId/:eventId
-  static const String getOrganizerNotifications =
-      '/messageOrganizer/notifications'; // GET /:eventId
+  // REMOVED: messageOrganizer endpoints no longer in backend API
+  // static const String sendOrganizerMessage = '/messageOrganizer/send';
+  // static const String getOrganizerConversations = '/messageOrganizer/conversations';
+  // static const String getOrganizerMessages = '/messageOrganizer/messages';
+  // static const String getOrganizerPresence = '/messageOrganizer/presence';
+  // static const String markOrganizerSeen = '/messageOrganizer/seen';
+  // static const String getOrganizerNotifications = '/messageOrganizer/notifications';
 
   //--------------------------Document (Organizer)---------------------
   static const String getPendingDocuments =
@@ -307,5 +322,6 @@ class ApiConstants {
   static const String deleteJob = '/job'; // DELETE /:id
 
   //--------------------------App Content-------------------------------
-  static const String createAppContent = '/appContent/create';
+  // REMOVED: appContent create endpoint no longer in backend API
+  // static const String createAppContent = '/appContent/create';
 }

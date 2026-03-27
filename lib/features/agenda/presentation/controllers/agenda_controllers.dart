@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/controllers/session_controller.dart';
-import '../../../../core/helpers/snackbar_helper.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../domain/services/agenda_service.dart';
 import '../../data/models/session_model.dart';
 
@@ -45,7 +45,7 @@ class AgendaController extends GetxController {
       final bookmarked = await _agendaService.getMyAgenda(currentEventId);
       myAgendaSessions.assignAll(bookmarked);
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to load agenda');
+      ToastMessageHelper.showToastMessage('Failed to load agenda', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -142,7 +142,7 @@ class AgendaController extends GetxController {
       await _agendaService.toggleSessionLike(currentEventId, session.id);
       await _fetchSessions(); // Refresh data to get updated likes count
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to toggle like');
+      ToastMessageHelper.showToastMessage('Failed to toggle like', title: 'Error');
     }
   }
 
@@ -150,10 +150,10 @@ class AgendaController extends GetxController {
   Future<void> addToMyAgenda(SessionModel session) async {
     try {
       await _agendaService.bookmarkSession(currentEventId, session.id);
-      SnackbarHelper.showSuccess('Success', 'Added to your agenda');
+      ToastMessageHelper.showToastMessage('Added to your agenda', title: 'Success');
       await _fetchSessions();
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to add to agenda');
+      ToastMessageHelper.showToastMessage('Failed to add to agenda', title: 'Error');
     }
   }
 
@@ -161,10 +161,10 @@ class AgendaController extends GetxController {
   Future<void> removeFromMyAgenda(SessionModel session) async {
     try {
       await _agendaService.removeBookmarkSession(currentEventId, session.id);
-      SnackbarHelper.showSuccess('Success', 'Removed from your agenda');
+      ToastMessageHelper.showToastMessage('Removed from your agenda', title: 'Success');
       await _fetchSessions();
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to remove from agenda');
+      ToastMessageHelper.showToastMessage('Failed to remove from agenda', title: 'Error');
     }
   }
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/approutes/app_routes.dart';
 import '../../../../core/services/poster_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class EventPosterDetailsController extends GetxController {
   final PosterService _posterService = Get.find<PosterService>();
@@ -76,7 +77,7 @@ class EventPosterDetailsController extends GetxController {
         }
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load poster details');
+      ToastMessageHelper.showToastMessage('Failed to load poster details', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -95,11 +96,11 @@ class EventPosterDetailsController extends GetxController {
   }
 
   void watchVideo() {
-    Get.snackbar('Video', 'Opening video player');
+    ToastMessageHelper.showToastMessage('Opening video player', title: 'Video');
   }
 
   void viewPresenterDetails(String presenterId) {
-    Get.snackbar('Presenter', 'Viewing presenter: $presenterId');
+    ToastMessageHelper.showToastMessage('Viewing presenter: $presenterId', title: 'Presenter');
   }
 }
 

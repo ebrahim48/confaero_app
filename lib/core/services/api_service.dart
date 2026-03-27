@@ -24,8 +24,8 @@ class ApiService {
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
         headers: ApiConstants.headers,
-        connectTimeout: const Duration(minutes: 2),
-        receiveTimeout: const Duration(minutes: 2),
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
       ),
     );
 

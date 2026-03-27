@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../connection/data/models/connection_model.dart';
 import '../../../connection/domain/services/connection_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class ConnectionListController extends GetxController {
   final ConnectionService _connectionService = Get.find<ConnectionService>();
@@ -13,12 +14,19 @@ class ConnectionListController extends GetxController {
   final connections = <ConnectionModel>[].obs;
   final filteredConnections = <ConnectionModel>[].obs;
 
+  // Pending requests
+  final pendingRequests = <dynamic>[].obs;
+
   // Stats
   final totalConnections = 0.obs;
   final bookmarkedCount = 0.obs;
+  final pendingCount = 0.obs;
 
   // Loading state
   final isLoading = false.obs;
+
+  // Tab: 0 = My Connections, 1 = Pending Requests
+  final selectedTab = 0.obs;
 
   @override
   void onInit() {
@@ -41,11 +49,7 @@ class ConnectionListController extends GetxController {
       filteredConnections.value = connections;
       updateStats();
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load connections',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Failed to load connections', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -99,37 +103,71 @@ class ConnectionListController extends GetxController {
         filteredConnections.refresh();
         updateStats();
       }
-      Get.snackbar(
-        'Error',
-        'Could not update bookmark',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Could not update bookmark', title: 'Error');
+    }
+  }
+
+  /// Load pending connection requests
+  Future<void> loadPendingRequests() async {
+    isLoading.value = true;
+    try {
+      final data = await _connectionService.getPendingRequests();
+      pendingRequests.assignAll(data);
+      pendingCount.value = data.length;
+    } catch (e) {
+      ToastMessageHelper.showToastMessage('Failed to load pending requests', title: 'Error');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Accept a connection request
+  Future<void> acceptRequest(String requestId) async {
+    try {
+      await _connectionService.acceptRequest(requestId);
+      pendingRequests.removeWhere((r) => r.id == requestId);
+      pendingCount.value = pendingRequests.length;
+      ToastMessageHelper.showToastMessage('Connection accepted!', title: 'Success');
+      // Refresh connections to show the new one
+      loadConnections();
+    } catch (e) {
+      ToastMessageHelper.showToastMessage('Failed to accept request', title: 'Error');
+    }
+  }
+
+  /// Get connection details
+  Future<ConnectionModel?> getConnectionDetails(String id) async {
+    try {
+      return await _connectionService.getConnectionDetails(id);
+    } catch (e) {
+      ToastMessageHelper.showToastMessage('Failed to load connection details', title: 'Error');
+      return null;
+    }
+  }
+
+  /// Switch tab
+  void switchTab(int index) {
+    selectedTab.value = index;
+    if (index == 1 && pendingRequests.isEmpty) {
+      loadPendingRequests();
     }
   }
 
   // Say Hi action
   void sayHi(String id) {
-    Get.snackbar(
-      'Message',
-      'Say Hi to connection',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 1),
-    );
+    ToastMessageHelper.showToastMessage('Say Hi to connection', title: 'Message');
   }
 
   // Send Mail action
   void sendMail(String id) {
-    Get.snackbar(
-      'Email',
-      'Opening email...',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 1),
-    );
+    ToastMessageHelper.showToastMessage('Opening email...', title: 'Email');
   }
 
   // Refresh connections
   Future<void> refreshConnections() async {
-    await Future.delayed(const Duration(seconds: 1));
-    loadConnections();
+    await loadConnections();
+    if (selectedTab.value == 1) {
+      await loadPendingRequests();
+    }
   }
 }

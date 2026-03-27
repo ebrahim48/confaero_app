@@ -40,7 +40,7 @@ class SettingsScreen extends StatelessWidget {
                   SettingsTileWidget(
                     icon: 'assets/icons/rolearrow.svg',
                     title: 'Role switch',
-                    onTap: controller.navigateToRoleSwitch,
+                    onTap: () => controller.navigateToRoleSwitch(context),
                   ),
                   SizedBox(height: 12.h),
 

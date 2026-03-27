@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/services/booth_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class BoothManagementController extends GetxController {
   final BoothService _service = Get.find<BoothService>();
@@ -49,7 +50,7 @@ class BoothManagementController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load booths');
+      ToastMessageHelper.showToastMessage('Failed to load booths', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -58,20 +59,20 @@ class BoothManagementController extends GetxController {
   Future<void> acceptBooth(String boothId) async {
     try {
       await _service.acceptBooth(boothId);
-      Get.snackbar('Success', 'Booth accepted');
+      ToastMessageHelper.showToastMessage('Booth accepted', title: 'Success');
       loadOrganizerBooths();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to accept booth');
+      ToastMessageHelper.showToastMessage('Failed to accept booth', title: 'Error');
     }
   }
 
   Future<void> cancelBooth(String boothId) async {
     try {
       await _service.cancelBooth(boothId);
-      Get.snackbar('Success', 'Booth cancelled');
+      ToastMessageHelper.showToastMessage('Booth cancelled', title: 'Success');
       loadOrganizerBooths();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to cancel booth');
+      ToastMessageHelper.showToastMessage('Failed to cancel booth', title: 'Error');
     }
   }
 
@@ -99,7 +100,7 @@ class BoothManagementController extends GetxController {
         } catch (_) {}
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load booth');
+      ToastMessageHelper.showToastMessage('Failed to load booth', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -112,9 +113,9 @@ class BoothManagementController extends GetxController {
         'name': boothNameController.text,
         'description': boothDescController.text,
       });
-      Get.snackbar('Success', 'Booth updated');
+      ToastMessageHelper.showToastMessage('Booth updated', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to update booth');
+      ToastMessageHelper.showToastMessage('Failed to update booth', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -123,15 +124,15 @@ class BoothManagementController extends GetxController {
   Future<void> addStaff(String email) async {
     try {
       await _service.addBoothStaff({'email': email});
-      Get.snackbar('Success', 'Staff added');
+      ToastMessageHelper.showToastMessage('Staff added', title: 'Success');
       loadMyBooth();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to add staff');
+      ToastMessageHelper.showToastMessage('Failed to add staff', title: 'Error');
     }
   }
 
   Future<void> removeStaff(String staffId) async {
     staffMembers.removeWhere((s) => s['_id'] == staffId);
-    Get.snackbar('Success', 'Staff removed');
+    ToastMessageHelper.showToastMessage('Staff removed', title: 'Success');
   }
 }

@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../../../../core/services/poster_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class AddPosterController extends GetxController {
   final PosterService _posterService = Get.find<PosterService>();
@@ -56,42 +59,54 @@ class AddPosterController extends GetxController {
     }
   }
 
-  /// Upload banner via PosterService
+  /// Upload banner via file picker + PosterService
   Future<void> addBanner() async {
-    // TODO: integrate file_picker to select file, then:
-    // final result = await FilePicker.platform.pickFiles();
-    // if (result != null) {
-    //   bannerFilePath.value = result.files.single.path;
-    //   final response = await _posterService.uploadPosterFile(bannerFilePath.value!);
-    //   // Store uploaded URL
-    // }
-    Get.snackbar('Info', 'Select a banner image');
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+      );
+      if (result != null && result.files.single.path != null) {
+        bannerFilePath.value = result.files.single.path;
+        ToastMessageHelper.showToastMessage(
+          'Banner selected: ${result.files.single.name}',
+          title: 'Success',
+        );
+      }
+    } catch (e) {
+      ToastMessageHelper.showToastMessage('Failed to pick banner image', title: 'Error');
+    }
   }
 
-  /// Upload attachment via PosterService
+  /// Upload attachment via file picker + PosterService
   Future<void> addAttachment() async {
-    // TODO: integrate file_picker to select file, then:
-    // final result = await FilePicker.platform.pickFiles();
-    // if (result != null) {
-    //   final path = result.files.single.path!;
-    //   attachmentFilePaths.add(path);
-    //   attachments.add({
-    //     'name': result.files.single.name,
-    //     'size': '${(result.files.single.size / 1024 / 1024).toStringAsFixed(1)} MB',
-    //     'icon': Icons.attach_file,
-    //   });
-    // }
-    Get.snackbar('Info', 'Select an attachment file');
+    try {
+      final result = await FilePicker.platform.pickFiles();
+      if (result != null && result.files.single.path != null) {
+        final path = result.files.single.path!;
+        attachmentFilePaths.add(path);
+        attachments.add({
+          'name': result.files.single.name,
+          'size': '${(result.files.single.size / 1024 / 1024).toStringAsFixed(1)} MB',
+          'icon': Icons.attach_file,
+        });
+        ToastMessageHelper.showToastMessage(
+          'Attachment added: ${result.files.single.name}',
+          title: 'Success',
+        );
+      }
+    } catch (e) {
+      ToastMessageHelper.showToastMessage('Failed to pick attachment', title: 'Error');
+    }
   }
 
   /// Submit poster via PosterService.createPoster()
   Future<void> submitForm() async {
     if (titleController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter a title');
+      ToastMessageHelper.showToastMessage('Please enter a title', title: 'Error');
       return;
     }
     if (abstractController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter an abstract');
+      ToastMessageHelper.showToastMessage('Please enter an abstract', title: 'Error');
       return;
     }
 
@@ -122,16 +137,10 @@ class AddPosterController extends GetxController {
         if (bannerUrl != null) 'bannerUrl': bannerUrl,
       });
 
-      Get.snackbar(
-        'Success',
-        'Poster submitted successfully!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xff32A69A),
-        colorText: Colors.white,
-      );
+      ToastMessageHelper.showToastMessage('Poster submitted successfully!', title: 'Success');
       Get.back();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to submit poster');
+      ToastMessageHelper.showToastMessage('Failed to submit poster', title: 'Error');
     } finally {
       isSubmitting.value = false;
     }

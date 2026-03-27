@@ -2,12 +2,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../../../../core/helpers/logger_helper.dart';
 import '../../../auth/data/repositories/auth_repository.dart';
 import '../../../profile/domain/services/profile_service.dart';
 import '../widgets/view/affiliation_form_screen.dart';
 import '../widgets/view/all_forms_screen.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class MyProfileController extends GetxController {
   final ProfileService _profileService = Get.find<ProfileService>();
@@ -77,7 +79,7 @@ class MyProfileController extends GetxController {
       }
     } catch (e) {
       _logger.e('Failed to load profile data: $e');
-      Get.snackbar('Error', 'Failed to load profile details');
+      ToastMessageHelper.showToastMessage('Failed to load profile details', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -94,7 +96,7 @@ class MyProfileController extends GetxController {
 
       if (image != null) {
         isSaving.value = true;
-        Get.snackbar('Processing...', 'Uploading profile image');
+        ToastMessageHelper.showToastMessage('Uploading profile image', title: 'Processing...');
 
         final File file = File(image.path);
         final updatedProfile = await _profileService.updateProfile(
@@ -105,11 +107,11 @@ class MyProfileController extends GetxController {
           userAvatar.value = updatedProfile.profileImage!;
         }
 
-        Get.snackbar('Success', 'Profile picture updated');
+        ToastMessageHelper.showToastMessage('Profile picture updated', title: 'Success');
       }
     } catch (e) {
       _logger.e('Failed to upload image: $e');
-      Get.snackbar('Error', 'Failed to upload image');
+      ToastMessageHelper.showToastMessage('Failed to upload image', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -156,28 +158,34 @@ class MyProfileController extends GetxController {
         isSaving.value = true;
         await _profileService.deleteResume();
         resumeUploaded.value = false;
-        Get.snackbar(
-          'Success',
-          'Resume removed',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastMessageHelper.showToastMessage('Resume removed', title: 'Success');
       } catch (e) {
         _logger.e('Failed to delete resume: $e');
-        Get.snackbar(
-          'Error',
-          'Failed to remove resume',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastMessageHelper.showToastMessage('Failed to remove resume', title: 'Error');
       } finally {
         isSaving.value = false;
       }
     } else {
-      Get.snackbar(
-        'Info',
-        'Opening file picker...',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      // TODO: Implement file picker and call _profileService.updateProfile(resumeFile: file)
+      // Upload resume via file picker
+      try {
+        final result = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['pdf', 'doc', 'docx'],
+        );
+
+        if (result != null && result.files.single.path != null) {
+          isSaving.value = true;
+          final file = File(result.files.single.path!);
+          await _profileService.updateProfile(resumeFile: file);
+          resumeUploaded.value = true;
+          ToastMessageHelper.showToastMessage('Resume uploaded successfully', title: 'Success');
+        }
+      } catch (e) {
+        _logger.e('Failed to upload resume: $e');
+        ToastMessageHelper.showToastMessage('Failed to upload resume', title: 'Error');
+      } finally {
+        isSaving.value = false;
+      }
     }
   }
 
@@ -216,10 +224,10 @@ class MyProfileController extends GetxController {
         title: location.value,
       );
 
-      Get.snackbar('Success', 'Profile saved successfully');
+      ToastMessageHelper.showToastMessage('Profile saved successfully', title: 'Success');
     } catch (e) {
       _logger.e('Failed to save profile: $e');
-      Get.snackbar('Error', 'Failed to save profile');
+      ToastMessageHelper.showToastMessage('Failed to save profile', title: 'Error');
     } finally {
       isSaving.value = false;
     }

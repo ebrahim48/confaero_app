@@ -1,17 +1,24 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/services/socket_service.dart';
 import '../../domain/models/message_model.dart';
 import '../../domain/services/message_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class MessageController extends GetxController {
   final MessageService _messageService = Get.find<MessageService>();
+  final SocketService _socketService = Get.find<SocketService>();
   final searchController = TextEditingController();
 
   final RxBool isLoading = false.obs;
   RxList<MessageModel> messages = <MessageModel>[].obs;
   RxList<MessageModel> filteredMessages = <MessageModel>[].obs;
+
+  // Socket subscription
+  StreamSubscription<Map<String, dynamic>>? _messageSubscription;
 
   // Event ID from global session state
   String get currentEventId => SessionController.to.eventId;
@@ -20,6 +27,11 @@ class MessageController extends GetxController {
   void onInit() {
     super.onInit();
     loadConversations();
+
+    // Refresh conversation list whenever a new message arrives via socket
+    _messageSubscription = _socketService.onNewMessage.listen((_) {
+      loadConversations();
+    });
   }
 
   Future<void> loadConversations() async {
@@ -46,11 +58,7 @@ class MessageController extends GetxController {
               .toList();
       filteredMessages.value = messages;
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load conversations',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Failed to load conversations', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -74,11 +82,18 @@ class MessageController extends GetxController {
     }
   }
 
-  void markAsRead(String id) {
+  Future<void> markAsRead(String id) async {
     final msg = messages.firstWhere((e) => e.id == id);
     msg.hasUnread = false;
     messages.refresh();
     filteredMessages.refresh();
+
+    // Mark as seen on server
+    try {
+      await _messageService.markMessageSeen(id, currentEventId);
+    } catch (_) {
+      // Silent fail — local UI is already updated
+    }
   }
 
   Future<void> refreshConversations() async {
@@ -87,6 +102,7 @@ class MessageController extends GetxController {
 
   @override
   void onClose() {
+    _messageSubscription?.cancel();
     searchController.dispose();
     super.onClose();
   }

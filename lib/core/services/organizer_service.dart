@@ -22,43 +22,7 @@ class OrganizerService {
     }
   }
 
-  /// POST /organizer-sessions/events/:eventId/agenda
-  Future<Map<String, dynamic>> createSession(
-    String eventId,
-    Map<String, dynamic> sessionData,
-  ) async {
-    await _checkConnectivity();
-    _logger.i('Creating session for event: $eventId');
-    final response = await _apiService.post(
-      '${ApiConstants.createSession}/$eventId/agenda',
-      data: sessionData,
-    );
-    return response.data as Map<String, dynamic>;
-  }
-
-  /// PATCH /organizer-sessions/events/:eventId/agenda/:sessionId
-  Future<Map<String, dynamic>> updateSession(
-    String eventId,
-    String sessionId,
-    Map<String, dynamic> data,
-  ) async {
-    await _checkConnectivity();
-    _logger.i('Updating session $sessionId for event: $eventId');
-    final response = await _apiService.patch(
-      '${ApiConstants.updateSession}/$eventId/agenda/$sessionId',
-      data: data,
-    );
-    return response.data as Map<String, dynamic>;
-  }
-
-  /// DELETE /organizer-sessions/events/:eventId/agenda/:sessionId
-  Future<void> deleteSession(String eventId, String sessionId) async {
-    await _checkConnectivity();
-    _logger.i('Deleting session $sessionId from event: $eventId');
-    await _apiService.delete(
-      '${ApiConstants.deleteSession}/$eventId/agenda/$sessionId',
-    );
-  }
+  // REMOVED: createSession, updateSession, deleteSession — endpoints no longer in backend API
 
   /// POST /organizer-sessions/events/:eventId/speakers
   Future<Map<String, dynamic>> addSpeaker(
@@ -74,50 +38,7 @@ class OrganizerService {
     return response.data as Map<String, dynamic>;
   }
 
-  // -------- Organizer Attendee Management --------
-
-  /// GET /organizer/attendee/:eventId/:attendeeId
-  Future<Map<String, dynamic>> getAttendeeDetail(
-    String eventId,
-    String attendeeId,
-  ) async {
-    await _checkConnectivity();
-    _logger.i('Getting organizer attendee $attendeeId for event $eventId');
-    final response = await _apiService.get(
-      '${ApiConstants.getOrganizerAttendeeDetail}/$eventId/$attendeeId',
-    );
-    if (response.data is Map<String, dynamic>) {
-      return response.data as Map<String, dynamic>;
-    }
-    return {};
-  }
-
-  /// DELETE /organizer/attendee/:eventId/:attendeeId
-  Future<void> removeAttendee(String eventId, String attendeeId) async {
-    await _checkConnectivity();
-    _logger.i('Removing attendee $attendeeId from event $eventId');
-    await _apiService.delete(
-      '${ApiConstants.removeOrganizerAttendee}/$eventId/$attendeeId',
-    );
-  }
-
-  /// GET /organizer/all-register/:eventId
-  Future<List<Map<String, dynamic>>> getAllRegistrations(String eventId) async {
-    await _checkConnectivity();
-    _logger.i('Fetching all registrations for event: $eventId');
-    final response = await _apiService.get(
-      '${ApiConstants.getAllRegistrations}/$eventId',
-    );
-    if (response.data is Map<String, dynamic>) {
-      final data = response.data as Map<String, dynamic>;
-      if (data['success'] == true && data['data'] is List) {
-        return (data['data'] as List)
-            .map((e) => e as Map<String, dynamic>)
-            .toList();
-      }
-    }
-    return [];
-  }
+  // REMOVED: getAttendeeDetail, removeAttendee, getAllRegistrations — endpoints no longer in backend API
 
   /// GET /organizer-sessions/event/:eventId/speakers/search?q=query
   Future<List<Map<String, dynamic>>> searchSpeakers(

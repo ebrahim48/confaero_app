@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/services/job_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 // Job Model
 class Job {
@@ -83,11 +84,7 @@ class JobOpeningsController extends GetxController {
       allJobs.assignAll(parsed);
       jobs.assignAll(parsed);
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load jobs',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Failed to load jobs', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -143,10 +140,10 @@ class JobOpeningsController extends GetxController {
     try {
       isSaving.value = true;
       await _jobService.createJob(data);
-      Get.snackbar('Success', 'Job created');
+      ToastMessageHelper.showToastMessage('Job created', title: 'Success');
       loadJobs();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to create job');
+      ToastMessageHelper.showToastMessage('Failed to create job', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -163,7 +160,7 @@ class JobOpeningsController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load my jobs');
+      ToastMessageHelper.showToastMessage('Failed to load my jobs', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -180,7 +177,7 @@ class JobOpeningsController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load jobs for review');
+      ToastMessageHelper.showToastMessage('Failed to load jobs for review', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -189,30 +186,30 @@ class JobOpeningsController extends GetxController {
   Future<void> updateJobStatus(String jobId, Map<String, dynamic> data) async {
     try {
       await _jobService.updateJobStatus(jobId, data);
-      Get.snackbar('Success', 'Job status updated');
+      ToastMessageHelper.showToastMessage('Job status updated', title: 'Success');
       loadJobs();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to update job status');
+      ToastMessageHelper.showToastMessage('Failed to update job status', title: 'Error');
     }
   }
 
   Future<void> updateJob(String jobId, Map<String, dynamic> data) async {
     try {
       await _jobService.updateJob(jobId, data);
-      Get.snackbar('Success', 'Job updated');
+      ToastMessageHelper.showToastMessage('Job updated', title: 'Success');
       loadJobs();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to update job');
+      ToastMessageHelper.showToastMessage('Failed to update job', title: 'Error');
     }
   }
 
   Future<void> deleteJob(String jobId) async {
     try {
       await _jobService.deleteJob(jobId);
-      Get.snackbar('Success', 'Job deleted');
+      ToastMessageHelper.showToastMessage('Job deleted', title: 'Success');
       loadJobs();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to delete job');
+      ToastMessageHelper.showToastMessage('Failed to delete job', title: 'Error');
     }
   }
 }

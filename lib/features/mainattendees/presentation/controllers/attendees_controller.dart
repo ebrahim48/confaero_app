@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../domain/services/attendee_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class AttendeesController extends GetxController {
   final AttendeeService _attendeeService = Get.find<AttendeeService>();
@@ -49,11 +50,7 @@ class AttendeesController extends GetxController {
       bookmarked.value =
           attendees.where((a) => a['isBookmarked'] == true).length;
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load attendees',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Failed to load attendees', title: 'Error');
     }
   }
 
@@ -81,11 +78,7 @@ class AttendeesController extends GetxController {
         attendees.refresh();
         bookmarked.value =
             attendees.where((a) => a['isBookmarked'] == true).length;
-        Get.snackbar(
-          'Error',
-          'Failed to bookmark',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastMessageHelper.showToastMessage('Failed to bookmark', title: 'Error');
       }
     }
   }

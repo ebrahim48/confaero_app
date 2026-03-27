@@ -158,10 +158,13 @@ class MessageChatScreen extends StatelessWidget {
                               },
                             ),
                           ),
-                          SvgPicture.asset(
-                            "assets/icons/share2.svg",
-                            width: 19.w,
-                            height: 19.h,
+                          GestureDetector(
+                            onTap: () => controller.pickAndSendAttachment(),
+                            child: SvgPicture.asset(
+                              "assets/icons/share2.svg",
+                              width: 19.w,
+                              height: 19.h,
+                            ),
                           ),
                         ],
                       ),

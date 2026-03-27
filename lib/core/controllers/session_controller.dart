@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import '../constants/app_constants.dart';
 import '../helpers/prefs_helper.dart';
+import '../services/socket_service.dart';
 
 /// Global singleton controller that tracks the currently active event.
 ///
@@ -40,6 +41,14 @@ class SessionController extends GetxController {
     eventIdRx.value = eventId;
     eventTitle.value = title;
     await PrefsHelper.setString(AppConstants.currentEventId, eventId);
+
+    // Connect (or reconnect) Socket.IO with the new event context
+    try {
+      final socketService = Get.find<SocketService>();
+      await socketService.reconnect();
+    } catch (_) {
+      // SocketService may not be registered yet during early startup
+    }
   }
 
   /// Clear the current event (e.g., on logout).
@@ -47,5 +56,11 @@ class SessionController extends GetxController {
     eventIdRx.value = '';
     eventTitle.value = '';
     await PrefsHelper.setString(AppConstants.currentEventId, '');
+
+    // Disconnect socket when leaving event / logging out
+    try {
+      final socketService = Get.find<SocketService>();
+      socketService.disconnect();
+    } catch (_) {}
   }
 }

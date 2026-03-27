@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/video_conference_service.dart';
 
 class VideoConferenceController extends GetxController {
@@ -29,7 +30,7 @@ class VideoConferenceController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load sessions');
+      ToastMessageHelper.showToastMessage('Failed to load sessions', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -39,10 +40,10 @@ class VideoConferenceController extends GetxController {
     try {
       final response = await _service.startSession(sessionId);
       currentSession.value = response['data'] as Map<String, dynamic>?;
-      Get.snackbar('Success', 'Session started');
+      ToastMessageHelper.showToastMessage('Session started', title: 'Success');
       loadSessions();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to start session');
+      ToastMessageHelper.showToastMessage('Failed to start session', title: 'Error');
     }
   }
 
@@ -51,10 +52,10 @@ class VideoConferenceController extends GetxController {
       final response = await _service.joinSession(sessionId);
       final joinUrl = response['data']?['joinUrl'] as String?;
       if (joinUrl != null) {
-        Get.snackbar('Success', 'Joining session...');
+        ToastMessageHelper.showToastMessage('Joining session...', title: 'Success');
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to join session');
+      ToastMessageHelper.showToastMessage('Failed to join session', title: 'Error');
     }
   }
 
@@ -62,10 +63,10 @@ class VideoConferenceController extends GetxController {
     try {
       await _service.endSession(sessionId);
       currentSession.value = null;
-      Get.snackbar('Success', 'Session ended');
+      ToastMessageHelper.showToastMessage('Session ended', title: 'Success');
       loadSessions();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to end session');
+      ToastMessageHelper.showToastMessage('Failed to end session', title: 'Error');
     }
   }
 }

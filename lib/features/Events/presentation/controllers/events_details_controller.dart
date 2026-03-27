@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../core/config/approutes/app_routes.dart';
+import '../../../../../core/helpers/toast_message_helper.dart';
 import '../../../../../core/services/api_service.dart';
 import '../../../../../core/services/connectivity_service.dart';
 import '../../data/models/event_model.dart';
@@ -84,15 +85,11 @@ class EventDetailsController extends GetxController {
 
       if (result != null) {
         final status = result['status'] as String? ?? '';
-        Get.snackbar(
-          'Registration',
+        ToastMessageHelper.showToastMessage(
           status == 'VERIFIED'
               ? 'Successfully registered!'
               : 'Registration submitted. Status: $status',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: const Color(0xff5BB8AE).withOpacity(0.9),
-          colorText: const Color(0xFFFFFFFF),
-          duration: const Duration(seconds: 3),
+          title: 'Success',
         );
         await loadEvent(eventId);
         await Future.delayed(const Duration(seconds: 1));
@@ -107,14 +104,7 @@ class EventDetailsController extends GetxController {
           .replaceAll('Exception:', '')
           .trim();
       errorMessage.value = msg;
-      Get.snackbar(
-        'Registration Failed',
-        msg,
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: const Color(0xFFE53935).withOpacity(0.9),
-        colorText: const Color(0xFFFFFFFF),
-        duration: const Duration(seconds: 4),
-      );
+      ToastMessageHelper.showToastMessage(msg, title: 'Error');
     } finally {
       isRegistering.value = false;
     }
@@ -126,8 +116,10 @@ class EventDetailsController extends GetxController {
 
   void joinWithInvitationCode() async {
     if (invitationCodeController.text.trim().isEmpty) {
-      Get.snackbar('Error', 'Please enter an invitation code',
-          snackPosition: SnackPosition.TOP);
+      ToastMessageHelper.showToastMessage(
+        'Please enter an invitation code',
+        title: 'Error',
+      );
       return;
     }
     isLoading.value = true;

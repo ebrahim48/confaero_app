@@ -1,7 +1,12 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/services/socket_service.dart';
 import '../../domain/services/message_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class ChatMessage {
   final String text;
@@ -21,6 +26,7 @@ class ChatMessage {
 
 class MessageChatController extends GetxController {
   final MessageService _messageService = Get.find<MessageService>();
+  final SocketService _socketService = Get.find<SocketService>();
 
   final messageController = TextEditingController();
   final scrollController = ScrollController();
@@ -30,7 +36,9 @@ class MessageChatController extends GetxController {
 
   final messages = <ChatMessage>[].obs;
 
-  // Example conversational constants
+  // Socket subscription
+  StreamSubscription<Map<String, dynamic>>? _messageSubscription;
+
   // Event ID from global session state; conversationId + receiverId from route args
   String get currentEventId => SessionController.to.eventId;
   String currentReceiverId = '';
@@ -59,11 +67,7 @@ class MessageChatController extends GetxController {
         scrollToBottom();
       });
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load messages',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Failed to load messages', title: 'Error');
     }
   }
 
@@ -95,6 +99,36 @@ class MessageChatController extends GetxController {
     if (currentConversationId.isNotEmpty) {
       loadMessages();
     }
+
+    // Listen for real-time incoming messages via Socket.IO
+    _messageSubscription = _socketService.onNewMessage.listen(_handleSocketMessage);
+  }
+
+  /// Handle a real-time message from Socket.IO.
+  void _handleSocketMessage(Map<String, dynamic> data) {
+    // Only add if it belongs to the current conversation
+    final msgConversationId = data['conversationId']?.toString() ?? '';
+    if (msgConversationId != currentConversationId && msgConversationId.isNotEmpty) {
+      return; // Not for this chat
+    }
+
+    // Ignore messages sent by the current user (already shown optimistically)
+    final senderId = data['senderId']?.toString() ?? '';
+    if (senderId == currentReceiverId || senderId.isEmpty) {
+      // It's from the other person → show it
+      final content = data['content']?.toString() ?? '';
+      if (content.isEmpty) return;
+
+      messages.add(ChatMessage(
+        text: content,
+        isMe: false,
+        time: _getCurrentTime(),
+        date: 'Today',
+        showTime: true,
+      ));
+
+      Future.delayed(const Duration(milliseconds: 100), () => scrollToBottom());
+    }
   }
 
   Future<void> sendMessage() async {
@@ -124,11 +158,7 @@ class MessageChatController extends GetxController {
         content: text,
       );
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to send message over network',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Failed to send message over network', title: 'Error');
       // Could visually indicate unsent text here
     }
   }
@@ -151,8 +181,40 @@ class MessageChatController extends GetxController {
     return '$hour:$minute $period';
   }
 
+  /// Pick a file and send it as an attachment
+  Future<void> pickAndSendAttachment() async {
+    try {
+      final result = await FilePicker.platform.pickFiles();
+      if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        final fileName = result.files.single.name;
+
+        // Show optimistic message
+        final newMessage = ChatMessage(
+          text: '📎 $fileName',
+          isMe: true,
+          time: _getCurrentTime(),
+          date: "Today",
+          showTime: true,
+        );
+        messages.add(newMessage);
+        Future.delayed(const Duration(milliseconds: 100), () => scrollToBottom());
+
+        await _messageService.sendMessage(
+          currentEventId,
+          receiverId: currentReceiverId,
+          content: fileName,
+          attachmentFile: file,
+        );
+      }
+    } catch (e) {
+      ToastMessageHelper.showToastMessage('Failed to send attachment', title: 'Error');
+    }
+  }
+
   @override
   void onClose() {
+    _messageSubscription?.cancel();
     messageController.dispose();
     scrollController.dispose();
     super.onClose();

@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../../../../core/services/poster_assign_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class PosterAssignController extends GetxController {
   final PosterAssignService _service = Get.find<PosterAssignService>();
@@ -32,7 +33,7 @@ class PosterAssignController extends GetxController {
       _parseList(results[1], assigned);
       _parseList(results[2], reported);
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load posters');
+      ToastMessageHelper.showToastMessage('Failed to load posters', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -51,29 +52,29 @@ class PosterAssignController extends GetxController {
   Future<void> assignPoster(Map<String, dynamic> data) async {
     try {
       await _service.assignPoster(currentEventId, data);
-      Get.snackbar('Success', 'Poster assigned');
+      ToastMessageHelper.showToastMessage('Poster assigned', title: 'Success');
       loadAll();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to assign poster');
+      ToastMessageHelper.showToastMessage('Failed to assign poster', title: 'Error');
     }
   }
 
   Future<void> reassignPoster(Map<String, dynamic> data) async {
     try {
       await _service.reassignPoster(currentEventId, data);
-      Get.snackbar('Success', 'Poster reassigned');
+      ToastMessageHelper.showToastMessage('Poster reassigned', title: 'Success');
       loadAll();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to reassign poster');
+      ToastMessageHelper.showToastMessage('Failed to reassign poster', title: 'Error');
     }
   }
 
   Future<void> sendReminder(String assignmentId) async {
     try {
       await _service.sendReminder(assignmentId);
-      Get.snackbar('Success', 'Reminder sent');
+      ToastMessageHelper.showToastMessage('Reminder sent', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to send reminder');
+      ToastMessageHelper.showToastMessage('Failed to send reminder', title: 'Error');
     }
   }
 
@@ -81,10 +82,10 @@ class PosterAssignController extends GetxController {
     try {
       await _service.submitReview(currentEventId, data);
       Get.back();
-      Get.snackbar('Success', 'Review submitted');
+      ToastMessageHelper.showToastMessage('Review submitted', title: 'Success');
       loadAll();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to submit review');
+      ToastMessageHelper.showToastMessage('Failed to submit review', title: 'Error');
     }
   }
 
@@ -104,7 +105,7 @@ class PosterAssignController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      Get.snackbar('Error', 'Search failed');
+      ToastMessageHelper.showToastMessage('Search failed', title: 'Error');
     }
   }
 
@@ -118,7 +119,7 @@ class PosterAssignController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      Get.snackbar('Error', 'Search failed');
+      ToastMessageHelper.showToastMessage('Search failed', title: 'Error');
     }
   }
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../announcements/data/models/announcement_model.dart';
 import '../../../announcements/domain/services/announcement_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class CommunityController extends GetxController {
   final AnnouncementService _service = Get.find<AnnouncementService>();
@@ -33,13 +34,7 @@ class CommunityController extends GetxController {
       announcements.value = data;
     } catch (e) {
       errorMessage.value = 'Failed to load announcements';
-      Get.snackbar(
-        'Error',
-        'Failed to load announcements',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastMessageHelper.showToastMessage('Failed to load announcements', title: 'Error');
     } finally {
       isLoading.value = false;
     }

@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
-import '../../../../core/helpers/snackbar_helper.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../sponsors/domain/services/sponsor_service.dart';
 import '../../../sponsors/data/models/sponsor_model.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +26,7 @@ class SponsorsController extends GetxController {
       final fetched = await _service.getAllSponsors(currentEventId);
       sponsors.assignAll(fetched);
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to load sponsors');
+      ToastMessageHelper.showToastMessage('Failed to load sponsors', title: 'Error');
     } finally {
       isLoading.value = false;
     }

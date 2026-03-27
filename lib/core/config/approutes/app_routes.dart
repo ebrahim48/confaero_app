@@ -71,6 +71,7 @@ import '../../../features/resources/presentation/widgets/view/organizer_resource
 import '../../../features/invitations/presentation/widgets/view/verified_email_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/exhibitor_leads_screen.dart';
 import '../../../features/organizer/presentation/widgets/organizer_attendee_screen.dart';
+import '../../../features/auth/presentation/role_switch/role_switch_screen.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/helpers/prefs_helper.dart';
@@ -161,6 +162,7 @@ class AppRoutes {
   static const String verifiedEmailScreen = "/verifiedEmailScreen";
   static const String exhibitorLeadsScreen = "/exhibitorLeadsScreen";
   static const String organizerAttendeeScreen = "/organizerAttendeeScreen";
+  static const String roleSwitchScreen = "/roleSwitchScreen";
 
   // verifyScreen and resetPasswordScreen already defined above with API constants
 
@@ -445,7 +447,9 @@ class AppRoutes {
       GoRoute(
         path: attendeeDetailsScreen,
         name: attendeeDetailsScreen,
-        builder: (context, state) => AttendeeDetailsScreen(),
+        builder: (context, state) => AttendeeDetailsScreen(
+          args: state.extra as Map<String, dynamic>?,
+        ),
       ),
       GoRoute(
         path: sponsorsScreen,
@@ -575,6 +579,11 @@ class AppRoutes {
           final eventId = state.extra as String? ?? '';
           return OrganizerAttendeeScreen(eventId: eventId);
         },
+      ),
+      GoRoute(
+        path: roleSwitchScreen,
+        name: roleSwitchScreen,
+        builder: (context, state) => const RoleSwitchScreen(),
       ),
 
       GoRoute(

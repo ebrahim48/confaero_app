@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../connection/domain/services/connection_service.dart';
 import '../../domain/services/attendee_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class AttendeeDetailsController extends GetxController {
   final AttendeeService _attendeeService = Get.find<AttendeeService>();
@@ -52,11 +53,7 @@ class AttendeeDetailsController extends GetxController {
         });
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load attendee details',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Failed to load attendee details', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -76,11 +73,7 @@ class AttendeeDetailsController extends GetxController {
     } catch (e) {
       attendeeDetails['isBookmarked'] = wasBookmarked;
       attendeeDetails.refresh();
-      Get.snackbar(
-        'Error',
-        'Failed to bookmark',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Failed to bookmark', title: 'Error');
     }
   }
 
@@ -102,21 +95,9 @@ class AttendeeDetailsController extends GetxController {
     isRequesting.value = true;
     try {
       await _connectionService.sendRequest(eventId);
-      Get.snackbar(
-        'Success',
-        'Connection request sent!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xff32A69A),
-        colorText: Colors.white,
-      );
+      ToastMessageHelper.showToastMessage('Connection request sent!', title: 'Success');
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to send request: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastMessageHelper.showToastMessage('Failed to send request: $e', title: 'Error');
     } finally {
       isRequesting.value = false;
     }

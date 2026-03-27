@@ -28,6 +28,7 @@ import '../services/reviewer_service.dart';
 import '../services/volunteer_service.dart';
 import '../services/video_conference_service.dart';
 import '../services/organizer_message_service.dart';
+import '../services/socket_service.dart';
 import '../services/verified_email_service.dart';
 import '../controllers/session_controller.dart';
 
@@ -85,6 +86,9 @@ class DependencyInjection {
     Get.lazyPut<ApiService>(() => ApiService(), fenix: true);
     Get.lazyPut<CacheService>(() => CacheService(), fenix: true);
     Get.lazyPut<ConnectivityService>(() => ConnectivityService(), fenix: true);
+
+    // Socket.IO Service (real-time communication)
+    Get.lazyPut<SocketService>(() => SocketService(), fenix: true);
 
     // Auth Repository
     Get.lazyPut<AuthRepository>(

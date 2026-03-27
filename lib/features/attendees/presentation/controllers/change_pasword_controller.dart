@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../auth/data/repositories/auth_repository.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class ChangePasswordController extends GetxController {
   // Text Controllers
@@ -37,22 +38,22 @@ class ChangePasswordController extends GetxController {
   Future<void> changePassword() async {
     // Validation
     if (currentPasswordController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter current password');
+      ToastMessageHelper.showToastMessage('Please enter current password', title: 'Error');
       return;
     }
 
     if (newPasswordController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter new password');
+      ToastMessageHelper.showToastMessage('Please enter new password', title: 'Error');
       return;
     }
 
     if (newPasswordController.text.length < 6) {
-      Get.snackbar('Error', 'Password must be at least 6 characters');
+      ToastMessageHelper.showToastMessage('Password must be at least 6 characters', title: 'Error');
       return;
     }
 
     if (confirmPasswordController.text != newPasswordController.text) {
-      Get.snackbar('Error', 'Passwords do not match');
+      ToastMessageHelper.showToastMessage('Passwords do not match', title: 'Error');
       return;
     }
 
@@ -61,10 +62,7 @@ class ChangePasswordController extends GetxController {
       r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$',
     );
     if (!passwordRegex.hasMatch(newPasswordController.text)) {
-      Get.snackbar(
-        'Error',
-        'Password must include letters, numbers and special characters (!@#\$%)',
-      );
+      ToastMessageHelper.showToastMessage('Password must include letters, numbers and special characters (!@#\$%)', title: 'Error');
       return;
     }
 
@@ -78,16 +76,13 @@ class ChangePasswordController extends GetxController {
 
       final success = response['success'] as bool? ?? false;
       if (success) {
-        Get.snackbar('Success', 'Password changed successfully!');
+        ToastMessageHelper.showToastMessage('Password changed successfully!', title: 'Success');
         Get.back();
       } else {
-        Get.snackbar(
-          'Error',
-          response['message'] ?? 'Failed to change password',
-        );
+        ToastMessageHelper.showToastMessage(response['message'] ?? 'Failed to change password', title: 'Error');
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred while changing password');
+      ToastMessageHelper.showToastMessage('An error occurred while changing password', title: 'Error');
     } finally {
       isLoading.value = false;
     }
