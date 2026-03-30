@@ -47,4 +47,4 @@ app.*.map.json
 # FVM Version Cache
 .fvm/
 
-api.json
+api.json.claude/
