@@ -7,6 +7,8 @@ import 'package:confaero_app/features/attendees/presentation/widgets/view/event_
 import 'package:confaero_app/features/attendees/presentation/widgets/view/floormap_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/home_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/job_details_screen.dart';
+import 'package:confaero_app/features/job/presentation/widgets/job_posting_form_screen.dart';
+import 'package:confaero_app/features/job/presentation/widgets/my_jobs_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/new_event_proposal_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
@@ -63,6 +65,7 @@ import '../../../features/volunteer/presentation/widgets/volunteer_dashboard_scr
 import '../../../features/volunteer/presentation/widgets/task_form_screen.dart';
 import '../../../features/video_conference/presentation/widgets/live_session_screen.dart';
 import '../../../features/organizer_messaging/presentation/widgets/organizer_conversations_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/resources_screen.dart' as resources_view;
 import '../../../features/organizer_messaging/presentation/widgets/organizer_chat_screen.dart';
 import '../../../features/invitations/presentation/widgets/invitations_screen.dart';
 import '../../../features/announcements/presentation/widgets/view/organizer_announcements_screen.dart'
@@ -101,6 +104,8 @@ class AppRoutes {
   static const String liveMeetingScreen = "/liveMeetingScreen";
   static const String jobOpeningsScreen = "/jobOpeningsScreen";
   static const String jobDetailsScreen = "/jobDetailsScreen";
+  static const String jobPostingFormScreen = "/jobPostingFormScreen";
+  static const String myJobsScreen = "/myJobsScreen";
   static const String notificationsScreen = "/notificationsScreen";
   static const String myProfileScreen = "/myProfileScreen";
   static const String connectionListScreen = "/connectionListScreen";
@@ -300,6 +305,18 @@ class AppRoutes {
       ),
 
       GoRoute(
+        path: jobPostingFormScreen,
+        name: jobPostingFormScreen,
+        builder: (context, state) => const JobPostingFormScreen(),
+      ),
+
+      GoRoute(
+        path: myJobsScreen,
+        name: myJobsScreen,
+        builder: (context, state) => const MyJobsScreen(),
+      ),
+
+      GoRoute(
         path: notificationsScreen,
         name: notificationsScreen,
         builder: (context, state) => NotificationsScreen(),
@@ -389,7 +406,7 @@ class AppRoutes {
       GoRoute(
         path: resourcesScreen,
         name: resourcesScreen,
-        builder: (context, state) => ResourcesScreen(),
+        builder: (context, state) => const resources_view.ResourcesScreen(),
       ),
       GoRoute(
         path: pollScreen,

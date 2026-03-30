@@ -6,18 +6,20 @@ import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/helpers/logger_helper.dart';
 import '../../../../../core/helpers/prefs_helper.dart';
+import '../../../../../core/controllers/role_controller.dart';
 import '../../../../auth/data/repositories/auth_repository.dart';
 import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class RoleSwitchController extends GetxController {
   final AuthRepository _authRepository = Get.find<AuthRepository>();
+  final _roleController = Get.find<RoleController>();
   final _logger = LoggerHelper('RoleSwitchController');
 
   /// All roles the user has been assigned
   final RxList<String> availableRoles = <String>[].obs;
 
-  /// The user's currently active role
-  final RxString activeRole = ''.obs;
+  /// The user's currently active role (delegated to RoleController)
+  String get activeRole => _roleController.activeRole.value;
 
   /// Loading states
   final RxBool isLoadingRoles = false.obs;
@@ -26,15 +28,7 @@ class RoleSwitchController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _loadCurrentRole();
     fetchMyRoles();
-  }
-
-  Future<void> _loadCurrentRole() async {
-    final saved = await PrefsHelper.getString(AppConstants.userRole);
-    if (saved.isNotEmpty) {
-      activeRole.value = saved;
-    }
   }
 
   /// Fetch all roles assigned to the current user
@@ -48,21 +42,23 @@ class RoleSwitchController extends GetxController {
         final data = response['data'];
         if (data is List) {
           availableRoles.assignAll(data.cast<String>());
+          _roleController.setUserRoles(data.cast<String>());
         } else if (data is Map<String, dynamic>) {
           // Handle case where data contains roles list
           final roles = data['roles'] as List?;
           if (roles != null) {
             availableRoles.assignAll(roles.cast<String>());
+            _roleController.setUserRoles(roles.cast<String>());
           }
           // Also read activeRole from server if available
           final serverActiveRole = data['activeRole'] as String?;
           if (serverActiveRole != null && serverActiveRole.isNotEmpty) {
-            activeRole.value = serverActiveRole;
+            await _roleController.setRole(serverActiveRole);
           }
         }
       }
 
-      _logger.d('Available roles: $availableRoles, Active: ${activeRole.value}');
+      _logger.d('Available roles: $availableRoles, Active: ${activeRole}');
     } catch (e) {
       _logger.e('Failed to fetch roles: $e');
       ToastMessageHelper.showToastMessage(
@@ -76,7 +72,7 @@ class RoleSwitchController extends GetxController {
 
   /// Switch to a different role
   Future<void> switchRole(String role, BuildContext context) async {
-    if (role == activeRole.value) return; // Already active
+    if (role.toUpperCase() == activeRole.toUpperCase()) return; // Already active
 
     isSwitching.value = true;
     try {
@@ -84,8 +80,8 @@ class RoleSwitchController extends GetxController {
       final success = response['success'] as bool? ?? false;
 
       if (success) {
-        activeRole.value = role;
-        await PrefsHelper.setString(AppConstants.userRole, role);
+        // Update role in RoleController (this will trigger UI rebuild)
+        await _roleController.setRole(role);
 
         // Update token if the server returns a new one
         final data = response['data'] as Map<String, dynamic>?;
@@ -101,11 +97,12 @@ class RoleSwitchController extends GetxController {
         }
 
         ToastMessageHelper.showToastMessage(
-          'Switched to ${_formatRoleName(role)}',
+          'Switched to ${formatRoleName(role)}',
           title: 'Success',
         );
 
         // Navigate to main screen so the new role takes effect
+        // The MainNavigationScreen will rebuild with the new role UI
         if (context.mounted) {
           context.go(AppRoutes.mainNavigationScreen);
         }
@@ -125,54 +122,8 @@ class RoleSwitchController extends GetxController {
   }
 
   /// Get a human-friendly role name
-  static String formatRoleName(String role) => _formatRoleName(role);
-
-  static String _formatRoleName(String role) {
-    switch (role.toUpperCase()) {
-      case 'ATTENDEE':
-        return 'Attendee';
-      case 'ORGANIZER':
-        return 'Organizer';
-      case 'SPONSOR':
-        return 'Sponsor';
-      case 'EXHIBITOR':
-        return 'Exhibitor';
-      case 'REVIEWER':
-        return 'Reviewer';
-      case 'VOLUNTEER':
-        return 'Volunteer';
-      case 'SPEAKER':
-        return 'Speaker';
-      case 'STAFF':
-        return 'Staff';
-      default:
-        // Capitalize first letter
-        if (role.isEmpty) return role;
-        return role[0].toUpperCase() + role.substring(1).toLowerCase();
-    }
-  }
+  static String formatRoleName(String role) => RoleController.formatRoleName(role);
 
   /// Get an icon for each role
-  static IconData getRoleIcon(String role) {
-    switch (role.toUpperCase()) {
-      case 'ATTENDEE':
-        return Icons.person_outline;
-      case 'ORGANIZER':
-        return Icons.event_note_outlined;
-      case 'SPONSOR':
-        return Icons.diamond_outlined;
-      case 'EXHIBITOR':
-        return Icons.storefront_outlined;
-      case 'REVIEWER':
-        return Icons.rate_review_outlined;
-      case 'VOLUNTEER':
-        return Icons.volunteer_activism_outlined;
-      case 'SPEAKER':
-        return Icons.mic_outlined;
-      case 'STAFF':
-        return Icons.badge_outlined;
-      default:
-        return Icons.account_circle_outlined;
-    }
-  }
+  static IconData getRoleIcon(String role) => RoleController.getRoleIcon(role);
 }

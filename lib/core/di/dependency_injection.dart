@@ -30,7 +30,9 @@ import '../services/video_conference_service.dart';
 import '../services/organizer_message_service.dart';
 import '../services/socket_service.dart';
 import '../services/verified_email_service.dart';
+import '../services/speaker_service.dart';
 import '../controllers/session_controller.dart';
+import '../controllers/role_controller.dart';
 
 /// Dependency Injection setup for the application.
 ///
@@ -81,6 +83,9 @@ class DependencyInjection {
   static void init() {
     // Global session state (must come first)
     Get.put<SessionController>(SessionController(), permanent: true);
+
+    // Role controller (must be initialized early for role-based UI)
+    Get.put<RoleController>(RoleController(), permanent: true);
 
     // Core Services (Singletons)
     Get.lazyPut<ApiService>(() => ApiService(), fenix: true);
@@ -320,6 +325,15 @@ class DependencyInjection {
     // Organizer Message Service
     Get.lazyPut<OrganizerMessageService>(
       () => OrganizerMessageService(
+        apiService: Get.find<ApiService>(),
+        connectivityService: Get.find<ConnectivityService>(),
+      ),
+      fenix: true,
+    );
+
+    // Speaker Service
+    Get.lazyPut<SpeakerService>(
+      () => SpeakerService(
         apiService: Get.find<ApiService>(),
         connectivityService: Get.find<ConnectivityService>(),
       ),

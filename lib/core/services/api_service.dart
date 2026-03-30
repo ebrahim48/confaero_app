@@ -7,6 +7,7 @@ import '../constants/api_constants.dart';
 import '../constants/app_constants.dart';
 import '../exceptions/app_exceptions.dart';
 import '../helpers/prefs_helper.dart';
+import '../helpers/toast_message_helper.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -76,6 +77,9 @@ class ApiService {
             print('└─────────────────────────────────────────');
           }
 
+          // Show user-friendly error toast for common errors
+          _showErrorToast(error);
+
           final statusCode = error.response?.statusCode;
           final requestOptions = error.requestOptions;
 
@@ -143,6 +147,61 @@ class ApiService {
   }
 
   Dio get dio => _dio;
+
+  /// Show user-friendly error toast based on error type
+  void _showErrorToast(DioException error) {
+    // Don't show toast for 401 (handled by token refresh)
+    if (error.response?.statusCode == 401) return;
+
+    String errorMessage = 'Something went wrong';
+    String title = 'Error';
+
+    // Check if it's a network/connectivity error
+    if (error.type == DioExceptionType.connectionError ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.receiveTimeout) {
+      errorMessage = 'Please check your internet connection and try again';
+      title = 'No Internet';
+    } else if (error.response != null) {
+      // Try to get error message from backend response
+      final responseData = error.response?.data;
+      if (responseData is Map<String, dynamic>) {
+        final message = responseData['message'] as String?;
+        if (message != null && message.isNotEmpty) {
+          errorMessage = message;
+        }
+      }
+
+      // Status code specific messages
+      switch (error.response?.statusCode) {
+        case 400:
+          title = 'Bad Request';
+          break;
+        case 403:
+          errorMessage = 'You don\'t have permission to perform this action';
+          title = 'Access Denied';
+          break;
+        case 404:
+          errorMessage = 'The requested resource was not found';
+          title = 'Not Found';
+          break;
+        case 500:
+          errorMessage = 'Server error. Please try again later';
+          title = 'Server Error';
+          break;
+        case 502:
+        case 503:
+          errorMessage = 'Service temporarily unavailable';
+          title = 'Service Unavailable';
+          break;
+      }
+    }
+
+    // Show toast in debug mode only to avoid spamming users during development
+    if (kDebugMode) {
+      ToastMessageHelper.showToastMessage(errorMessage, title: title);
+    }
+  }
 
   //*---------------- Handle Refresh Token ----------------*//
   Future<String?> _handleTokenRefresh() async {

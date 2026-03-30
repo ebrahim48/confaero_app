@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/controllers/role_controller.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 import '../../../attendees/presentation/widgets/custom_app_bar_widget.dart';
 import 'controllers/role_switch_controller.dart';
@@ -84,7 +85,7 @@ class RoleSwitchScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final role = controller.availableRoles[index];
                   final isActive = role.toUpperCase() ==
-                      controller.activeRole.value.toUpperCase();
+                      controller.activeRole.toUpperCase();
 
                   return _RoleCard(
                     role: role,
@@ -149,7 +150,7 @@ class _RoleCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
-                RoleSwitchController.getRoleIcon(role),
+                RoleController.getRoleIcon(role),
                 color: isActive
                     ? AppColors.primaryColor32A69A
                     : AppColors.textColor707070,
@@ -165,7 +166,7 @@ class _RoleCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CustomText(
-                    text: RoleSwitchController.formatRoleName(role),
+                    text: RoleController.formatRoleName(role),
                     fontsize: 16.sp,
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                     color: isActive

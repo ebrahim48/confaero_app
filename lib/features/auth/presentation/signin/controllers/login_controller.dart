@@ -8,6 +8,7 @@ import '../../../../../core/helpers/logger_helper.dart';
 import '../../../../../core/helpers/prefs_helper.dart';
 import '../../../../../core/helpers/toast_message_helper.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/controllers/role_controller.dart';
 import '../../../data/repositories/auth_repository.dart';
 
 class SignInController extends GetxController {
@@ -106,6 +107,9 @@ class SignInController extends GetxController {
           AppConstants.email,
           emailController.text.trim(),
         );
+
+        // Update RoleController with the active role
+        Get.find<RoleController>().setRole(activeRole);
 
         await Future.delayed(const Duration(milliseconds: 100));
         if (!context.mounted) return;
