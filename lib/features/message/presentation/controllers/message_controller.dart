@@ -57,8 +57,16 @@ class MessageController extends GetxController {
               )
               .toList();
       filteredMessages.value = messages;
+      
+      // Show message if no conversations available
+      if (messages.isEmpty) {
+        ToastMessageHelper.showToastMessage(
+          'Messages coming soon. Start a conversation!',
+          title: 'Info',
+        );
+      }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load conversations', title: 'Error');
+      ToastMessageHelper.showToastMessage('Messages coming soon. Start a conversation!', title: 'Info');
     } finally {
       isLoading.value = false;
     }

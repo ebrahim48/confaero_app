@@ -10,8 +10,9 @@ import '../attendee_contact_info.dart';
 import '../attendee_profile_header.dart';
 
 class AttendeeDetailsScreen extends StatelessWidget {
-  final Map<String, dynamic>? args;
-  const AttendeeDetailsScreen({super.key, this.args});
+  final String attendeeId;
+  
+  const AttendeeDetailsScreen({super.key, required this.attendeeId});
 
   @override
   Widget build(BuildContext context) {
@@ -19,12 +20,8 @@ class AttendeeDetailsScreen extends StatelessWidget {
       AttendeeDetailsController(),
     );
 
-    // Load real data from API if args contain attendeeId
-    final attendeeId = args?['attendeeId'] as String? ?? '';
-    final eventId = args?['eventId'] as String? ??
-        (Get.isRegistered<SessionController>()
-            ? SessionController.to.eventId
-            : '');
+    // Load real data from API
+    final eventId = SessionController.to.eventId;
 
     if (attendeeId.isNotEmpty && eventId.isNotEmpty) {
       controller.loadAttendeeDetails(eventId, attendeeId);

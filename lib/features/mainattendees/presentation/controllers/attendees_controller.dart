@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../domain/services/attendee_service.dart';
+import '../../data/models/attendee_model.dart';
 import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class AttendeesController extends GetxController {
@@ -11,85 +12,129 @@ class AttendeesController extends GetxController {
 
   // Total stats
   final RxInt totalAttendees = 0.obs;
-  final RxInt bookmarked = 0.obs;
+  final RxInt bookmarkedCount = 0.obs;
 
   // Attendees list
-  final RxList<Map<String, dynamic>> attendees = <Map<String, dynamic>>[].obs;
+  final RxList<AttendeeModel> attendees = <AttendeeModel>[].obs;
+  final RxList<AttendeeModel> filteredAttendees = <AttendeeModel>[].obs;
+
+  // Filter state
+  final RxBool showBookmarkedOnly = false.obs;
 
   @override
   void onInit() {
     super.onInit();
     loadAttendees();
+    
+    // Listen to search
+    searchController.addListener(() {
+      filterAttendees();
+    });
   }
 
+  /// Load all attendees
   Future<void> loadAttendees() async {
     try {
       final eventId = SessionController.to.eventId;
       if (eventId.isEmpty) return;
-      final data = await _attendeeService.getEventAttendees(eventId);
+      
+      final response = await _attendeeService.getEventAttendees(
+        eventId,
+        bookmarkedOnly: showBookmarkedOnly.value,
+      );
 
-      attendees.value =
-          data
-              .map(
-                (a) => {
-                  'id': a.id,
-                  'name': a.name,
-                  'company': a.company,
-                  'role': a.role,
-                  'sessions': '${a.sessionsCount} sessions',
-                  'image':
-                      a.avatarUrl.isNotEmpty
-                          ? a.avatarUrl
-                          : 'assets/images/profile.png',
-                  'isBookmarked': a.isBookmarked,
-                },
-              )
-              .toList();
+      attendees.value = response.attendees;
+      totalAttendees.value = response.total;
+      bookmarkedCount.value = response.bookmarkedCount;
+      filteredAttendees.value = attendees;
 
-      totalAttendees.value = attendees.length;
-      bookmarked.value =
-          attendees.where((a) => a['isBookmarked'] == true).length;
+      // Show message if no attendees available
+      if (attendees.isEmpty) {
+        ToastMessageHelper.showToastMessage(
+          'Attendees list coming soon. Check back later!',
+          title: 'Info',
+        );
+      }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load attendees', title: 'Error');
+      ToastMessageHelper.showToastMessage(
+        'Attendees list coming soon. Check back later!',
+        title: 'Info',
+      );
     }
+  }
+
+  /// Toggle between all and bookmarked view
+  Future<void> toggleBookmarkedFilter() async {
+    showBookmarkedOnly.value = !showBookmarkedOnly.value;
+    await loadAttendees();
+  }
+
+  /// Filter attendees by search query
+  void filterAttendees() {
+    final query = searchController.text.toLowerCase();
+    if (query.isEmpty) {
+      filteredAttendees.value = attendees;
+    } else {
+      filteredAttendees.value = attendees
+          .where((a) =>
+              a.name.toLowerCase().contains(query) ||
+              a.company.toLowerCase().contains(query) ||
+              a.role.toLowerCase().contains(query))
+          .toList();
+    }
+  }
+
+  /// Toggle bookmark for an attendee
+  Future<void> toggleBookmark(String id) async {
+    final index = attendees.indexWhere((a) => a.id == id);
+    if (index == -1) return;
+
+    final attendee = attendees[index];
+    final eventId = SessionController.to.eventId;
+
+    try {
+      final newBookmarkStatus = await _attendeeService.bookmarkAttendee(
+        eventId,
+        id,
+      );
+      
+      // Update local state
+      attendee.isBookmarked = newBookmarkStatus;
+      attendees.refresh();
+      
+      // Refresh the list to get updated counts
+      await loadAttendees();
+      
+      ToastMessageHelper.showToastMessage(
+        newBookmarkStatus ? 'Added to bookmarks' : 'Removed from bookmarks',
+        title: 'Bookmark',
+      );
+    } catch (e) {
+      ToastMessageHelper.showToastMessage('Failed to update bookmark', title: 'Error');
+    }
+  }
+
+  /// Say Hi - send connection request
+  void sayHi(String name, String attendeeId) {
+    ToastMessageHelper.showToastMessage(
+      'Connection request sent to $name',
+      title: 'Connection',
+    );
+    // TODO: Implement actual connection request API
+  }
+
+  /// Send Email
+  void sendMail(String email) {
+    ToastMessageHelper.showToastMessage(
+      'Opening email client...',
+      title: 'Email',
+    );
+    // TODO: Use url_launcher to open mailto: link
   }
 
   @override
   void onClose() {
     searchController.dispose();
     super.onClose();
-  }
-
-  // Toggle bookmark
-  Future<void> toggleBookmark(String id) async {
-    final index = attendees.indexWhere((a) => a['id'] == id);
-    if (index != -1) {
-      final wasBookmarked = attendees[index]['isBookmarked'];
-      attendees[index]['isBookmarked'] = !wasBookmarked;
-      attendees.refresh();
-      bookmarked.value =
-          attendees.where((a) => a['isBookmarked'] == true).length;
-
-      try {
-        await _attendeeService.bookmarkAttendee(SessionController.to.eventId, id);
-      } catch (e) {
-        // Revert on error
-        attendees[index]['isBookmarked'] = wasBookmarked;
-        attendees.refresh();
-        bookmarked.value =
-            attendees.where((a) => a['isBookmarked'] == true).length;
-        ToastMessageHelper.showToastMessage('Failed to bookmark', title: 'Error');
-      }
-    }
-  }
-
-  // Say Hi
-  void sayHi(String name) {
-    print('Say Hi to $name');
-  }
-
-  // Send Mail
-  void sendMail(String name) {
-    print('Send mail to $name');
   }
 }

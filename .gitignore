@@ -47,4 +47,7 @@ app.*.map.json
 # FVM Version Cache
 .fvm/
 
+# Temporary files (screenshots, testing, etc.)
+/temp/
+
 api.json.claude/

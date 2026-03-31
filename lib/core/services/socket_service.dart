@@ -83,22 +83,33 @@ class SocketService extends GetxService {
 
     _logger.i('Connecting to socket server…');
 
-    _socket = io.io(
-      'http://206.162.244.11:8078',
-      io.OptionBuilder()
-          .setTransports(['websocket'])
-          .disableAutoConnect()
-          .setExtraHeaders({
-            'token': token,
-            'eventid': eventId,
-          })
-          .build(),
-    );
+    try {
+      _socket = io.io(
+        'https://reazul8078.suplify.life',
+        io.OptionBuilder()
+            .setTransports(['websocket'])
+            .disableAutoConnect()
+            .setExtraHeaders({
+              'token': token,
+              'eventid': eventId,
+            })
+            .build(),
+      );
 
-    _registerCoreListeners();
-    _registerEventListeners();
+      _registerCoreListeners();
+      _registerEventListeners();
 
-    _socket!.connect();
+      _socket!.connect();
+      
+      // Set timeout for connection
+      Future.delayed(const Duration(seconds: 5), () {
+        if (!isConnected.value) {
+          _logger.w('Socket connection timeout - continuing without real-time features');
+        }
+      });
+    } catch (e) {
+      _logger.w('Socket connection failed: $e. Continuing without real-time features.');
+    }
   }
 
   /// Disconnect and clean up.

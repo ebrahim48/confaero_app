@@ -50,6 +50,8 @@ class AttendeeDetailsController extends GetxController {
           'phone': details.phone ?? '',
           'location': details.location ?? '',
           'isBookmarked': details.isBookmarked,
+          'canMessage': details.role != 'ATTENDEE' ? false : true,
+          'canEmail': details.email?.isNotEmpty ?? false,
         });
       }
     } catch (e) {
@@ -62,18 +64,24 @@ class AttendeeDetailsController extends GetxController {
   // Toggle bookmark
   Future<void> toggleBookmark() async {
     final wasBookmarked = attendeeDetails['isBookmarked'] ?? false;
-    attendeeDetails['isBookmarked'] = !wasBookmarked;
-    attendeeDetails.refresh();
-
+    
     try {
-      await _attendeeService.bookmarkAttendee(
+      final newStatus = await _attendeeService.bookmarkAttendee(
         SessionController.to.eventId,
         attendeeDetails['id'] ?? '',
+      );
+      
+      attendeeDetails['isBookmarked'] = newStatus;
+      attendeeDetails.refresh();
+      
+      ToastMessageHelper.showToastMessage(
+        newStatus ? 'Added to bookmarks' : 'Removed from bookmarks',
+        title: 'Bookmark',
       );
     } catch (e) {
       attendeeDetails['isBookmarked'] = wasBookmarked;
       attendeeDetails.refresh();
-      ToastMessageHelper.showToastMessage('Failed to bookmark', title: 'Error');
+      ToastMessageHelper.showToastMessage('Failed to update bookmark', title: 'Error');
     }
   }
 

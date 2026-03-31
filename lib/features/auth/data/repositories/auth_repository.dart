@@ -132,7 +132,7 @@ class AuthRepository {
       final response = await _apiService.post(
         ApiConstants.changePassword,
         data: {
-          'currentPassword': currentPassword,
+          'oldPassword': currentPassword,  // Backend expects 'oldPassword'
           'newPassword': newPassword,
           'confirmPassword': confirmPassword,
         },

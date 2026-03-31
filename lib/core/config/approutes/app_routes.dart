@@ -464,9 +464,10 @@ class AppRoutes {
       GoRoute(
         path: attendeeDetailsScreen,
         name: attendeeDetailsScreen,
-        builder: (context, state) => AttendeeDetailsScreen(
-          args: state.extra as Map<String, dynamic>?,
-        ),
+        builder: (context, state) {
+          final attendeeId = (state.extra as Map<String, dynamic>?)?['attendeeId'] as String? ?? '';
+          return AttendeeDetailsScreen(attendeeId: attendeeId);
+        },
       ),
       GoRoute(
         path: sponsorsScreen,

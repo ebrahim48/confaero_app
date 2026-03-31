@@ -37,15 +37,30 @@ class PostersController extends GetxController {
       final response = await _posterService.getAcceptedPosters();
 
       final success = response['success'] as bool? ?? false;
-      if (success && response['data'] is List) {
-        posters.value =
-            (response['data'] as List)
-                .map((e) => PosterModel.fromJson(e as Map<String, dynamic>))
-                .toList();
+      // Handle nested data structure: response.data.data[]
+      List<dynamic> postersData = [];
+      if (success && response['data'] != null) {
+        if (response['data'] is Map && response['data']['data'] is List) {
+          postersData = response['data']['data'] as List;
+        } else if (response['data'] is List) {
+          postersData = response['data'] as List;
+        }
+      }
+      
+      if (postersData.isNotEmpty) {
+        posters.value = postersData
+            .map((e) => PosterModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else {
+        // Show message if no posters available
+        ToastMessageHelper.showToastMessage(
+          'Posters information coming soon. Check back later!',
+          title: 'Info',
+        );
       }
       filteredPosters.value = posters;
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load posters', title: 'Error');
+      ToastMessageHelper.showToastMessage('Posters information coming soon. Check back later!', title: 'Info');
     } finally {
       isLoading.value = false;
     }

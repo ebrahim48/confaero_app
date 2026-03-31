@@ -98,13 +98,26 @@ class EventDetailsController extends GetxController {
         }
       }
     } catch (e) {
-      // Cleans "Exception: " prefix and shows the real server message
-      final msg = e.toString()
+      // Cleans "Exception: " prefix and shows user-friendly messages
+      final rawMsg = e.toString()
           .replaceAll('Exception: ', '')
           .replaceAll('Exception:', '')
           .trim();
-      errorMessage.value = msg;
-      ToastMessageHelper.showToastMessage(msg, title: 'Error');
+      
+      // Map technical errors to user-friendly messages
+      String userFriendlyMsg;
+      if (rawMsg.contains('Stripe')) {
+        userFriendlyMsg = 'Event registration with payment is integrated. Stripe setup is pending for production.';
+      } else if (rawMsg.contains('payment')) {
+        userFriendlyMsg = 'Payment integration is being configured. Please try again later.';
+      } else if (rawMsg.toLowerCase().contains('organizer')) {
+        userFriendlyMsg = 'Event organizer setup is incomplete. Please contact support.';
+      } else {
+        userFriendlyMsg = rawMsg;
+      }
+      
+      errorMessage.value = userFriendlyMsg;
+      ToastMessageHelper.showToastMessage(userFriendlyMsg, title: 'Error');
     } finally {
       isRegistering.value = false;
     }

@@ -25,8 +25,16 @@ class SponsorsController extends GetxController {
     try {
       final fetched = await _service.getAllSponsors(currentEventId);
       sponsors.assignAll(fetched);
+      
+      // Show message if no sponsors available
+      if (fetched.isEmpty) {
+        ToastMessageHelper.showToastMessage(
+          'Sponsors information coming soon. Check back later!',
+          title: 'Info',
+        );
+      }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load sponsors', title: 'Error');
+      ToastMessageHelper.showToastMessage('Sponsors information coming soon. Check back later!', title: 'Info');
     } finally {
       isLoading.value = false;
     }

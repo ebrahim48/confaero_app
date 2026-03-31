@@ -22,25 +22,43 @@ class AttendeeService {
     }
   }
 
-  Future<List<AttendeeModel>> getEventAttendees(String eventId) async {
+  /// Get all attendees for an event
+  /// API: GET /eventAttendee/events/:eventId/attendees
+  /// Response: { success, message, data: { total, bookmarked, attendees: [] } }
+  Future<AttendeesResponse> getEventAttendees(String eventId, {bool bookmarkedOnly = false}) async {
     await _checkConnectivity();
     _logger.i('Fetching attendees for event: $eventId');
 
-    final response = await _apiService.get(
-      '${ApiConstants.getEventAttendees}/$eventId/attendees',
-    );
+    String endpoint = '${ApiConstants.getEventAttendees}/$eventId/attendees';
+    if (bookmarkedOnly) {
+      endpoint += '?bookmarked=true';
+    }
+
+    final response = await _apiService.get(endpoint);
 
     if (response.data is Map<String, dynamic>) {
       final data = response.data as Map<String, dynamic>;
-      if ((data['success'] as bool? ?? false) && data['data'] is List) {
-        return (data['data'] as List)
+      if ((data['success'] as bool? ?? false) && data['data'] is Map) {
+        final dataMap = data['data'] as Map<String, dynamic>;
+        final total = dataMap['total'] as int? ?? 0;
+        final bookmarkedCount = dataMap['bookmarked'] as int? ?? 0;
+        final attendeesList = dataMap['attendees'] as List? ?? [];
+        
+        final attendees = attendeesList
             .map((e) => AttendeeModel.fromJson(e as Map<String, dynamic>))
             .toList();
+        
+        return AttendeesResponse(
+          total: total,
+          bookmarkedCount: bookmarkedCount,
+          attendees: attendees,
+        );
       }
     }
-    return [];
+    return AttendeesResponse(total: 0, bookmarkedCount: 0, attendees: []);
   }
 
+  /// Get attendee details
   Future<AttendeeModel?> getAttendeeDetails(
     String eventId,
     String attendeeId,
@@ -63,16 +81,38 @@ class AttendeeService {
     return null;
   }
 
-  Future<Map<String, dynamic>> bookmarkAttendee(
+  /// Toggle bookmark for attendee
+  Future<bool> bookmarkAttendee(
     String eventId,
     String attendeeId,
   ) async {
     await _checkConnectivity();
-    _logger.i('Bookmarking attendee: $attendeeId for event: $eventId');
+    _logger.i('Toggling bookmark for attendee: $attendeeId in event: $eventId');
 
     final response = await _apiService.patch(
       '${ApiConstants.bookmarkAttendee}/$eventId/attendees/$attendeeId/bookmark',
     );
-    return response.data as Map<String, dynamic>;
+    
+    if (response.data is Map<String, dynamic>) {
+      final data = response.data as Map<String, dynamic>;
+      if ((data['success'] as bool? ?? false) && data['data'] != null) {
+        final dataMap = data['data'] as Map<String, dynamic>;
+        return dataMap['isBookmarked'] as bool? ?? false;
+      }
+    }
+    return false;
   }
+}
+
+/// Response model for attendees list API
+class AttendeesResponse {
+  final int total;
+  final int bookmarkedCount;
+  final List<AttendeeModel> attendees;
+
+  AttendeesResponse({
+    required this.total,
+    required this.bookmarkedCount,
+    required this.attendees,
+  });
 }

@@ -117,7 +117,7 @@ class AttendeesScreen extends StatelessWidget {
                       label: 'Total Attendees',
                     ),
                     StatsCard(
-                      count: controller.bookmarked.value.toString(),
+                      count: controller.bookmarkedCount.value.toString(),
                       label: 'Bookmarked',
                     ),
                   ],
@@ -131,24 +131,24 @@ class AttendeesScreen extends StatelessWidget {
               child: Obx(() {
                 return ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 24.w),
-                  itemCount: controller.attendees.length,
+                  itemCount: controller.filteredAttendees.length,
                   itemBuilder: (context, index) {
-                    final attendee = controller.attendees[index];
+                    final attendee = controller.filteredAttendees[index];
                     return AttendeeCard(
-                      name: attendee['name'],
-                      company: attendee['company'],
-                      role: attendee['role'],
-                      sessions: attendee['sessions'],
-                      imagePath: attendee['image'],
-                      isBookmarked: attendee['isBookmarked'],
-                      onBookmarkTap: () => controller.toggleBookmark(attendee['id']),
-                      onSayHi: () => controller.sayHi(attendee['name']),
-                      onSendMail: () => controller.sendMail(attendee['name']),
+                      name: attendee.name,
+                      company: attendee.company,
+                      role: attendee.role,
+                      sessions: '${attendee.sessionsCount} sessions',
+                      imagePath: attendee.avatarUrl,
+                      isBookmarked: attendee.isBookmarked,
+                      onBookmarkTap: () => controller.toggleBookmark(attendee.id),
+                      onSayHi: () => controller.sayHi(attendee.name, attendee.id),
+                      onSendMail: () => controller.sendMail(attendee.email ?? ''),
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const AttendeeDetailsScreen(),
+                            builder: (context) => AttendeeDetailsScreen(attendeeId: attendee.id),
                           ),
                         );
                       },

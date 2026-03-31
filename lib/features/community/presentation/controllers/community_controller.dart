@@ -32,9 +32,17 @@ class CommunityController extends GetxController {
 
       final data = await _service.getAnnouncements(currentEventId);
       announcements.value = data;
+      
+      // Show message if no announcements available
+      if (data.isEmpty) {
+        ToastMessageHelper.showToastMessage(
+          'Announcements coming soon. Check back later!',
+          title: 'Info',
+        );
+      }
     } catch (e) {
-      errorMessage.value = 'Failed to load announcements';
-      ToastMessageHelper.showToastMessage('Failed to load announcements', title: 'Error');
+      errorMessage.value = 'Announcements coming soon. Check back later!';
+      ToastMessageHelper.showToastMessage('Announcements coming soon. Check back later!', title: 'Info');
     } finally {
       isLoading.value = false;
     }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../core/services/api_service.dart';
 import '../../../../../core/services/connectivity_service.dart';
+import '../../../../../core/helpers/toast_message_helper.dart';
 import '../../data/floor_map_model.dart';
 import '../../data/repository/floor_map_repository.dart';
 import '../../domain/floor_map_service.dart';
@@ -48,9 +49,21 @@ class FloorMapController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
       floorMaps.value = await _repository.getFloorMaps(eventId);
+      
+      // Show message if no floor maps available
+      if (floorMaps.isEmpty) {
+        ToastMessageHelper.showToastMessage(
+          'Floor maps coming soon. Check back later!',
+          title: 'Info',
+        );
+      }
     } catch (e) {
       errorMessage.value =
           e.toString().replaceAll('Exception: ', '').replaceAll('Exception:', '');
+      ToastMessageHelper.showToastMessage(
+        'Floor maps coming soon. Check back later!',
+        title: 'Info',
+      );
     } finally {
       isLoading.value = false;
     }
@@ -73,22 +86,53 @@ class FloorMapController extends GetxController {
   }
 
   // ── Map viewer ────────────────────────────────────────────────────────────
+  final transformationController = TransformationController();
 
   void zoomIn() {
-    if (scale.value < 3.0) scale.value = (scale.value + 0.1).clamp(0.5, 3.0);
+    final newScale = (scale.value + 0.3).clamp(0.5, 3.0);
+    scale.value = newScale;
+    // Update the transformation matrix
+    final matrix = transformationController.value.clone();
+    matrix.setEntry(0, 0, newScale); // Scale X
+    matrix.setEntry(1, 1, newScale); // Scale Y
+    transformationController.value = matrix;
+    ToastMessageHelper.showToastMessage('Zoomed in', title: 'Zoom');
   }
 
   void zoomOut() {
-    if (scale.value > 0.5) scale.value = (scale.value - 0.1).clamp(0.5, 3.0);
+    final newScale = (scale.value - 0.3).clamp(0.5, 3.0);
+    scale.value = newScale;
+    // Update the transformation matrix
+    final matrix = transformationController.value.clone();
+    matrix.setEntry(0, 0, newScale); // Scale X
+    matrix.setEntry(1, 1, newScale); // Scale Y
+    transformationController.value = matrix;
+    ToastMessageHelper.showToastMessage('Zoomed out', title: 'Zoom');
   }
 
   void recenter() {
     scale.value = 1.0;
     showAllArea.value = false;
+    transformationController.value = Matrix4.identity();
+    ToastMessageHelper.showToastMessage('Map recentered', title: 'View');
   }
 
   void toggleShowAllArea() {
     showAllArea.value = !showAllArea.value;
     scale.value = showAllArea.value ? 0.7 : 1.0;
+    final matrix = transformationController.value.clone();
+    matrix.setEntry(0, 0, scale.value);
+    matrix.setEntry(1, 1, scale.value);
+    transformationController.value = matrix;
+    ToastMessageHelper.showToastMessage(
+      showAllArea.value ? 'Showing all area' : 'Back to normal view',
+      title: 'View',
+    );
+  }
+
+  @override
+  void onClose() {
+    transformationController.dispose();
+    super.onClose();
   }
 }

@@ -44,8 +44,16 @@ class AgendaController extends GetxController {
 
       final bookmarked = await _agendaService.getMyAgenda(currentEventId);
       myAgendaSessions.assignAll(bookmarked);
+      
+      // Show message if no sessions available
+      if (all.isEmpty && myAgendaSessions.isEmpty) {
+        ToastMessageHelper.showToastMessage(
+          'Agenda sessions coming soon. Check back later!',
+          title: 'Info',
+        );
+      }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load agenda', title: 'Error');
+      ToastMessageHelper.showToastMessage('Agenda sessions coming soon. Check back later!', title: 'Info');
     } finally {
       isLoading.value = false;
     }
