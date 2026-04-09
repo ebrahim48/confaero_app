@@ -1,13 +1,16 @@
 // lib/features/attendees/controllers/attendees_controller.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/services/socket_service.dart';
 import '../../domain/services/attendee_service.dart';
 import '../../data/models/attendee_model.dart';
 import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class AttendeesController extends GetxController {
   final AttendeeService _attendeeService = Get.find<AttendeeService>();
+  final SocketService _socketService = Get.find<SocketService>();
   final TextEditingController searchController = TextEditingController();
 
   // Total stats
@@ -21,16 +24,55 @@ class AttendeesController extends GetxController {
   // Filter state
   final RxBool showBookmarkedOnly = false.obs;
 
+  // Socket subscriptions
+  StreamSubscription<Map<String, dynamic>>? _onlineSubscription;
+  StreamSubscription<Map<String, dynamic>>? _offlineSubscription;
+
   @override
   void onInit() {
     super.onInit();
     loadAttendees();
-    
+
     // Listen to search
     searchController.addListener(() {
       filterAttendees();
     });
+
+    // Listen to Socket.IO for real-time online/offline updates
+    _onlineSubscription = _socketService.onUserOnline.listen(_handleUserOnline);
+    _offlineSubscription = _socketService.onUserOffline.listen(_handleUserOffline);
   }
+
+  /// Handle user coming online
+  void _handleUserOnline(Map<String, dynamic> data) {
+    final userId = data['userId']?.toString() ?? '';
+    if (userId.isNotEmpty) {
+      // Mark attendee as online
+      final index = attendees.indexWhere((a) => a.id == userId);
+      if (index != -1) {
+        attendees[index].isOnline = true;
+        attendees.refresh();
+        filteredAttendees.refresh();
+      }
+    }
+  }
+
+  /// Handle user going offline
+  void _handleUserOffline(Map<String, dynamic> data) {
+    final userId = data['userId']?.toString() ?? '';
+    if (userId.isNotEmpty) {
+      // Mark attendee as offline
+      final index = attendees.indexWhere((a) => a.id == userId);
+      if (index != -1) {
+        attendees[index].isOnline = false;
+        attendees.refresh();
+        filteredAttendees.refresh();
+      }
+    }
+  }
+
+  /// Check if a specific attendee is online
+  bool isUserOnline(String userId) => _socketService.isUserOnline(userId);
 
   /// Load all attendees
   Future<void> loadAttendees() async {
@@ -135,6 +177,8 @@ class AttendeesController extends GetxController {
   @override
   void onClose() {
     searchController.dispose();
+    _onlineSubscription?.cancel();
+    _offlineSubscription?.cancel();
     super.onClose();
   }
 }

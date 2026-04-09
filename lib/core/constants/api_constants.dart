@@ -1,6 +1,7 @@
 class ApiConstants {
   static const String baseUrl = 'https://reazul8078.suplify.life/api/v1';
   static const String imageUrl = "https://reaz8080.syedbipul.me";
+  static const String socketServerUrl = 'https://reazul8078.suplify.life';
 
   static Map<String, String> headers = {'Content-Type': 'application/json'};
 

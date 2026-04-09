@@ -98,6 +98,8 @@ class MessageChatController extends GetxController {
 
     if (currentConversationId.isNotEmpty) {
       loadMessages();
+      // Join the conversation room for real-time updates
+      _socketService.emitJoinConversation(conversationId: currentConversationId);
     }
 
     // Listen for real-time incoming messages via Socket.IO
@@ -151,15 +153,30 @@ class MessageChatController extends GetxController {
       scrollToBottom();
     });
 
-    try {
-      await _messageService.sendMessage(
-        currentEventId,
-        receiverId: currentReceiverId,
-        content: text,
-      );
-    } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to send message over network', title: 'Error');
-      // Could visually indicate unsent text here
+    // Try sending via Socket.IO first for real-time delivery
+    final socketSent = await _socketService.emitMessage(
+      conversationId: currentConversationId,
+      receiverId: currentReceiverId,
+      content: text,
+      eventId: currentEventId,
+    );
+
+    // If Socket.IO fails, fallback to REST API
+    if (!socketSent) {
+      try {
+        await _messageService.sendMessage(
+          currentEventId,
+          receiverId: currentReceiverId,
+          content: text,
+        );
+      } catch (e) {
+        ToastMessageHelper.showToastMessage(
+          'Failed to send message',
+          title: 'Error',
+        );
+        // Remove the optimistic message on failure
+        messages.removeWhere((m) => m.text == text && m.isMe);
+      }
     }
   }
 
@@ -214,6 +231,10 @@ class MessageChatController extends GetxController {
 
   @override
   void onClose() {
+    // Leave the conversation room
+    if (currentConversationId.isNotEmpty) {
+      _socketService.emitLeaveConversation(conversationId: currentConversationId);
+    }
     _messageSubscription?.cancel();
     messageController.dispose();
     scrollController.dispose();

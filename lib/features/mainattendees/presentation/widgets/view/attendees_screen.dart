@@ -141,6 +141,7 @@ class AttendeesScreen extends StatelessWidget {
                       sessions: '${attendee.sessionsCount} sessions',
                       imagePath: attendee.avatarUrl,
                       isBookmarked: attendee.isBookmarked,
+                      isOnline: attendee.isOnline || controller.isUserOnline(attendee.id),
                       onBookmarkTap: () => controller.toggleBookmark(attendee.id),
                       onSayHi: () => controller.sayHi(attendee.name, attendee.id),
                       onSendMail: () => controller.sendMail(attendee.email ?? ''),

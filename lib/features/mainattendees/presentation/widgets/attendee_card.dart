@@ -10,6 +10,7 @@ class AttendeeCard extends StatelessWidget {
   final String sessions;
   final String imagePath;
   final bool isBookmarked;
+  final bool isOnline;
   final VoidCallback onBookmarkTap;
   final VoidCallback onSayHi;
   final VoidCallback onSendMail;
@@ -23,6 +24,7 @@ class AttendeeCard extends StatelessWidget {
     required this.sessions,
     required this.imagePath,
     required this.isBookmarked,
+    this.isOnline = false,
     required this.onBookmarkTap,
     required this.onSayHi,
     required this.onSendMail,
@@ -57,17 +59,39 @@ class AttendeeCard extends StatelessWidget {
             // Top Row: Avatar, Info, Bookmark
             Row(
               children: [
-                // Avatar
-                Container(
-                  width: 45.w,
-                  height: 45.h,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.r),
-                    image: DecorationImage(
-                      image: AssetImage(imagePath),
-                      fit: BoxFit.cover,
+                // Avatar with online indicator
+                Stack(
+                  children: [
+                    Container(
+                      width: 45.w,
+                      height: 45.h,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8.r),
+                        image: DecorationImage(
+                          image: AssetImage(imagePath),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
-                  ),
+                    // Online status indicator (green dot)
+                    if (isOnline)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 12.w,
+                          height: 12.h,
+                          decoration: BoxDecoration(
+                            color: const Color(0xff4CAF50),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 SizedBox(width: 12.w),
 

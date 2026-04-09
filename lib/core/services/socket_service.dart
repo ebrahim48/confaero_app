@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
+import '../constants/api_constants.dart';
 import '../constants/app_constants.dart';
 import '../controllers/session_controller.dart';
 import '../helpers/logger_helper.dart';
@@ -17,6 +18,16 @@ class SocketEvents {
   static const String userOnline = 'user:online';
   static const String userOffline = 'user:offline';
   static const String activeCount = 'active-count';
+
+  // Outgoing (emit)
+  static const String sendMessageEvent = 'message:send';
+  static const String sendNotification = 'notification:send';
+  static const String userStatusUpdate = 'user:status';
+  static const String typing = 'typing:start';
+  static const String stopTyping = 'typing:stop';
+  static const String seenMessage = 'message:seen';
+  static const String joinConversation = 'conversation:join';
+  static const String leaveConversation = 'conversation:leave';
 }
 
 /// Centralized Socket.IO service.
@@ -47,6 +58,7 @@ class SocketService extends GetxService {
   final _notificationController = StreamController<Map<String, dynamic>>.broadcast();
   final _userOnlineController = StreamController<Map<String, dynamic>>.broadcast();
   final _userOfflineController = StreamController<Map<String, dynamic>>.broadcast();
+  final _messageSentController = StreamController<Map<String, dynamic>>.broadcast();
 
   /// Stream of new incoming messages.
   Stream<Map<String, dynamic>> get onNewMessage => _messageController.stream;
@@ -59,6 +71,9 @@ class SocketService extends GetxService {
 
   /// Stream of user offline events.
   Stream<Map<String, dynamic>> get onUserOffline => _userOfflineController.stream;
+
+  /// Stream of messages successfully sent via Socket.IO.
+  Stream<Map<String, dynamic>> get onMessageSent => _messageSentController.stream;
 
   // ───────── Lifecycle ─────────
 
@@ -85,7 +100,7 @@ class SocketService extends GetxService {
 
     try {
       _socket = io.io(
-        'https://reazul8078.suplify.life',
+        ApiConstants.socketServerUrl,
         io.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()
@@ -115,6 +130,8 @@ class SocketService extends GetxService {
   /// Disconnect and clean up.
   void disconnect() {
     _logger.i('Disconnecting socket');
+    // Announce user is going offline before disconnecting
+    emitUserStatus(status: 'offline');
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;
@@ -135,6 +152,8 @@ class SocketService extends GetxService {
     _socket!.onConnect((_) {
       _logger.i('Socket connected ✓');
       isConnected.value = true;
+      // Announce user is online
+      emitUserStatus(status: 'online');
     });
 
     _socket!.onDisconnect((_) {
@@ -154,6 +173,8 @@ class SocketService extends GetxService {
     _socket!.onReconnect((_) {
       _logger.i('Socket reconnected');
       isConnected.value = true;
+      // Re-announce user is online after reconnect
+      emitUserStatus(status: 'online');
     });
   }
 
@@ -209,6 +230,33 @@ class SocketService extends GetxService {
         activeUserCount.value = data['count'] as int? ?? 0;
       }
     });
+
+    // 6. Typing indicator
+    _socket!.on(SocketEvents.typing, (data) {
+      _logger.d('typing:start → $data');
+      final parsed = _toMap(data);
+      if (parsed != null) {
+        _messageController.add({...parsed, 'isTyping': true});
+      }
+    });
+
+    // 7. Stop typing indicator
+    _socket!.on(SocketEvents.stopTyping, (data) {
+      _logger.d('typing:stop → $data');
+      final parsed = _toMap(data);
+      if (parsed != null) {
+        _messageController.add({...parsed, 'isTyping': false});
+      }
+    });
+
+    // 8. Message seen/acknowledged
+    _socket!.on(SocketEvents.seenMessage, (data) {
+      _logger.d('message:seen → $data');
+      final parsed = _toMap(data);
+      if (parsed != null) {
+        _messageController.add({...parsed, 'isSeen': true});
+      }
+    });
   }
 
   // ───────── Helpers ─────────
@@ -224,6 +272,89 @@ class SocketService extends GetxService {
   /// Check if a specific user is online.
   bool isUserOnline(String userId) => onlineUserIds.contains(userId);
 
+  // ───────── Emit (outgoing) methods ─────────
+
+  /// Emit a message to a conversation via Socket.IO.
+  ///
+  /// Returns `true` if the message was sent successfully, `false` otherwise.
+  Future<bool> emitMessage({
+    required String conversationId,
+    required String receiverId,
+    required String content,
+    String? eventId,
+  }) async {
+    if (_socket == null || !_socket!.connected) {
+      _logger.w('Cannot emit message: socket not connected');
+      return false;
+    }
+
+    try {
+      final payload = {
+        'conversationId': conversationId,
+        'receiverId': receiverId,
+        'content': content,
+        if (eventId != null) 'eventId': eventId,
+      };
+
+      _logger.d('Emitting message: $payload');
+      _socket!.emit(SocketEvents.sendMessageEvent, payload);
+      _messageSentController.add(payload);
+      return true;
+    } catch (e) {
+      _logger.e('Failed to emit message: $e');
+      return false;
+    }
+  }
+
+  /// Emit typing start event.
+  void emitTyping({required String conversationId, required String receiverId}) {
+    _socket?.emit(SocketEvents.typing, {
+      'conversationId': conversationId,
+      'receiverId': receiverId,
+    });
+  }
+
+  /// Emit typing stop event.
+  void emitStopTyping({required String conversationId, required String receiverId}) {
+    _socket?.emit(SocketEvents.stopTyping, {
+      'conversationId': conversationId,
+      'receiverId': receiverId,
+    });
+  }
+
+  /// Emit message seen event.
+  void emitMessageSeen({required String messageId}) {
+    _socket?.emit(SocketEvents.seenMessage, {
+      'messageId': messageId,
+    });
+  }
+
+  /// Emit join conversation event.
+  void emitJoinConversation({required String conversationId}) {
+    _socket?.emit(SocketEvents.joinConversation, {
+      'conversationId': conversationId,
+    });
+  }
+
+  /// Emit leave conversation event.
+  void emitLeaveConversation({required String conversationId}) {
+    _socket?.emit(SocketEvents.leaveConversation, {
+      'conversationId': conversationId,
+    });
+  }
+
+  /// Emit user status update.
+  void emitUserStatus({required String status}) {
+    _socket?.emit(SocketEvents.userStatusUpdate, {
+      'status': status,
+    });
+  }
+
+  /// Generic emit method for custom events.
+  void emitEvent(String eventName, [dynamic data]) {
+    _socket?.emit(eventName, data);
+  }
+
   // ───────── Dispose ─────────
 
   @override
@@ -233,6 +364,7 @@ class SocketService extends GetxService {
     _notificationController.close();
     _userOnlineController.close();
     _userOfflineController.close();
+    _messageSentController.close();
     super.onClose();
   }
 }

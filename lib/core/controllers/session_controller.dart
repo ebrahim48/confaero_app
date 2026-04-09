@@ -33,6 +33,19 @@ class SessionController extends GetxController {
     final saved = await PrefsHelper.getString(AppConstants.currentEventId);
     if (saved.isNotEmpty) {
       eventIdRx.value = saved;
+      // Auto-connect Socket.IO if user already has an event on startup
+      _connectSocketOnStartup();
+    }
+  }
+
+  /// Connects Socket.IO on app startup when a saved event exists.
+  void _connectSocketOnStartup() {
+    try {
+      final socketService = Get.find<SocketService>();
+      // Use Future.microtask to avoid blocking the init cycle
+      Future.microtask(() => socketService.connect());
+    } catch (_) {
+      // SocketService may not be registered yet during early startup
     }
   }
 
