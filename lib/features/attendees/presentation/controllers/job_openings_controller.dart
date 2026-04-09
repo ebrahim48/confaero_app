@@ -61,7 +61,7 @@ class JobOpeningsController extends GetxController {
   final isLoading = false.obs;
 
   // Filter options
-  final filterOptions = ['All', 'Full-time', 'internship', 'Remote', 'On-site'];
+  final filterOptions = ['All', 'Full-time', 'Full Time', 'Internship', 'Remote', 'On-site', 'Part-time', 'Contract'];
 
   @override
   void onInit() {
@@ -82,7 +82,7 @@ class JobOpeningsController extends GetxController {
       final data = await _jobService.getJobs();
       final parsed = data.map((j) => Job.fromJson(j)).toList();
       allJobs.assignAll(parsed);
-      jobs.assignAll(parsed);
+      _applyFilters();
     } catch (e) {
       ToastMessageHelper.showToastMessage('Failed to load jobs', title: 'Error');
     } finally {
@@ -93,23 +93,12 @@ class JobOpeningsController extends GetxController {
   // Select filter
   void selectFilter(String filter) {
     selectedFilter.value = filter;
+    _applyFilters();
   }
 
   // Search jobs
   void searchJobs(String query) {
-    if (query.isEmpty) {
-      jobs.assignAll(allJobs);
-    } else {
-      jobs.assignAll(
-        allJobs
-            .where(
-              (j) =>
-                  j.position.toLowerCase().contains(query.toLowerCase()) ||
-                  j.companyName.toLowerCase().contains(query.toLowerCase()),
-            )
-            .toList(),
-      );
-    }
+    _applyFilters(query: query);
   }
 
   // Refresh jobs
@@ -117,17 +106,34 @@ class JobOpeningsController extends GetxController {
     await loadJobs();
   }
 
-  // Get filtered jobs
-  List<Job> get filteredJobs {
-    if (selectedFilter.value == 'All') {
-      return jobs;
+  // Apply both search and filter on allJobs
+  void _applyFilters({String query = ''}) {
+    final searchQuery = query.isNotEmpty ? query : searchController.text;
+    List<Job> result = allJobs;
+
+    // Apply search
+    if (searchQuery.isNotEmpty) {
+      result = result
+          .where(
+            (j) =>
+                j.position.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                j.companyName.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                j.location.toLowerCase().contains(searchQuery.toLowerCase()),
+          )
+          .toList();
     }
-    return jobs
-        .where(
-          (job) =>
-              job.jobType.toLowerCase() == selectedFilter.value.toLowerCase(),
-        )
-        .toList();
+
+    // Apply filter
+    if (selectedFilter.value != 'All') {
+      final filterLower = selectedFilter.value.toLowerCase();
+      result = result
+          .where(
+            (job) => job.jobType.toLowerCase().contains(filterLower),
+          )
+          .toList();
+    }
+
+    jobs.assignAll(result);
   }
 
   // ======================== Organizer/Exhibitor Job Management ========================

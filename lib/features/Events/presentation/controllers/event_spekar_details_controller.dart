@@ -70,10 +70,10 @@ class EventSpekarDetailsController extends GetxController {
   }
 
   // Request to Connect
-  Future<void> requestToConnect(String eventId) async {
+  Future<void> requestToConnect(String eventId, String receiverId) async {
     isRequesting.value = true;
     try {
-      await _connectionService.sendRequest(eventId);
+      await _connectionService.sendRequest(eventId, receiverId: receiverId);
       ToastMessageHelper.showToastMessage('Connection request sent!', title: 'Success');
     } catch (e) {
       ToastMessageHelper.showToastMessage('Failed to send request: $e', title: 'Error');

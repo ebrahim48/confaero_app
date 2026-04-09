@@ -109,22 +109,22 @@ class ApiConstants {
       '/photo/public/events'; // append /:id/photos
 
   //--------------------------Resources (Q&A/Polls)---------------
-  static const String getEventQnA = '/resouce/event/qna'; // append /:eventId
-  static const String getEventPolls = '/resouce/event/poll'; // append /:eventId
+  static const String getEventQnA = '/resource/event/qna'; // append /:eventId
+  static const String getEventPolls = '/resource/event/poll'; // append /:eventId
   static const String submitPollVote =
-      '/resouce/poll'; // append /:id/:eventId/submit
+      '/resource/poll'; // append /:id/:eventId/submit
 
   //--------------------------Resources CRUD (Organizer)----------
-  static const String createQnA = '/resouce/qna'; // POST /:eventId
-  static const String updateQnA = '/resouce/qna'; // PATCH /:id/:eventId
-  static const String deleteQnA = '/resouce/qna'; // DELETE /:id/:eventId
-  static const String createPoll = '/resouce/poll'; // POST /:eventId
-  static const String updatePoll = '/resouce/poll'; // PATCH /:id/:eventId
-  static const String deletePoll = '/resouce/poll'; // DELETE /:id/:eventId
-  static const String getPollVotes = '/resouce/poll'; // GET /:id/:eventId/votes
-  static const String submitSurvey = '/resouce/survey'; // POST /:eventId/submit
+  static const String createQnA = '/resource/qna'; // POST /:eventId
+  static const String updateQnA = '/resource/qna'; // PATCH /:id/:eventId
+  static const String deleteQnA = '/resource/qna'; // DELETE /:id/:eventId
+  static const String createPoll = '/resource/poll'; // POST /:eventId
+  static const String updatePoll = '/resource/poll'; // PATCH /:id/:eventId
+  static const String deletePoll = '/resource/poll'; // DELETE /:id/:eventId
+  static const String getPollVotes = '/resource/poll'; // GET /:id/:eventId/votes
+  static const String submitSurvey = '/resource/survey'; // POST /:eventId/submit
   static const String getSurveyAnalytics =
-      '/resouce/survey'; // GET /:eventId/analytics
+      '/resource/survey'; // GET /:eventId/analytics
 
   //--------------------------Verified Email (Organizer)----------
   // REMOVED: verifyEmail endpoints no longer in backend API
@@ -146,10 +146,9 @@ class ApiConstants {
 
   //--------------------------Event Registration-------------------
   static const String getMyEventDetails = '/attendee/my-events'; // append /:id
-  static const String registerEvent =
-      '/attendee/events'; // append /:id/register
   static const String getEventSessions =
       '/attendee/events'; // append /:id/sessions
+  static const String joinEvent = '/attendee/event'; // PATCH /:eventId/join
 
   //--------------------------Roles---------------------------------
   static const String changeRole = '/auth/change-role';
@@ -165,7 +164,7 @@ class ApiConstants {
   static const String getVolunteerAttendance = '/qr/volunteer'; // GET /:eventId
 
   //--------------------------Jobs----------------------------------
-  static const String getJobs = '/job/';
+  static const String getJobs = '/job';
   static const String getJobDetails = '/job'; // append /:id
 
   //--------------------------Invitations---------------------------
@@ -206,8 +205,10 @@ class ApiConstants {
   static const String getOrganizerBooths =
       '/organizerBooth/events'; // GET /:eventId/booths
   static const String getBoothDetails = '/organizerBooth/booths'; // GET /:id
-  static const String acceptBooth =
+  static const String updateBoothNumber =
       '/organizerBooth/booths'; // PATCH /:id/number
+  static const String acceptBooth =
+      '/organizerBooth/booths'; // PATCH /:id/accept
   static const String cancelBooth =
       '/organizerBooth/booths'; // PATCH /:id/cancel
 
@@ -252,8 +253,6 @@ class ApiConstants {
       '/poster-assign/unassigned'; // GET /:eventId
   static const String getAssignedPosters =
       '/poster-assign/assigned'; // GET /:eventId
-  static const String submitPosterReview =
-      '/poster-assign/review'; // POST /:eventId
   static const String getReportedPosters =
       '/poster-assign/reported'; // GET /:eventId
 

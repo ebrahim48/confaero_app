@@ -1,10 +1,12 @@
 import 'package:get/get.dart';
 
 import '../../../../core/services/poster_assign_service.dart';
+import '../../../../core/services/reviewer_service.dart';
 import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class PosterAssignController extends GetxController {
   final PosterAssignService _service = Get.find<PosterAssignService>();
+  final ReviewerService _reviewerService = Get.find<ReviewerService>();
 
   final unassigned = <Map<String, dynamic>>[].obs;
   final assigned = <Map<String, dynamic>>[].obs;
@@ -78,9 +80,9 @@ class PosterAssignController extends GetxController {
     }
   }
 
-  Future<void> submitReview(Map<String, dynamic> data) async {
+  Future<void> submitReview(String attachmentId, Map<String, dynamic> data) async {
     try {
-      await _service.submitReview(currentEventId, data);
+      await _reviewerService.reviewPosterImage(attachmentId, data);
       Get.back();
       ToastMessageHelper.showToastMessage('Review submitted', title: 'Success');
       loadAll();

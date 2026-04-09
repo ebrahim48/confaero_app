@@ -45,11 +45,22 @@ class BoothService {
   }
 
   /// PATCH /organizerBooth/booths/:id/number
+  Future<Map<String, dynamic>> updateBoothNumber(String boothId, String number) async {
+    await _checkConnectivity();
+    _logger.i('Updating booth number: $boothId');
+    final response = await _apiService.patch(
+      '${ApiConstants.updateBoothNumber}/$boothId/number',
+      data: {'boothNumber': number},
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// PATCH /organizerBooth/booths/:id/accept
   Future<Map<String, dynamic>> acceptBooth(String boothId) async {
     await _checkConnectivity();
     _logger.i('Accepting booth: $boothId');
     final response = await _apiService.patch(
-      '${ApiConstants.acceptBooth}/$boothId/number',
+      '${ApiConstants.acceptBooth}/$boothId/accept',
     );
     return response.data as Map<String, dynamic>;
   }

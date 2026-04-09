@@ -82,7 +82,11 @@ class MessageScreen extends StatelessWidget {
             /// Message List
             Expanded(
               child: Obx(
-                    () => ListView.builder(
+                    () {
+                  if (controller.messages.isEmpty) {
+                    return _buildEmptyState();
+                  }
+                  return ListView.builder(
                   itemCount: controller.messages.length,
                   itemBuilder: (context, index) {
                     final msg = controller.messages[index];
@@ -100,8 +104,45 @@ class MessageScreen extends StatelessWidget {
                       },
                     );
                   },
-                ),
+                );
+                },
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.chat_bubble_outline,
+              size: 80.sp,
+              color: const Color(0xFFAD9D8D),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'No Conversations Yet',
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF252525),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Start connecting with other attendees. Your conversations will appear here once you message someone.',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF757575),
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

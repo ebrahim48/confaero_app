@@ -31,10 +31,22 @@ class SponsorService {
 
     if (response.data is Map<String, dynamic>) {
       final resData = response.data as Map<String, dynamic>;
-      if ((resData['success'] == true) && resData['data'] is List) {
-        return (resData['data'] as List)
-            .map((e) => SponsorModel.fromJson(e))
-            .toList();
+      if (resData['success'] == true) {
+        // Handle both flat and nested data structures
+        List<dynamic> sponsorsList = [];
+        if (resData['data'] is List) {
+          sponsorsList = resData['data'] as List;
+        } else if (resData['data'] is Map && resData['data']['data'] is List) {
+          sponsorsList = resData['data']['data'] as List;
+        } else if (resData['data'] is Map && resData['data']['sponsors'] is List) {
+          sponsorsList = resData['data']['sponsors'] as List;
+        }
+
+        if (sponsorsList.isNotEmpty) {
+          return sponsorsList
+              .map((e) => SponsorModel.fromJson(e as Map<String, dynamic>))
+              .toList();
+        }
       }
     }
     return [];

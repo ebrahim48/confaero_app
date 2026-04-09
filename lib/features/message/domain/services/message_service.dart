@@ -90,7 +90,7 @@ class MessageService {
       '${ApiConstants.sendMessage}/$eventId',
       data: {
         'receiverId': receiverId,
-        'content': content,
+        'text': content,
         if (attachmentUrl != null) 'attachmentUrl': attachmentUrl,
       },
     );
@@ -103,7 +103,7 @@ class MessageService {
     _logger.i('Uploading chat attachment: ${file.path}');
 
     final formData = FormData.fromMap({
-      'attachment': await MultipartFile.fromFile(file.path),
+      'file': await MultipartFile.fromFile(file.path),
     });
 
     final response = await _apiService.post(

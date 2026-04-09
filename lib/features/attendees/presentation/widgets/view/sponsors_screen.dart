@@ -27,7 +27,7 @@ class SponsorsScreen extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               }
               if (controller.sponsors.isEmpty) {
-                return const Center(child: Text('No sponsors found'));
+                return _buildEmptyState();
               }
               return Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
@@ -59,6 +59,42 @@ class SponsorsScreen extends StatelessWidget {
             }),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.business_center_outlined,
+              size: 80.sp,
+              color: const Color(0xFFAD9D8D),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'No Sponsors Yet',
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF252525),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Sponsors for this event will appear here once they are added. Check back later!',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF757575),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

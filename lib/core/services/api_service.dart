@@ -230,10 +230,16 @@ class ApiService {
         return null;
       }
 
+      // Backend expects refreshToken in HTTP-only cookie, but we also send it
+      // in body as fallback since Flutter can't manage cookies like a browser.
       final response = await _dio.post(
         ApiConstants.refreshTokenApi,
         data: {'refreshToken': refreshToken},
-        options: Options(headers: {'Content-Type': 'application/json'}),
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+          // Send cookies with request (for when cookie-based auth is available)
+          extra: {'withCredentials': true},
+        ),
       );
 
       final responseData = response.data as Map<String, dynamic>?;
@@ -245,7 +251,6 @@ class ApiService {
       }
 
       final newAccessToken = data['accessToken'] as String? ?? '';
-      final newRefreshToken = data['refreshToken'] as String? ?? refreshToken;
 
       if (newAccessToken.isEmpty) {
         return null;
@@ -253,6 +258,8 @@ class ApiService {
 
       await PrefsHelper.setString(AppConstants.bearerToken, newAccessToken);
 
+      // Update refresh token if backend rotated it
+      final newRefreshToken = data['refreshToken'] as String? ?? refreshToken;
       await PrefsHelper.setString(AppConstants.refreshToken, newRefreshToken);
 
       return newAccessToken;

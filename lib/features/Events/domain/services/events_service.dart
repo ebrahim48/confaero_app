@@ -235,33 +235,6 @@ class EventsService {
     }
   }
 
-  // ── POST /attendee/events/:id/register ──────────────────────────────────
-  Future<Map<String, dynamic>?> registerEvent(String eventId) async {
-    try {
-      await _checkConnectivity();
-      _logger.i('Registering for event: $eventId');
-      final response = await _apiService.post(
-        '${ApiConstants.registerEvent}/$eventId/register',
-      );
-      if (response.data is Map<String, dynamic>) {
-        return response.data as Map<String, dynamic>;
-      }
-      return null;
-    } on DioException catch (e) {
-      String errorMsg = 'Registration failed';
-      try {
-        final rd = e.response?.data;
-        if (rd is Map<String, dynamic>)
-          errorMsg = rd['message'] as String? ?? errorMsg;
-      } catch (_) {}
-      _logger.e('registerEvent failed', error: e);
-      throw Exception(errorMsg);
-    } catch (e) {
-      _logger.e('registerEvent failed', error: e);
-      rethrow;
-    }
-  }
-
   // ── GET /attendee/events/:id/sessions ───────────────────────────────────
   Future<List<Map<String, dynamic>>> getEventSessions(String eventId) async {
     try {

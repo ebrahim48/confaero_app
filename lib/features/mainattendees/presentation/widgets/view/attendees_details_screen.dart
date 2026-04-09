@@ -106,7 +106,10 @@ class AttendeeDetailsScreen extends StatelessWidget {
                                 : CustomButton(
                                   title: 'Request to Connect',
                                   onpress:
-                                      () => controller.requestToConnect(eventId),
+                                      () => controller.requestToConnect(
+                                        eventId,
+                                        attendee['id'] ?? '',
+                                      ),
                                 ),
                             SizedBox(height: 32.h),
                           ],
