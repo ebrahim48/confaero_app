@@ -9,6 +9,7 @@ import '../../../resources/domain/services/resource_service.dart';
 class ResourcesController extends GetxController {
   final ResourceService _service = Get.find<ResourceService>();
   final RxBool isLoading = false.obs;
+  final RxBool isSubmitting = false.obs;
 
   // Read event ID from global session state
   String get currentEventId => SessionController.to.eventId;
@@ -18,9 +19,11 @@ class ResourcesController extends GetxController {
   // Q&A List
   final RxList<QnAModel> qaList = <QnAModel>[].obs;
   final RxSet<String> expandedQaIds = <String>{}.obs;
+  final TextEditingController questionController = TextEditingController();
 
   // Polls List
   final RxList<PollModel> pollsList = <PollModel>[].obs;
+  final RxMap<String, List<bool>> pollSelectedOptions = <String, List<bool>>{}.obs;
 
   @override
   void onInit() {
@@ -33,14 +36,28 @@ class ResourcesController extends GetxController {
     try {
       final qnaData = await _service.getEventQnA(currentEventId);
       qaList.assignAll(qnaData);
+      print('Q&A loaded: ${qnaData.length} items');
 
       final pollData = await _service.getEventPolls(currentEventId);
       pollsList.assignAll(pollData);
+      print('Polls loaded: ${pollData.length} items');
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load resources', title: 'Error');
+      print('Error loading resources: $e');
+      // Don't show error toast for 404 - just show empty state
+      if (!e.toString().contains('404')) {
+        ToastMessageHelper.showToastMessage('Failed to load resources', title: 'Error');
+      }
+      // Keep lists empty to show empty states
+      qaList.clear();
+      pollsList.clear();
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // Refresh data
+  Future<void> refreshData() async {
+    await fetchData();
   }
 
   Future<void> submitPollVote(String pollId, String optionId) async {

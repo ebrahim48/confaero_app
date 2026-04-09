@@ -153,6 +153,21 @@ class ApiService {
     // Don't show toast for 401 (handled by token refresh)
     if (error.response?.statusCode == 401) return;
 
+    // Suppress toasts for endpoints that might not be implemented yet
+    final path = error.requestOptions.path;
+    final suppressedPaths = [
+      '/resource/event/qna/',
+      '/resource/event/poll/',
+      '/resource/poll/',
+      '/resource/survey/',
+      '/eventAttendee/events/',
+      '/connection/request/',
+    ];
+    
+    if (suppressedPaths.any((suppressed) => path.contains(suppressed))) {
+      return; // Don't show toast for these endpoints
+    }
+
     String errorMessage = 'Something went wrong';
     String title = 'Error';
 

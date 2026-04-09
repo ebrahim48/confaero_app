@@ -1,7 +1,9 @@
+import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:confaero_app/presentations/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../controllers/resources_controller.dart';
 import '../character_limit_text.dart';
@@ -12,10 +14,58 @@ import '../resources_poll_card.dart';
 import '../resources_tab_widget.dart';
 import '../survey_radio_option.dart';
 import '../survey_star_rating_widgets.dart';
-import 'poll_screen.dart';
 
 class ResourcesScreen extends StatelessWidget {
   const ResourcesScreen({super.key});
+
+  void _showAskQuestionDialog(BuildContext context, ResourcesController controller) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final TextEditingController questionCtrl = TextEditingController();
+        return AlertDialog(
+          title: CustomText(
+            text: 'Ask a Question',
+            fontsize: 18.sp,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xff252525),
+          ),
+          content: TextField(
+            controller: questionCtrl,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              hintText: 'Type your question here...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: CustomText(
+                text: 'Cancel',
+                fontsize: 14.sp,
+                color: const Color(0xff757575),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // TODO: Implement submit question API call
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xff32A69A),
+              ),
+              child: CustomText(
+                text: 'Submit',
+                fontsize: 14.sp,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,56 +118,141 @@ class ResourcesScreen extends StatelessWidget {
           // Content
           Expanded(
             child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xff32A69A),
+                  ),
+                );
+              }
+
               // Q&A Tab
               if (controller.selectedTabIndex.value == 0) {
-                return ListView.builder(
-                  padding: EdgeInsets.all(24.w),
-                  itemCount: controller.qaList.length,
-                  itemBuilder: (context, index) {
-                    final qa = controller.qaList[index];
-                    return Obx(
-                      () => QAExpansionTile(
-                        question: qa.question,
-                        answer: qa.answer,
-                        isExpanded: controller.expandedQaIds.contains(qa.id),
-                        onTap: () => controller.toggleQA(qa.id),
+                return RefreshIndicator(
+                  onRefresh: () => controller.refreshData(),
+                  color: const Color(0xff32A69A),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: controller.qaList.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.help_outline,
+                                      size: 64.sp,
+                                      color: const Color(0xffBDBDBD),
+                                    ),
+                                    SizedBox(height: 16.h),
+                                    CustomText(
+                                      text: 'No questions yet',
+                                      fontsize: 18.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xff757575),
+                                    ),
+                                    SizedBox(height: 8.h),
+                                    CustomText(
+                                      text: 'Be the first to ask a question!',
+                                      fontsize: 14.sp,
+                                      color: const Color(0xff9E9E9E),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : ListView.builder(
+                                padding: EdgeInsets.all(24.w),
+                                itemCount: controller.qaList.length,
+                                itemBuilder: (context, index) {
+                                  final qa = controller.qaList[index];
+                                  return Obx(
+                                    () => QAExpansionTile(
+                                      question: qa.question,
+                                      answer: qa.answer,
+                                      isExpanded: controller.expandedQaIds.contains(qa.id),
+                                      onTap: () => controller.toggleQA(qa.id),
+                                    ),
+                                  );
+                                },
+                              ),
                       ),
-                    );
-                  },
+                      // Ask Question Button
+                      Padding(
+                        padding: EdgeInsets.all(24.w),
+                        child: CustomButton(
+                          title: 'Ask a Question',
+                          onpress: () => _showAskQuestionDialog(context, controller),
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               }
               // Polls Tab
               else if (controller.selectedTabIndex.value == 1) {
-                return ListView.builder(
-                  padding: EdgeInsets.all(24.w),
-                  itemCount: controller.pollsList.length,
-                  itemBuilder: (context, index) {
-                    final poll = controller.pollsList[index];
-                    final totalVotes = poll.options.fold<int>(
-                      0,
-                      (sum, option) => sum + option.votes,
-                    );
-                    return PollCard(
-                      title: poll.question,
-                      creator: poll.isActive ? 'Active Poll' : 'Closed Poll',
-                      responses: '$totalVotes response(s)',
-                      onAnswerTap: () {
-                        // Pass poll data to PollScreen in the future
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const PollScreen(),
-                          ),
-                        );
-                      },
-                      onMenuTap: () {
-                        // Menu action
-                      },
-                    );
-                  },
+                return RefreshIndicator(
+                  onRefresh: () => controller.refreshData(),
+                  color: const Color(0xff32A69A),
+                  child: controller.pollsList.isEmpty
+                      ? ListView(
+                          children: [
+                            SizedBox(
+                              height: MediaQuery.of(context).size.height - 250.h,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.poll_outlined,
+                                      size: 64.sp,
+                                      color: const Color(0xffBDBDBD),
+                                    ),
+                                    SizedBox(height: 16.h),
+                                    CustomText(
+                                      text: 'No polls available',
+                                      fontsize: 18.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xff757575),
+                                    ),
+                                    SizedBox(height: 8.h),
+                                    CustomText(
+                                      text: 'Polls will appear here when created',
+                                      fontsize: 14.sp,
+                                      color: const Color(0xff9E9E9E),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : ListView.builder(
+                          padding: EdgeInsets.all(24.w),
+                          itemCount: controller.pollsList.length,
+                          itemBuilder: (context, index) {
+                            final poll = controller.pollsList[index];
+                            final totalVotes = poll.options.fold<int>(
+                              0,
+                              (sum, option) => sum + option.votes,
+                            );
+                            return PollCard(
+                              title: poll.question,
+                              creator: poll.isActive ? 'Active Poll' : 'Closed Poll',
+                              responses: '$totalVotes response(s)',
+                              onAnswerTap: () {
+                                context.push(
+                                  AppRoutes.pollScreen,
+                                  extra: {'poll': poll},
+                                );
+                              },
+                              onMenuTap: () {
+                                // Menu action
+                              },
+                            );
+                          },
+                        ),
                 );
               }
-              // resources_screen.dart এর Survey tab এ এই code দিন:
               // Survey Tab
               else {
                 return SingleChildScrollView(
@@ -211,7 +346,20 @@ class ResourcesScreen extends StatelessWidget {
                       const CharacterLimitText(limit: 80),
                       SizedBox(height: 32.h),
 
-                      CustomButton(title: 'Submit Survey', onpress: () {}),
+                      Obx(() {
+                        return CustomButton(
+                          title: controller.isSubmitting.value
+                              ? 'Submitting...'
+                              : 'Submit Survey',
+                          onpress: () async {
+                            if (!controller.isSubmitting.value) {
+                              controller.isSubmitting.value = true;
+                              await controller.submitSurvey();
+                              controller.isSubmitting.value = false;
+                            }
+                          },
+                        );
+                      }),
                     ],
                   ),
                 );

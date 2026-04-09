@@ -13,6 +13,7 @@ import 'package:confaero_app/features/attendees/presentation/widgets/view/new_ev
 import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../features/Events/presentation/widgets/view/event_speaker_screen.dart';
@@ -411,7 +412,17 @@ class AppRoutes {
       GoRoute(
         path: pollScreen,
         name: pollScreen,
-        builder: (context, state) => PollScreen(),
+        builder: (context, state) {
+          final poll = state.extra as Map<String, dynamic>?;
+          if (poll != null && poll['poll'] != null) {
+            return PollScreen(poll: poll['poll']);
+          }
+          return const Scaffold(
+            body: Center(
+              child: Text('No poll data provided'),
+            ),
+          );
+        },
       ),
       GoRoute(
         path: documentScreen,

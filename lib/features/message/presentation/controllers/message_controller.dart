@@ -57,19 +57,21 @@ class MessageController extends GetxController {
               )
               .toList();
       filteredMessages.value = messages;
-      
-      // Show message if no conversations available
-      if (messages.isEmpty) {
-        ToastMessageHelper.showToastMessage(
-          'Messages coming soon. Start a conversation!',
-          title: 'Info',
-        );
-      }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Messages coming soon. Start a conversation!', title: 'Info');
+      print('Error loading conversations: $e');
+      // Don't show toast for 404 - just show empty state
+      if (!e.toString().contains('404')) {
+        ToastMessageHelper.showToastMessage('Failed to load conversations', title: 'Error');
+      }
+      messages.clear();
+      filteredMessages.clear();
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> refreshConversations() async {
+    await loadConversations();
   }
 
   String _formatTime(DateTime dt) {
@@ -102,10 +104,6 @@ class MessageController extends GetxController {
     } catch (_) {
       // Silent fail — local UI is already updated
     }
-  }
-
-  Future<void> refreshConversations() async {
-    await loadConversations();
   }
 
   @override

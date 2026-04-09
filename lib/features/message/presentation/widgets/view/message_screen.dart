@@ -81,31 +81,43 @@ class MessageScreen extends StatelessWidget {
 
             /// Message List
             Expanded(
-              child: Obx(
-                    () {
-                  if (controller.messages.isEmpty) {
-                    return _buildEmptyState();
-                  }
-                  return ListView.builder(
-                  itemCount: controller.messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = controller.messages[index];
-                    return MessageItemWidget(
-                      message: msg,
-                      onTap: () {
-                        controller.markAsRead(msg.id);
-                        context.pushNamed(
-                          AppRoutes.messageChatScreen,
-                          extra: {
-                            'conversationId': msg.id,
-                            'receiverId': msg.id, // MessageModel.id is the conversation id; actual receiverId comes from ConversationModel
-                          },
-                        );
-                      },
-                    );
+              child: RefreshIndicator(
+                onRefresh: () => controller.refreshConversations(),
+                color: const Color(0xff32A69A),
+                child: Obx(
+                      () {
+                    if (controller.isLoading.value) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xff32A69A),
+                        ),
+                      );
+                    }
+                    
+                    if (controller.messages.isEmpty) {
+                      return _buildEmptyState();
+                    }
+                    return ListView.builder(
+                    itemCount: controller.messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = controller.messages[index];
+                      return MessageItemWidget(
+                        message: msg,
+                        onTap: () {
+                          controller.markAsRead(msg.id);
+                          context.pushNamed(
+                            AppRoutes.messageChatScreen,
+                            extra: {
+                              'conversationId': msg.id,
+                              'receiverId': msg.id,
+                            },
+                          );
+                        },
+                      );
+                    },
+                  );
                   },
-                );
-                },
+                ),
               ),
             ),
           ],

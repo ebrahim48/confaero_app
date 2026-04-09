@@ -68,7 +68,9 @@ class AttendeeCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8.r),
                         image: DecorationImage(
-                          image: AssetImage(imagePath),
+                          image: imagePath.startsWith('http://') || imagePath.startsWith('https://')
+                              ? NetworkImage(imagePath)
+                              : AssetImage(imagePath) as ImageProvider,
                           fit: BoxFit.cover,
                         ),
                       ),

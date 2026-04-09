@@ -2,19 +2,66 @@ import 'package:confaero_app/core/constants/app_colors.dart';
 import 'package:confaero_app/presentations/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../custom_app_bar_widget.dart';
+import '../../controllers/resources_controller.dart';
+import '../../../../resources/data/models/resource_model.dart';
 
 class PollScreen extends StatefulWidget {
-  const PollScreen({super.key});
+  final PollModel poll;
+
+  const PollScreen({super.key, required this.poll});
 
   @override
   State<PollScreen> createState() => _PollScreenState();
 }
 
 class _PollScreenState extends State<PollScreen> {
-  final List<String> options = ['Very good', 'Very good', 'Very good'];
-  final List<bool> selectedOptions = [false, false, false];
+  late List<bool> selectedOptions;
+  bool isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedOptions = List.filled(widget.poll.options.length, false);
+  }
+
+  void _submitVote() {
+    final selectedIndices = <int>[];
+    for (int i = 0; i < selectedOptions.length; i++) {
+      if (selectedOptions[i]) {
+        selectedIndices.add(i);
+      }
+    }
+
+    if (selectedIndices.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select at least one option'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      isSubmitting = true;
+    });
+
+    // Get the controller and submit vote
+    final controller = Get.find<ResourcesController>();
+    final selectedOptionId = widget.poll.options[selectedIndices.first].id;
+    
+    controller.submitPollVote(widget.poll.id, selectedOptionId);
+    
+    setState(() {
+      isSubmitting = false;
+    });
+
+    // Navigate back
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,12 +88,17 @@ class _PollScreenState extends State<PollScreen> {
                       CircleAvatar(
                         radius: 20.r,
                         backgroundColor: const Color(0xffBDBDBD),
+                        child: Icon(
+                          Icons.person,
+                          size: 24.sp,
+                          color: Colors.white,
+                        ),
                       ),
                       SizedBox(width: 12.w),
                       Expanded(
                         child: CustomText(
                           textAlign: TextAlign.start,
-                          text: 'Poll create by organizer, Anthony Ciobanu',
+                          text: 'Poll created by organizer',
                           fontsize: 12.sp,
                           color: const Color(0xff757575),
                         ),
@@ -58,7 +110,7 @@ class _PollScreenState extends State<PollScreen> {
                   // Question
                   CustomText(
                     textAlign: TextAlign.start,
-                    text: 'Rate your overall event experience.',
+                    text: widget.poll.question,
                     fontsize: 18.sp,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xff252525),
@@ -70,13 +122,17 @@ class _PollScreenState extends State<PollScreen> {
                   SizedBox(height: 24.h),
 
                   // Options
-                  ...List.generate(options.length, (index) {
+                  ...List.generate(widget.poll.options.length, (index) {
+                    final option = widget.poll.options[index];
                     return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedOptions[index] = !selectedOptions[index];
-                        });
-                      },
+                      onTap: widget.poll.isActive
+                          ? () {
+                              setState(() {
+                                // Toggle selection
+                                selectedOptions[index] = !selectedOptions[index];
+                              });
+                            }
+                          : null,
                       child: Container(
                         width: double.infinity,
                         margin: EdgeInsets.only(bottom: 12.h),
@@ -85,7 +141,9 @@ class _PollScreenState extends State<PollScreen> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8.r),
                           border: Border.all(
-                            color: const Color(0xff9E9E9E),
+                            color: selectedOptions[index]
+                                ? const Color(0xff32A69A)
+                                : const Color(0xff9E9E9E),
                             width: 1,
                           ),
                         ),
@@ -101,32 +159,66 @@ class _PollScreenState extends State<PollScreen> {
                                   : const Color(0xff9E9E9E),
                             ),
                             SizedBox(width: 12.w),
-                            CustomText(
-                              text: options[index],
-                              fontsize: 14.sp,
-                              color: const Color(0xff252525),
+                            Expanded(
+                              child: CustomText(
+                                text: option.text,
+                                fontsize: 14.sp,
+                                color: const Color(0xff252525),
+                              ),
                             ),
-
-
+                            if (option.votes > 0)
+                              CustomText(
+                                text: '${option.votes}',
+                                fontsize: 12.sp,
+                                color: const Color(0xff757575),
+                              ),
                           ],
                         ),
                       ),
                     );
                   }),
+                  if (!widget.poll.isActive)
+                    Container(
+                      margin: EdgeInsets.only(top: 16.h),
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xffF5F5F5),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 20.sp,
+                            color: const Color(0xff757575),
+                          ),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: CustomText(
+                              text: 'This poll is closed. Results are shown.',
+                              fontsize: 12.sp,
+                              color: const Color(0xff757575),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),
           ),
-          Padding(
-            padding:  EdgeInsets.symmetric(vertical: 23,horizontal: 23),
-            child: CustomButton(title: 'Submit', onpress: () {
-
-            },),
-          ),
-
-          SizedBox(height: 100,),
-
-
+          if (widget.poll.isActive)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 23.h, horizontal: 23.w),
+              child: CustomButton(
+                title: isSubmitting ? 'Submitting...' : 'Submit',
+                onpress: () {
+                  if (!isSubmitting) {
+                    _submitVote();
+                  }
+                },
+              ),
+            ),
         ],
       ),
     );

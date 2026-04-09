@@ -128,35 +128,67 @@ class AttendeesScreen extends StatelessWidget {
 
             // Attendees List
             Expanded(
-              child: Obx(() {
-                return ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 24.w),
-                  itemCount: controller.filteredAttendees.length,
-                  itemBuilder: (context, index) {
-                    final attendee = controller.filteredAttendees[index];
-                    return AttendeeCard(
-                      name: attendee.name,
-                      company: attendee.company,
-                      role: attendee.role,
-                      sessions: '${attendee.sessionsCount} sessions',
-                      imagePath: attendee.avatarUrl,
-                      isBookmarked: attendee.isBookmarked,
-                      isOnline: attendee.isOnline || controller.isUserOnline(attendee.id),
-                      onBookmarkTap: () => controller.toggleBookmark(attendee.id),
-                      onSayHi: () => controller.sayHi(attendee.name, attendee.id),
-                      onSendMail: () => controller.sendMail(attendee.email ?? ''),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AttendeeDetailsScreen(attendeeId: attendee.id),
+              child: RefreshIndicator(
+                onRefresh: () => controller.refreshAttendees(),
+                color: const Color(0xff32A69A),
+                child: Obx(() {
+                  if (controller.filteredAttendees.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.people_outline,
+                            size: 64.sp,
+                            color: const Color(0xffBDBDBD),
                           ),
-                        );
-                      },
+                          SizedBox(height: 16.h),
+                          CustomText(
+                            text: 'No attendees yet',
+                            fontsize: 18.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xff757575),
+                          ),
+                          SizedBox(height: 8.h),
+                          CustomText(
+                            text: 'Attendees will appear here',
+                            fontsize: 14.sp,
+                            color: const Color(0xff9E9E9E),
+                          ),
+                        ],
+                      ),
                     );
-                  },
-                );
-              }),
+                  }
+                  
+                  return ListView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    itemCount: controller.filteredAttendees.length,
+                    itemBuilder: (context, index) {
+                      final attendee = controller.filteredAttendees[index];
+                      return AttendeeCard(
+                        name: attendee.name,
+                        company: attendee.company,
+                        role: attendee.role,
+                        sessions: '${attendee.sessionsCount} sessions',
+                        imagePath: attendee.avatarUrl,
+                        isBookmarked: attendee.isBookmarked,
+                        isOnline: attendee.isOnline || controller.isUserOnline(attendee.id),
+                        onBookmarkTap: () => controller.toggleBookmark(attendee.id),
+                        onSayHi: () => controller.sayHi(attendee.name, attendee.id),
+                        onSendMail: () => controller.sendMail(attendee.email ?? ''),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AttendeeDetailsScreen(attendeeId: attendee.id),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
+                }),
+              ),
             ),
           ],
         ),

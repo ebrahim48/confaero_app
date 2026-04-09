@@ -68,15 +68,28 @@ class AttendeeService {
       'Fetching attendee details for event: $eventId, attendee: $attendeeId',
     );
 
-    final response = await _apiService.get(
-      '${ApiConstants.getAttendeeDetails}/$eventId/attendees/$attendeeId',
-    );
+    try {
+      final response = await _apiService.get(
+        '${ApiConstants.getAttendeeDetails}/$eventId/attendees/$attendeeId',
+      );
 
-    if (response.data is Map<String, dynamic>) {
-      final data = response.data as Map<String, dynamic>;
-      if ((data['success'] as bool? ?? false) && data['data'] != null) {
-        return AttendeeModel.fromJson(data['data'] as Map<String, dynamic>);
+      _logger.i('Attendee details response: ${response.data}');
+
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        _logger.i('Attendee details success: ${data['success']}, data type: ${data['data'].runtimeType}');
+        
+        if ((data['success'] as bool? ?? false) && data['data'] != null) {
+          return AttendeeModel.fromJson(data['data'] as Map<String, dynamic>);
+        } else if (data['success'] != true) {
+          _logger.e('Attendee details API returned success=false. Response: $data');
+        }
+      } else {
+        _logger.w('Attendee details response is not a Map. Type: ${response.data.runtimeType}');
       }
+    } catch (e) {
+      _logger.e('Error fetching attendee details: $e');
+      rethrow;
     }
     return null;
   }
@@ -87,12 +100,18 @@ class AttendeeService {
     String attendeeId,
   ) async {
     await _checkConnectivity();
+    
+    if (attendeeId.isEmpty) {
+      _logger.e('Bookmark attempt with empty attendee ID for event: $eventId');
+      throw Exception('Invalid attendee ID');
+    }
+    
     _logger.i('Toggling bookmark for attendee: $attendeeId in event: $eventId');
 
     final response = await _apiService.patch(
       '${ApiConstants.bookmarkAttendee}/$eventId/attendees/$attendeeId/bookmark',
     );
-    
+
     if (response.data is Map<String, dynamic>) {
       final data = response.data as Map<String, dynamic>;
       if ((data['success'] as bool? ?? false) && data['data'] != null) {

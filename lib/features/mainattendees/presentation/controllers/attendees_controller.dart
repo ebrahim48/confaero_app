@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../../core/services/socket_service.dart';
+import '../../../connection/domain/services/connection_service.dart';
 import '../../domain/services/attendee_service.dart';
 import '../../data/models/attendee_model.dart';
 import 'package:confaero_app/core/helpers/toast_message_helper.dart';
@@ -79,7 +80,7 @@ class AttendeesController extends GetxController {
     try {
       final eventId = SessionController.to.eventId;
       if (eventId.isEmpty) return;
-      
+
       final response = await _attendeeService.getEventAttendees(
         eventId,
         bookmarkedOnly: showBookmarkedOnly.value,
@@ -89,20 +90,20 @@ class AttendeesController extends GetxController {
       totalAttendees.value = response.total;
       bookmarkedCount.value = response.bookmarkedCount;
       filteredAttendees.value = attendees;
-
-      // Show message if no attendees available
-      if (attendees.isEmpty) {
-        ToastMessageHelper.showToastMessage(
-          'Attendees list coming soon. Check back later!',
-          title: 'Info',
-        );
-      }
     } catch (e) {
-      ToastMessageHelper.showToastMessage(
-        'Attendees list coming soon. Check back later!',
-        title: 'Info',
-      );
+      print('Error loading attendees: $e');
+      // Don't show toast for 404 - just show empty state
+      if (!e.toString().contains('404')) {
+        ToastMessageHelper.showToastMessage('Failed to load attendees', title: 'Error');
+      }
+      attendees.clear();
+      filteredAttendees.clear();
     }
+  }
+
+  /// Refresh attendees
+  Future<void> refreshAttendees() async {
+    await loadAttendees();
   }
 
   /// Toggle between all and bookmarked view
@@ -157,21 +158,36 @@ class AttendeesController extends GetxController {
   }
 
   /// Say Hi - send connection request
-  void sayHi(String name, String attendeeId) {
-    ToastMessageHelper.showToastMessage(
-      'Connection request sent to $name',
-      title: 'Connection',
-    );
-    // TODO: Implement actual connection request API
+  Future<void> sayHi(String name, String attendeeId) async {
+    try {
+      final eventId = SessionController.to.eventId;
+      await Get.find<ConnectionService>().sendRequest(eventId, receiverId: attendeeId);
+      ToastMessageHelper.showToastMessage(
+        'Connection request sent to $name',
+        title: 'Connection',
+      );
+    } catch (e) {
+      print('Error sending connection request: $e');
+      if (!e.toString().contains('404')) {
+        ToastMessageHelper.showToastMessage('Failed to send connection request', title: 'Error');
+      } else {
+        ToastMessageHelper.showToastMessage('Connection feature coming soon!', title: 'Info');
+      }
+    }
   }
 
   /// Send Email
   void sendMail(String email) {
+    if (email.isEmpty) {
+      ToastMessageHelper.showToastMessage('Email not available', title: 'Info');
+      return;
+    }
     ToastMessageHelper.showToastMessage(
       'Opening email client...',
       title: 'Email',
     );
     // TODO: Use url_launcher to open mailto: link
+    // launchUrl(Uri.parse('mailto:$email'));
   }
 
   @override
