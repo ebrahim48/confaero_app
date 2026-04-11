@@ -22,6 +22,7 @@ class SpeakerHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(SpeakerHomeController());
+    final scaffoldKey = Get.find<GlobalKey<ScaffoldState>>();
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -34,7 +35,7 @@ class SpeakerHomeScreen extends StatelessWidget {
           slivers: [
             // Custom App Bar
             SliverToBoxAdapter(
-              child: _buildHeader(controller),
+              child: _buildHeader(controller, scaffoldKey),
             ),
 
             // Live Session Controls (if active or has sessions)
@@ -73,7 +74,7 @@ class SpeakerHomeScreen extends StatelessWidget {
   }
 
   /// Header with welcome message and stats
-  Widget _buildHeader(SpeakerHomeController controller) {
+  Widget _buildHeader(SpeakerHomeController controller, GlobalKey<ScaffoldState> scaffoldKey) {
     return Container(
       padding: EdgeInsets.fromLTRB(24.w, 40.h, 24.w, 24.h),
       decoration: BoxDecoration(
@@ -91,6 +92,16 @@ class SpeakerHomeScreen extends StatelessWidget {
         children: [
           Row(
             children: [
+              // Hamburger menu icon
+              GestureDetector(
+                onTap: () => scaffoldKey.currentState?.openDrawer(),
+                child: Icon(
+                  Icons.menu,
+                  color: Colors.white,
+                  size: 28.w,
+                ),
+              ),
+              SizedBox(width: 16.w),
               Expanded(
                 child: CustomText(
                   text: 'Hello Speaker!',

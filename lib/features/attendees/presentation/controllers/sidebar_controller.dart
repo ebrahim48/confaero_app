@@ -16,12 +16,14 @@ class SidebarMenuItem {
   final String label;
   final String? route;
   final VoidCallback? onTap;
+  final IconData? fallbackIcon;
 
   SidebarMenuItem({
     required this.icon,
     required this.label,
     this.route,
     this.onTap,
+    this.fallbackIcon,
   });
 }
 

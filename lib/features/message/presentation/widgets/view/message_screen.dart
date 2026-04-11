@@ -156,6 +156,36 @@ class MessageScreen extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
+            SizedBox(height: 24.h),
+            ElevatedButton.icon(
+              onPressed: () {
+                // Navigate to attendee home to browse attendees
+                Get.toNamed(AppRoutes.attendeeHomeScreen);
+              },
+              icon: Icon(Icons.people_alt_outlined, size: 20.sp),
+              label: Text(
+                'Browse Attendees',
+                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF32A69A),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              'Tap "Say Hi" on any attendee profile to start messaging',
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.grey.shade500,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),

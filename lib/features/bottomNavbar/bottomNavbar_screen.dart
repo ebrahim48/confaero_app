@@ -13,11 +13,15 @@ import '../../core/controllers/role_controller.dart';
 import '../../core/controllers/session_controller.dart';
 import '../attendees/presentation/widgets/view/home_screen.dart';
 import '../volunteer/presentation/widgets/volunteer_dashboard_screen.dart';
+import '../volunteer/presentation/widgets/volunteer_home_screen.dart';
+import '../volunteer/presentation/widgets/volunteer_qr_scan_screen.dart';
 import '../sponsor_dashboard/presentation/widgets/sponsor_dashboard_screen.dart';
 import '../reviewer/presentation/widgets/reviewer_dashboard_screen.dart';
 import '../organizer/presentation/widgets/organizer_dashboard_screen.dart';
 import '../booth_management/presentation/widgets/booth_management_screen.dart';
 import '../speakers/presentation/widgets/speaker_home_screen.dart';
+import '../attendees/presentation/widgets/sidebar_drawer.dart';
+import '../speakers/presentation/widgets/speaker_sidebar_drawer.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -28,6 +32,7 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int currentIndex = 0;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +46,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       final screens = roleData['screens'] as List<Widget>;
       final useRoleBasedNav = roleData['useRoleBasedNav'] as bool;
 
+      // Make scaffold key accessible globally for opening drawer
+      Get.delete<GlobalKey<ScaffoldState>>(force: true);
+      Get.put<GlobalKey<ScaffoldState>>(_scaffoldKey, permanent: true);
+
       return Scaffold(
+        key: _scaffoldKey,
         backgroundColor: AppColors.backgroundColor,
+        drawer: Obx(() {
+          final role = RoleController.to.activeRole.value.toUpperCase();
+          if (role == 'SPEAKER') {
+            return const SpeakerSidebarDrawer();
+          }
+          return const SidebarDrawer();
+        }),
         body: IndexedStack(
           index: currentIndex,
           children: screens,
@@ -88,9 +105,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       case 'VOLUNTEER':
         return {
           'screens': [
-            const VolunteerDashboardScreen(), // Home - Tasks view
+            const VolunteerHomeScreen(), // Home - Events (My Events / Invited Event)
             const VolunteerDashboardScreen(), // Tasks
-            const VolunteerDashboardScreen(), // QR Scan
+            const VolunteerQRScanScreen(), // QR Scan
             const resources_view.ResourcesScreen(), // Resources (Q&A, Polls, Survey)
             const MessageScreen(),
           ],

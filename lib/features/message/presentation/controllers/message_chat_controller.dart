@@ -43,6 +43,10 @@ class MessageChatController extends GetxController {
   String get currentEventId => SessionController.to.eventId;
   String currentReceiverId = '';
   String currentConversationId = '';
+  
+  // Receiver display info (for new conversations)
+  final RxString receiverName = 'Attendee'.obs;
+  final RxString receiverImage = ''.obs;
 
   Future<void> loadMessages() async {
     try {
@@ -96,11 +100,12 @@ class MessageChatController extends GetxController {
       messageText.value = messageController.text;
     });
 
+    // If we have a conversationId, load messages and join socket room
     if (currentConversationId.isNotEmpty) {
       loadMessages();
-      // Join the conversation room for real-time updates
       _socketService.emitJoinConversation(conversationId: currentConversationId);
     }
+    // If we only have receiverId (new conversation from "Say Hi"), we'll join socket room after first message
 
     // Listen for real-time incoming messages via Socket.IO
     _messageSubscription = _socketService.onNewMessage.listen(_handleSocketMessage);
@@ -136,6 +141,12 @@ class MessageChatController extends GetxController {
   Future<void> sendMessage() async {
     final text = messageController.text.trim();
     if (text.isEmpty) return;
+
+    // For new conversations, we need to send via REST API first to create the conversation
+    if (currentConversationId.isEmpty) {
+      await _sendNewMessage(text);
+      return;
+    }
 
     final newMessage = ChatMessage(
       text: text,
@@ -177,6 +188,55 @@ class MessageChatController extends GetxController {
         // Remove the optimistic message on failure
         messages.removeWhere((m) => m.text == text && m.isMe);
       }
+    }
+  }
+
+  /// Send a new message to start a conversation (when conversationId is not yet known)
+  Future<void> _sendNewMessage(String text) async {
+    try {
+      // Send via REST API to create the conversation
+      final response = await _messageService.sendMessage(
+        currentEventId,
+        receiverId: currentReceiverId,
+        content: text,
+      );
+
+      // Add optimistic message
+      final newMessage = ChatMessage(
+        text: text,
+        isMe: true,
+        time: _getCurrentTime(),
+        date: "Today",
+        showTime: true,
+      );
+      messages.add(newMessage);
+      messageController.clear();
+      messageText.value = '';
+
+      Future.delayed(const Duration(milliseconds: 100), () {
+        scrollToBottom();
+      });
+
+      // Extract conversationId from response if available
+      final conversationId = response['data']?['conversationId']?.toString() ??
+          response['data']?['conversation']?['id']?.toString() ??
+          response['conversationId']?.toString();
+      
+      if (conversationId != null && conversationId.isNotEmpty) {
+        currentConversationId = conversationId;
+        // Now join the socket room for future real-time updates
+        _socketService.emitJoinConversation(conversationId: currentConversationId);
+      }
+
+      ToastMessageHelper.showToastMessage(
+        'Message sent!',
+        title: 'Success',
+      );
+    } catch (e) {
+      ToastMessageHelper.showToastMessage(
+        'Failed to send message',
+        title: 'Error',
+      );
     }
   }
 

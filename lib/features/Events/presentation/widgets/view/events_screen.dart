@@ -1,3 +1,5 @@
+import 'package:confaero_app/features/attendees/presentation/widgets/sidebar_drawer.dart';
+import 'package:confaero_app/features/speakers/presentation/widgets/speaker_sidebar_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -6,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/constants/app_colors.dart';
+import '../../../../../core/controllers/role_controller.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../../data/models/event_model.dart';
 import '../../../data/models/my_event_model.dart';
@@ -35,6 +38,13 @@ class _EventsScreenState extends State<EventsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Obx(() {
+        final role = RoleController.to.activeRole.value.toUpperCase();
+        if (role == 'SPEAKER') {
+          return const SpeakerSidebarDrawer();
+        }
+        return const SidebarDrawer();
+      }),
       body: SafeArea(
         child: Column(
           children: [
@@ -112,13 +122,38 @@ class _EventsScreenState extends State<EventsScreen>
                     Obx(() => EventTabSwitcher(
                       selectedTab: controller.selectedTab.value,
                       onTabChanged: controller.switchTab,
+                      tabLabels: controller.tabLabels,
                     )),
                     SizedBox(height: 12.h),
                     Obx(() {
-                      if (controller.selectedTab.value == 0) {
+                      final activeRole = RoleController.to.activeRole.value.toUpperCase();
+                      final tabIndex = controller.selectedTab.value;
+
+                      // Determine which tab content to show based on role and tab index
+                      if (activeRole == 'ATTENDEE' || activeRole == 'SPEAKER') {
+                        return tabIndex == 0
+                            ? _buildMyEventsTab()
+                            : _buildExploreEventsTab();
+                      } else if (activeRole == 'VOLUNTEER' ||
+                          activeRole == 'REVIEWER' ||
+                          activeRole == 'ABSTRACT_REVIEWER' ||
+                          activeRole == 'TRACK_CHAIR') {
+                        return tabIndex == 0
+                            ? _buildMyEventsTab()
+                            : _buildInvitedEventsTab();
+                      } else if (activeRole == 'EXHIBITOR' ||
+                          activeRole == 'BOOTH_STAFF' ||
+                          activeRole == 'SPONSOR') {
+                        return tabIndex == 0
+                            ? _buildMyEventsTab()
+                            : _buildAllEventsTab();
+                      } else if (activeRole == 'ORGANIZER') {
                         return _buildMyEventsTab();
                       } else {
-                        return _buildExploreEventsTab();
+                        // Default
+                        return tabIndex == 0
+                            ? _buildMyEventsTab()
+                            : _buildExploreEventsTab();
                       }
                     }),
                   ],
@@ -142,48 +177,28 @@ class _EventsScreenState extends State<EventsScreen>
     }
 
     final active = controller.filteredActiveEvents;
-    final upcoming = controller.filteredUpcomingEvents;
 
-    if (active.isEmpty && upcoming.isEmpty) {
-      return _emptyWidget('No events found');
+    if (active.isEmpty) {
+      return _noEventsWidget();
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Active (registered) events
-        if (active.isNotEmpty) ...[
-          CustomText(
-            text: 'Active events(${active.length})',
-            fontsize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textColor424242,
-            textAlign: TextAlign.start,
-            bottom: 12.h,
-          ),
-          ...active.map((m) => Padding(
-            padding: EdgeInsets.only(bottom: 8.h),
-            child: _buildRegisteredCard(m),
-          )),
-          SizedBox(height: 24.h),
-        ],
-
-        // Upcoming (not registered) events
-        if (upcoming.isNotEmpty) ...[
-          CustomText(
-            text: 'Upcoming events(${upcoming.length})',
-            fontsize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textColor424242,
-            textAlign: TextAlign.start,
-            bottom: 12.h,
-          ),
-          ...upcoming.map((e) => Padding(
-            padding: EdgeInsets.only(bottom: 8.h),
-            child: _buildUpcomingCard(e),
-          )),
-          SizedBox(height: 24.h),
-        ],
+        CustomText(
+          text: 'My events(${active.length})',
+          fontsize: 16.sp,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textColor424242,
+          textAlign: TextAlign.start,
+          bottom: 12.h,
+        ),
+        ...active.map((m) => Padding(
+          padding: EdgeInsets.only(bottom: 8.h),
+          child: _buildRegisteredCard(m),
+        )),
+        SizedBox(height: 24.h),
       ],
     );
   }
@@ -198,7 +213,12 @@ class _EventsScreenState extends State<EventsScreen>
       location: e.location,
       isRegistered: true,
       registrationStatus: m.status,
-      onCardTap: () => controller.openEventDetails(context, e.id),
+      onCardTap: () => controller.openEventDetails(
+        context, 
+        e.id, 
+        title: e.title,
+        registrationStatus: m.status,
+      ),
     );
   }
 
@@ -210,8 +230,8 @@ class _EventsScreenState extends State<EventsScreen>
       date: e.formattedDateRange,
       location: e.location,
       isRegistered: false,
-      onRegisterTap: () => controller.registerEvent(context, e.id),
-      onCardTap: () => controller.openEventDetails(context, e.id),
+      onRegisterTap: () => controller.registerEvent(context, e.id, title: e.title),
+      onCardTap: () => controller.openEventDetails(context, e.id, title: e.title),
     );
   }
 
@@ -249,8 +269,94 @@ class _EventsScreenState extends State<EventsScreen>
             date: e.formattedDateRange,
             location: e.location,
             isRegistered: false,
-            onRegisterTap: () => controller.registerEvent(context, e.id),
-            onCardTap: () => controller.openEventDetails(context, e.id),
+            onRegisterTap: () => controller.registerEvent(context, e.id, title: e.title),
+            onCardTap: () => controller.openEventDetails(context, e.id, title: e.title),
+          ),
+        )),
+        SizedBox(height: 24.h),
+      ],
+    );
+  }
+
+  // ── Invited Events Tab ────────────────────────────────────────────────────
+
+  Widget _buildInvitedEventsTab() {
+    if (controller.isInvitedLoading.value) return _shimmerList();
+
+    if (controller.invitedError.isNotEmpty) {
+      return _errorWidget(
+          controller.invitedError.value, controller.loadInvitedEvents);
+    }
+
+    final events = controller.filteredInvitedEvents;
+    if (events.isEmpty) return _emptyWidget('No invited events found');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CustomText(
+          text: 'Invited events(${events.length})',
+          fontsize: 16.sp,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textColor424242,
+          textAlign: TextAlign.start,
+          bottom: 12.h,
+        ),
+        ...events.map((e) => Padding(
+          padding: EdgeInsets.only(bottom: 8.h),
+          child: EventCard(
+            imageUrl: e.bannerImageUrl ?? '',
+            isNetworkImage:
+            e.bannerImageUrl != null && e.bannerImageUrl!.isNotEmpty,
+            title: e.title,
+            date: e.formattedDateRange,
+            location: e.location,
+            isRegistered: false,
+            onRegisterTap: () => controller.registerEvent(context, e.id, title: e.title),
+            onCardTap: () => controller.openEventDetails(context, e.id, title: e.title),
+          ),
+        )),
+        SizedBox(height: 24.h),
+      ],
+    );
+  }
+
+  // ── All Events Tab ────────────────────────────────────────────────────────
+
+  Widget _buildAllEventsTab() {
+    if (controller.isAllEventsLoading.value) return _shimmerList();
+
+    if (controller.allEventsError.isNotEmpty) {
+      return _errorWidget(
+          controller.allEventsError.value, controller.loadAllEvents);
+    }
+
+    final events = controller.filteredAllEvents;
+    if (events.isEmpty) return _emptyWidget('No events available');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CustomText(
+          text: 'All events(${events.length})',
+          fontsize: 16.sp,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textColor424242,
+          textAlign: TextAlign.start,
+          bottom: 12.h,
+        ),
+        ...events.map((e) => Padding(
+          padding: EdgeInsets.only(bottom: 8.h),
+          child: EventCard(
+            imageUrl: e.bannerImageUrl ?? '',
+            isNetworkImage:
+            e.bannerImageUrl != null && e.bannerImageUrl!.isNotEmpty,
+            title: e.title,
+            date: e.formattedDateRange,
+            location: e.location,
+            isRegistered: false,
+            onRegisterTap: () => controller.registerEvent(context, e.id, title: e.title),
+            onCardTap: () => controller.openEventDetails(context, e.id, title: e.title),
           ),
         )),
         SizedBox(height: 24.h),
@@ -323,6 +429,61 @@ class _EventsScreenState extends State<EventsScreen>
           fontWeight: FontWeight.w400,
           color: AppColors.textColor7E7F7E,
           textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  Widget _noEventsWidget() {
+    return SizedBox(
+      height: 400.h,
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.event_busy_outlined,
+                size: 80.w,
+                color: AppColors.iconColorAEAEAE,
+              ),
+              SizedBox(height: 24.h),
+              CustomText(
+                text: 'You have no events',
+                fontsize: 20.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textColor252525,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8.h),
+              CustomText(
+                text: 'Register for an event to get started!',
+                fontsize: 14.sp,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textColor7E7F7E,
+                textAlign: TextAlign.center,
+                maxline: 2,
+              ),
+              SizedBox(height: 24.h),
+              GestureDetector(
+                onTap: () => controller.switchTab(1),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 14.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xff5BB8AE),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: CustomText(
+                    text: 'Explore Events',
+                    fontsize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

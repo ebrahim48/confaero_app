@@ -12,22 +12,44 @@ import '../helpers/prefs_helper.dart';
 class SocketEvents {
   SocketEvents._();
 
-  // Incoming (listen)
+  // ───────── General Messaging (Incoming) ─────────
   static const String messageNew = 'message:new';
   static const String notificationNew = 'notification:new';
   static const String userOnline = 'user:online';
   static const String userOffline = 'user:offline';
   static const String activeCount = 'active-count';
+  static const String error = 'error';
 
-  // Outgoing (emit)
-  static const String sendMessageEvent = 'message:send';
-  static const String sendNotification = 'notification:send';
-  static const String userStatusUpdate = 'user:status';
+  // ───────── General Messaging (Outgoing) ─────────
+  static const String sendMessage = 'send-message';
+
+  // ───────── Event Live Session (Outgoing) ─────────
+  static const String joinSession = 'event-live:join-session';
+  static const String sendLiveMessage = 'event-live:send-message';
+  static const String createPoll = 'event-live:create-poll';
+  static const String votePoll = 'event-live:vote-poll';
+  static const String endSession = 'event-live:session-ended';
+  static const String muteAllAttendees = 'event-live:mute-all-attendees';
+  static const String unmuteAllAttendees = 'event-live:unmute-all-attendees';
+
+  // ───────── Event Live Session (Incoming) ─────────
+  static const String liveMessageNew = 'event-live:message-new';
+  static const String pollCreated = 'event-live:poll-created';
+  static const String pollUpdated = 'event-live:poll-updated';
+  static const String sessionEnded = 'event-live:session-ended';
+  static const String forceMute = 'event-live:force-mute';
+  static const String allowUnmute = 'event-live:allow-unmute';
+  static const String viewerCount = 'event-live:viewer-count';
+
+  // ───────── Legacy/Typing Events ─────────
   static const String typing = 'typing:start';
   static const String stopTyping = 'typing:stop';
   static const String seenMessage = 'message:seen';
   static const String joinConversation = 'conversation:join';
   static const String leaveConversation = 'conversation:leave';
+  static const String sendMessageEvent = 'message:send';
+  static const String sendNotification = 'notification:send';
+  static const String userStatusUpdate = 'user:status';
 }
 
 /// Centralized Socket.IO service.
@@ -53,12 +75,29 @@ class SocketService extends GetxService {
   // ───────── Online users tracking ─────────
   final RxSet<String> onlineUserIds = <String>{}.obs;
 
-  // ───────── Stream controllers for incoming events ─────────
+  // ───────── Stream controllers for general messaging events ─────────
   final _messageController = StreamController<Map<String, dynamic>>.broadcast();
   final _notificationController = StreamController<Map<String, dynamic>>.broadcast();
   final _userOnlineController = StreamController<Map<String, dynamic>>.broadcast();
   final _userOfflineController = StreamController<Map<String, dynamic>>.broadcast();
   final _messageSentController = StreamController<Map<String, dynamic>>.broadcast();
+  final _errorController = StreamController<Map<String, dynamic>>.broadcast();
+
+  // ───────── Stream controllers for Event Live Session ─────────
+  final _liveMessageController = StreamController<Map<String, dynamic>>.broadcast();
+  final _pollCreatedController = StreamController<Map<String, dynamic>>.broadcast();
+  final _pollUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
+  final _sessionEndedController = StreamController<Map<String, dynamic>>.broadcast();
+  final _forceMuteController = StreamController<Map<String, dynamic>>.broadcast();
+  final _allowUnmuteController = StreamController<Map<String, dynamic>>.broadcast();
+  final _viewerCountController = StreamController<Map<String, dynamic>>.broadcast();
+
+  // ───────── Reactive state for Event Live Session ─────────
+  final RxInt liveViewerCount = 0.obs;
+  final RxBool isSessionActive = false.obs;
+  final RxBool isMutedBySpeaker = false.obs;
+
+  // ───────── General Messaging Streams ─────────
 
   /// Stream of new incoming messages.
   Stream<Map<String, dynamic>> get onNewMessage => _messageController.stream;
@@ -74,6 +113,32 @@ class SocketService extends GetxService {
 
   /// Stream of messages successfully sent via Socket.IO.
   Stream<Map<String, dynamic>> get onMessageSent => _messageSentController.stream;
+
+  /// Stream of socket errors.
+  Stream<Map<String, dynamic>> get onError => _errorController.stream;
+
+  // ───────── Event Live Session Streams ─────────
+
+  /// Stream of new live session chat messages.
+  Stream<Map<String, dynamic>> get onLiveMessage => _liveMessageController.stream;
+
+  /// Stream of new poll creation events.
+  Stream<Map<String, dynamic>> get onPollCreated => _pollCreatedController.stream;
+
+  /// Stream of poll update events (votes).
+  Stream<Map<String, dynamic>> get onPollUpdated => _pollUpdatedController.stream;
+
+  /// Stream of session ended events.
+  Stream<Map<String, dynamic>> get onSessionEnded => _sessionEndedController.stream;
+
+  /// Stream of force mute events (from speaker).
+  Stream<Map<String, dynamic>> get onForceMute => _forceMuteController.stream;
+
+  /// Stream of allow unmute events (from speaker).
+  Stream<Map<String, dynamic>> get onAllowUnmute => _allowUnmuteController.stream;
+
+  /// Stream of viewer count updates.
+  Stream<Map<String, dynamic>> get onViewerCount => _viewerCountController.stream;
 
   // ───────── Lifecycle ─────────
 
@@ -257,6 +322,85 @@ class SocketService extends GetxService {
         _messageController.add({...parsed, 'isSeen': true});
       }
     });
+
+    // 9. Socket error
+    _socket!.on(SocketEvents.error, (data) {
+      _logger.e('Socket error event → $data');
+      final parsed = _toMap(data);
+      if (parsed != null) {
+        _errorController.add(parsed);
+      }
+    });
+
+    // ───────── Event Live Session Listeners ─────────
+
+    // 10. New live session chat message
+    _socket!.on(SocketEvents.liveMessageNew, (data) {
+      _logger.d('event-live:message-new → $data');
+      final parsed = _toMap(data);
+      if (parsed != null) {
+        _liveMessageController.add(parsed);
+      }
+    });
+
+    // 11. Poll created
+    _socket!.on(SocketEvents.pollCreated, (data) {
+      _logger.d('event-live:poll-created → $data');
+      final parsed = _toMap(data);
+      if (parsed != null) {
+        _pollCreatedController.add(parsed);
+      }
+    });
+
+    // 12. Poll updated (vote)
+    _socket!.on(SocketEvents.pollUpdated, (data) {
+      _logger.d('event-live:poll-updated → $data');
+      final parsed = _toMap(data);
+      if (parsed != null) {
+        _pollUpdatedController.add(parsed);
+      }
+    });
+
+    // 13. Session ended
+    _socket!.on(SocketEvents.sessionEnded, (data) {
+      _logger.d('event-live:session-ended → $data');
+      final parsed = _toMap(data);
+      if (parsed != null) {
+        isSessionActive.value = false;
+        _sessionEndedController.add(parsed);
+      }
+    });
+
+    // 14. Force mute (speaker muted all)
+    _socket!.on(SocketEvents.forceMute, (data) {
+      _logger.d('event-live:force-mute → $data');
+      final parsed = _toMap(data);
+      if (parsed != null) {
+        isMutedBySpeaker.value = true;
+        _forceMuteController.add(parsed);
+      }
+    });
+
+    // 15. Allow unmute (speaker unmuted all)
+    _socket!.on(SocketEvents.allowUnmute, (data) {
+      _logger.d('event-live:allow-unmute → $data');
+      final parsed = _toMap(data);
+      if (parsed != null) {
+        isMutedBySpeaker.value = false;
+        _allowUnmuteController.add(parsed);
+      }
+    });
+
+    // 16. Viewer count
+    _socket!.on(SocketEvents.viewerCount, (data) {
+      _logger.d('event-live:viewer-count → $data');
+      final parsed = _toMap(data);
+      if (parsed != null) {
+        final count = parsed['count'] as int? ?? 0;
+        liveViewerCount.value = count;
+        _viewerCountController.add(parsed);
+      }
+    });
   }
 
   // ───────── Helpers ─────────
@@ -355,6 +499,161 @@ class SocketService extends GetxService {
     _socket?.emit(eventName, data);
   }
 
+  // ───────── Event Live Session Emit Methods ─────────
+
+  /// Join a live session room to receive live updates.
+  ///
+  /// Must be called before any other live session operations.
+  void emitJoinLiveSession({required int sessionIndex}) {
+    if (_socket == null || !_socket!.connected) {
+      _logger.w('Cannot join session: socket not connected');
+      return;
+    }
+
+    _logger.d('Joining live session: $sessionIndex');
+    _socket!.emit(SocketEvents.joinSession, {'sessionIndex': sessionIndex});
+    isSessionActive.value = true;
+  }
+
+  /// Send a message in the live session chat.
+  ///
+  /// Returns `true` if the message was sent successfully.
+  bool emitLiveMessage({required int sessionIndex, required String text}) {
+    if (_socket == null || !_socket!.connected) {
+      _logger.w('Cannot send live message: socket not connected');
+      return false;
+    }
+
+    if (text.trim().isEmpty) {
+      _logger.w('Cannot send empty live message');
+      return false;
+    }
+
+    try {
+      _logger.d('Sending live message: session=$sessionIndex, text=$text');
+      _socket!.emit(SocketEvents.sendLiveMessage, {
+        'sessionIndex': sessionIndex,
+        'text': text.trim(),
+      });
+      return true;
+    } catch (e) {
+      _logger.e('Failed to send live message: $e');
+      return false;
+    }
+  }
+
+  /// Create a poll in the live session (SPEAKER ONLY).
+  ///
+  /// Returns `true` if the poll was created successfully.
+  bool emitCreatePoll({
+    required int sessionIndex,
+    required String question,
+    required List<String> options,
+  }) {
+    if (_socket == null || !_socket!.connected) {
+      _logger.w('Cannot create poll: socket not connected');
+      return false;
+    }
+
+    try {
+      _logger.d('Creating poll in session $sessionIndex');
+      _socket!.emit(SocketEvents.createPoll, {
+        'sessionIndex': sessionIndex,
+        'question': question.trim(),
+        'options': options,
+      });
+      return true;
+    } catch (e) {
+      _logger.e('Failed to create poll: $e');
+      return false;
+    }
+  }
+
+  /// Vote on a poll option.
+  ///
+  /// Returns `true` if the vote was cast successfully.
+  bool emitVotePoll({
+    required int sessionIndex,
+    required String pollId,
+    required int optionIndex,
+  }) {
+    if (_socket == null || !_socket!.connected) {
+      _logger.w('Cannot vote on poll: socket not connected');
+      return false;
+    }
+
+    try {
+      _logger.d('Voting on poll $pollId, option $optionIndex');
+      _socket!.emit(SocketEvents.votePoll, {
+        'sessionIndex': sessionIndex,
+        'pollId': pollId,
+        'optionIndex': optionIndex,
+      });
+      return true;
+    } catch (e) {
+      _logger.e('Failed to vote on poll: $e');
+      return false;
+    }
+  }
+
+  /// End the live session (SPEAKER ONLY).
+  ///
+  /// Returns `true` if the session end request was sent successfully.
+  bool emitEndSession({required int sessionIndex}) {
+    if (_socket == null || !_socket!.connected) {
+      _logger.w('Cannot end session: socket not connected');
+      return false;
+    }
+
+    try {
+      _logger.d('Ending session $sessionIndex');
+      _socket!.emit(SocketEvents.endSession, {'sessionIndex': sessionIndex});
+      isSessionActive.value = false;
+      return true;
+    } catch (e) {
+      _logger.e('Failed to end session: $e');
+      return false;
+    }
+  }
+
+  /// Mute all attendees in the session (SPEAKER ONLY).
+  ///
+  /// Returns `true` if the mute request was sent successfully.
+  bool emitMuteAllAttendees({required int sessionIndex}) {
+    if (_socket == null || !_socket!.connected) {
+      _logger.w('Cannot mute attendees: socket not connected');
+      return false;
+    }
+
+    try {
+      _logger.d('Muting all attendees in session $sessionIndex');
+      _socket!.emit(SocketEvents.muteAllAttendees, {'sessionIndex': sessionIndex});
+      return true;
+    } catch (e) {
+      _logger.e('Failed to mute attendees: $e');
+      return false;
+    }
+  }
+
+  /// Unmute all attendees in the session (SPEAKER ONLY).
+  ///
+  /// Returns `true` if the unmute request was sent successfully.
+  bool emitUnmuteAllAttendees({required int sessionIndex}) {
+    if (_socket == null || !_socket!.connected) {
+      _logger.w('Cannot unmute attendees: socket not connected');
+      return false;
+    }
+
+    try {
+      _logger.d('Unmuting all attendees in session $sessionIndex');
+      _socket!.emit(SocketEvents.unmuteAllAttendees, {'sessionIndex': sessionIndex});
+      return true;
+    } catch (e) {
+      _logger.e('Failed to unmute attendees: $e');
+      return false;
+    }
+  }
+
   // ───────── Dispose ─────────
 
   @override
@@ -365,6 +664,14 @@ class SocketService extends GetxService {
     _userOnlineController.close();
     _userOfflineController.close();
     _messageSentController.close();
+    _errorController.close();
+    _liveMessageController.close();
+    _pollCreatedController.close();
+    _pollUpdatedController.close();
+    _sessionEndedController.close();
+    _forceMuteController.close();
+    _allowUnmuteController.close();
+    _viewerCountController.close();
     super.onClose();
   }
 }

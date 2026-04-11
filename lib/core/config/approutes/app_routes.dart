@@ -177,6 +177,7 @@ class AppRoutes {
     redirect: (context, state) async {
       final token = await PrefsHelper.getString(AppConstants.bearerToken);
       final isLogged = await PrefsHelper.getBool(AppConstants.isLogged);
+      final currentEventId = await PrefsHelper.getString(AppConstants.currentEventId);
 
       final authRoutes = <String>{
         AppRoutes.onBoardingScreen,
@@ -189,13 +190,29 @@ class AppRoutes {
 
       final currentPath = state.matchedLocation;
       final isGoingToAuth = authRoutes.contains(currentPath);
+      final isGoingToEvents = currentPath == AppRoutes.eventsScreen;
 
-      if (token.isNotEmpty && isLogged && isGoingToAuth) {
-        return AppRoutes.mainNavigationScreen;
+      // Unauthenticated user trying to access protected pages → redirect to sign in
+      if ((token.isEmpty || !isLogged) && !isGoingToAuth && !isGoingToEvents) {
+        return AppRoutes.signInScreen;
       }
 
-      if (token.isEmpty && !isGoingToAuth) {
-        return AppRoutes.signInScreen;
+      // Authenticated user logic
+      if (token.isNotEmpty && isLogged) {
+        // Always allow navigation to EventsScreen (for event selection/switching)
+        if (isGoingToEvents) {
+          return null;
+        }
+
+        // If no event selected and trying to access protected routes → redirect to events screen
+        if (currentEventId.isEmpty && !isGoingToAuth) {
+          return AppRoutes.eventsScreen;
+        }
+
+        // If user has event and trying to access auth pages (except events) → redirect to main nav
+        if (currentEventId.isNotEmpty && isGoingToAuth) {
+          return AppRoutes.mainNavigationScreen;
+        }
       }
 
       return null;

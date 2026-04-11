@@ -22,6 +22,9 @@ class EventDetailsController extends GetxController {
 
   final event = Rxn<EventModel>();
   final errorMessage = ''.obs;
+  
+  // Registration status passed from EventsScreen (for "My Events" tab)
+  final RxString registrationStatus = ''.obs;
 
   @override
   void onInit() {
@@ -41,11 +44,17 @@ class EventDetailsController extends GetxController {
     super.onClose();
   }
 
-  Future<void> loadEvent(String eventId) async {
+  Future<void> loadEvent(String eventId, {String status = ''}) async {
     if (eventId.isEmpty) return;
     try {
       isLoading.value = true;
       errorMessage.value = '';
+      
+      // Set registration status if provided (from "My Events" tab)
+      if (status.isNotEmpty) {
+        registrationStatus.value = status;
+      }
+      
       event.value = await _repository.getEventDetails(eventId);
     } catch (e) {
       errorMessage.value = e.toString().replaceAll('Exception: ', '');
@@ -140,11 +149,30 @@ class EventDetailsController extends GetxController {
     isLoading.value = false;
   }
 
-  bool get isAlreadyRegistered =>
-      event.value?.registrationStatus == 'VERIFIED' ||
-          event.value?.registrationStatus == 'PENDING';
+  bool get isAlreadyRegistered {
+    // Check passed registration status first (from "My Events" tab)
+    if (registrationStatus.value.isNotEmpty) {
+      return registrationStatus.value == 'VERIFIED' || 
+             registrationStatus.value == 'PENDING';
+    }
+    // Fallback to event's registration status
+    return event.value?.registrationStatus == 'VERIFIED' ||
+           event.value?.registrationStatus == 'PENDING';
+  }
 
   String get registrationStatusLabel {
+    // Use passed registration status first
+    if (registrationStatus.value.isNotEmpty) {
+      switch (registrationStatus.value) {
+        case 'VERIFIED':
+          return 'Registered';
+        case 'PENDING':
+          return 'Pending';
+        default:
+          return '';
+      }
+    }
+    // Fallback to event's registration status
     switch (event.value?.registrationStatus) {
       case 'VERIFIED':
         return 'Registered';

@@ -112,6 +112,11 @@ class SignInController extends GetxController {
         // Update RoleController with the active role
         Get.find<RoleController>().setRole(activeRole);
 
+        // ========== Clear previous event selection on login ==========
+        // Always show EventsScreen first so user can select/switch events
+        await Get.find<SessionController>().clearEvent();
+        // ==========================================================
+
         // ========== DEMO MODE: Auto-select default event ==========
         if (AppConstants.DEMO_MODE) {
           Get.find<SessionController>().setEvent(
@@ -123,8 +128,10 @@ class SignInController extends GetxController {
 
         await Future.delayed(const Duration(milliseconds: 100));
         if (!context.mounted) return;
-        _logger.i('Navigating to main navigation screen');
-        context.go(AppRoutes.mainNavigationScreen);
+        _logger.i('Navigating to events screen (user must select an event)');
+        // Navigate to events screen - user must select an event first
+        // The routing redirect will handle if they already have an event
+        context.go(AppRoutes.eventsScreen);
       } else {
         final errorMessage = response['message'] as String? ?? 'Login failed';
         _logger.w('Login failed: $errorMessage');

@@ -170,15 +170,7 @@ class SidebarDrawer extends StatelessWidget {
       ) {
     return ListTile(
       onTap: () => controller.handleMenuTap(context, item),
-      leading: SvgPicture.asset(
-        item.icon,
-        width: 24.w,
-        height: 24.h,
-        colorFilter: ColorFilter.mode(
-          AppColors.textColor424242,
-          BlendMode.srcIn,
-        ),
-      ),
+      leading: _buildIcon(item),
       title: CustomText(
         textAlign: TextAlign.start,
         text: item.label,
@@ -186,12 +178,25 @@ class SidebarDrawer extends StatelessWidget {
         fontWeight: FontWeight.w500,
         color: AppColors.textColor424242,
       ),
-      trailing: Icon(
-        Icons.arrow_forward_ios,
-        size: 16.sp,
-        color: AppColors.textColor7E7F7E,
-      ),
       contentPadding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 4.h),
+    );
+  }
+
+  Widget _buildIcon(SidebarMenuItem item) {
+    // Try to load SVG, fallback to Icon if it fails
+    return SvgPicture.asset(
+      item.icon,
+      width: 24.w,
+      height: 24.h,
+      colorFilter: ColorFilter.mode(
+        AppColors.textColor424242,
+        BlendMode.srcIn,
+      ),
+      placeholderBuilder: (context) => Icon(
+        item.fallbackIcon ?? Icons.circle_outlined,
+        size: 24.w,
+        color: AppColors.textColor424242,
+      ),
     );
   }
 }

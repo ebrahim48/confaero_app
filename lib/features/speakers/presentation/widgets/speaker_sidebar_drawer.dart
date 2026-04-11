@@ -16,6 +16,7 @@ export '../../../attendees/presentation/controllers/sidebar_controller.dart' sho
 /// Speaker-specific sidebar drawer
 ///
 /// Includes:
+/// - My Events (to switch events)
 /// - Contact & QR
 /// - Connection List
 /// - Quick Notes
@@ -35,6 +36,11 @@ class SpeakerSidebarDrawer extends StatelessWidget {
     // Speaker-specific menu items
     final menuItems = [
       SidebarMenuItem(
+        icon: 'assets/icons/exploreevents.svg',
+        label: 'My Events',
+        route: AppRoutes.eventsScreen,
+      ),
+      SidebarMenuItem(
         icon: 'assets/icons/qrcode.svg',
         label: 'Contact & QR',
         route: AppRoutes.contactQrScreen,
@@ -49,16 +55,12 @@ class SpeakerSidebarDrawer extends StatelessWidget {
         label: 'Quick Notes',
         route: AppRoutes.quickNotesScreen,
       ),
-      // Documents - Speaker specific
+      // Documents - Speaker specific (use fallback icon)
       SidebarMenuItem(
         icon: 'assets/icons/document.svg',
         label: 'Documents',
         route: AppRoutes.documentScreen,
-      ),
-      SidebarMenuItem(
-        icon: 'assets/icons/exploreevents.svg',
-        label: 'Explore Events',
-        route: AppRoutes.eventsScreen,
+        fallbackIcon: Icons.description_outlined,
       ),
       SidebarMenuItem(
         icon: 'assets/icons/eventposters.svg',
@@ -183,31 +185,7 @@ class SpeakerSidebarDrawer extends StatelessWidget {
                 itemCount: menuItems.length,
                 itemBuilder: (context, index) {
                   final item = menuItems[index];
-                  return ListTile(
-                    leading: SvgPicture.asset(
-                      item.icon,
-                      width: 24.w,
-                      height: 24.h,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.textColor707070,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                    title: CustomText(
-                      text: item.label,
-                      fontsize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textColor424242,
-                    ),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      Future.delayed(const Duration(milliseconds: 200), () {
-                        if (item.route != null) {
-                          context.push(item.route!);
-                        }
-                      });
-                    },
-                  );
+                  return _buildMenuItem(context, item);
                 },
               ),
             ),
@@ -249,6 +227,46 @@ class SpeakerSidebarDrawer extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(BuildContext context, SidebarMenuItem item) {
+    return ListTile(
+      onTap: () {
+        Navigator.of(context).pop();
+        Future.delayed(const Duration(milliseconds: 200), () {
+          if (item.route != null) {
+            context.push(item.route!);
+          }
+        });
+      },
+      leading: _buildIcon(item),
+      title: CustomText(
+        textAlign: TextAlign.start,
+        text: item.label,
+        fontsize: 14.sp,
+        fontWeight: FontWeight.w500,
+        color: AppColors.textColor424242,
+      ),
+      contentPadding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 4.h),
+    );
+  }
+
+  Widget _buildIcon(SidebarMenuItem item) {
+    // Try to load SVG, fallback to Icon if it fails
+    return SvgPicture.asset(
+      item.icon,
+      width: 24.w,
+      height: 24.h,
+      colorFilter: const ColorFilter.mode(
+        AppColors.textColor707070,
+        BlendMode.srcIn,
+      ),
+      placeholderBuilder: (context) => Icon(
+        item.fallbackIcon ?? Icons.circle_outlined,
+        size: 24.w,
+        color: AppColors.textColor707070,
       ),
     );
   }

@@ -84,16 +84,8 @@ class RoleBasedBottomNav extends StatelessWidget {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          // If route is provided and it's not the current screen, navigate
-          if (route != null && !isSelected) {
-            Navigator.of(context).pop(); // Close any open drawers
-            Future.delayed(const Duration(milliseconds: 100), () {
-              context.push(route);
-            });
-          } else {
-            // Otherwise just update the index
-            onTap(index);
-          }
+          // Just switch tabs - don't navigate away from MainNavigationScreen
+          onTap(index);
         },
         child: Container(
           color: Colors.transparent,

@@ -2,6 +2,7 @@
 import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../connection/domain/services/connection_service.dart';
+import '../../../message/presentation/widgets/view/message_chat_screen.dart';
 import '../../domain/services/attendee_service.dart';
 import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
@@ -9,6 +10,9 @@ class AttendeeDetailsController extends GetxController {
   final AttendeeService _attendeeService = Get.find<AttendeeService>();
 
   final RxBool isLoading = false.obs;
+  
+  // Store the attendee ID from route parameter
+  String currentAttendeeId = '';
 
   // Attendee details
   final RxMap<String, dynamic> attendeeDetails =
@@ -26,6 +30,9 @@ class AttendeeDetailsController extends GetxController {
 
   /// Call this from the screen, passing eventId and attendeeId from route args
   Future<void> loadAttendeeDetails(String eventId, String attendeeId) async {
+    // Store the attendee ID for later use (critical for "Say Hi" functionality)
+    currentAttendeeId = attendeeId;
+    
     isLoading.value = true;
     try {
       final details = await _attendeeService.getAttendeeDetails(
@@ -59,11 +66,13 @@ class AttendeeDetailsController extends GetxController {
     } catch (e) {
       print('Error loading attendee details: $e');
       final errorStr = e.toString();
-      
+
       // Don't show error for 404 or 500 - backend routes might not exist yet
+      // or user might not be part of the event (backend validation issue)
       if (errorStr.contains('404') || errorStr.contains('500') || errorStr.contains('ServerException')) {
         // Silently fail - show empty/default data instead
-        print('Backend route not available, showing default data');
+        // "Say Hi" will still work because we have currentAttendeeId
+        print('Backend route not available or access denied, using default data');
       } else {
         ToastMessageHelper.showToastMessage(
           'Failed to load attendee details',
@@ -111,9 +120,30 @@ class AttendeeDetailsController extends GetxController {
     }
   }
 
-  // Say Hi
+  // Say Hi - Start a conversation
   void sayHi() {
-    print('Say Hi');
+    // Try to get ID from controller state first, then fallback to stored ID
+    final attendeeId = attendeeDetails['id']?.toString() ?? currentAttendeeId;
+    final attendeeName = attendeeDetails['name']?.toString() ?? 'Attendee';
+    final attendeeImage = attendeeDetails['image']?.toString() ?? '';
+
+    if (attendeeId.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Unable to message: Attendee ID not available',
+        title: 'Error',
+      );
+      return;
+    }
+
+    // Navigate using Get.to with preventDuplicates to avoid context issues
+    Get.to(
+      () => MessageChatScreen(
+        receiverId: attendeeId,
+        receiverName: attendeeName,
+        receiverImage: attendeeImage,
+      ),
+      preventDuplicates: false,
+    );
   }
 
   // Send Mail

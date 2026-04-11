@@ -12,6 +12,8 @@ import '../../features/sponsors/domain/services/sponsor_service.dart';
 import '../../features/documents/domain/services/document_service.dart';
 import '../../features/photos/domain/services/photo_service.dart';
 import '../../features/resources/domain/services/resource_service.dart';
+import '../../features/video_conference/domain/services/event_live_service.dart';
+import '../../features/video_conference/presentation/controllers/event_live_controller.dart';
 import '../services/api_service.dart';
 import '../services/cache_service.dart';
 import '../services/connectivity_service.dart';
@@ -337,6 +339,21 @@ class DependencyInjection {
         apiService: Get.find<ApiService>(),
         connectivityService: Get.find<ConnectivityService>(),
       ),
+      fenix: true,
+    );
+
+    // Event Live Service (for live session REST APIs)
+    Get.lazyPut<EventLiveService>(
+      () => EventLiveService(
+        apiService: Get.find<ApiService>(),
+        connectivityService: Get.find<ConnectivityService>(),
+      ),
+      fenix: true,
+    );
+
+    // Event Live Controller (manages real-time live session features)
+    Get.lazyPut<EventLiveController>(
+      () => EventLiveController(),
       fenix: true,
     );
   }
