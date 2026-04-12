@@ -192,6 +192,18 @@ class AppRoutes {
       final isGoingToAuth = authRoutes.contains(currentPath);
       final isGoingToEvents = currentPath == AppRoutes.eventsScreen;
 
+      // Routes accessible even before an event is selected
+      final preEventRoutes = <String>{
+        AppRoutes.eventsScreen,
+        AppRoutes.notificationsScreen,
+        AppRoutes.myProfileScreen,
+        AppRoutes.settingsScreen,
+        AppRoutes.aboutUsScreen,
+        AppRoutes.termsConditionScreen,
+        AppRoutes.changePasswordScreen,
+      };
+      final isPreEventRoute = preEventRoutes.contains(currentPath);
+
       // Unauthenticated user trying to access protected pages → redirect to sign in
       if ((token.isEmpty || !isLogged) && !isGoingToAuth && !isGoingToEvents) {
         return AppRoutes.signInScreen;
@@ -199,13 +211,13 @@ class AppRoutes {
 
       // Authenticated user logic
       if (token.isNotEmpty && isLogged) {
-        // Always allow navigation to EventsScreen (for event selection/switching)
-        if (isGoingToEvents) {
+        // Always allow navigation to EventsScreen and utility screens
+        if (isPreEventRoute) {
           return null;
         }
 
         // If no event selected and trying to access protected routes → redirect to events screen
-        if (currentEventId.isEmpty && !isGoingToAuth) {
+        if (currentEventId.isEmpty && !isGoingToAuth && !isPreEventRoute) {
           return AppRoutes.eventsScreen;
         }
 

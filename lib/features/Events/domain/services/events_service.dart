@@ -143,13 +143,14 @@ class EventsService {
   // ── POST /attendee/events/{id}/initiate-registration ─────────────────────
 
   /// POST /attendee/events/{id}/initiate-registration
-  Future<Map<String, dynamic>?> initiateRegistration(String eventId) async {
+  Future<Map<String, dynamic>?> initiateRegistration(String eventId, {double price = 0.0}) async {
     try {
       await _checkConnectivity();
       _logger.i('Initiating registration for event: $eventId');
 
       final response = await _apiService.post(
         '${ApiConstants.initiateRegistration}/$eventId/initiate-registration',
+        data: {'price': price},
       );
       _logger.d('Status: ${response.statusCode}');
 

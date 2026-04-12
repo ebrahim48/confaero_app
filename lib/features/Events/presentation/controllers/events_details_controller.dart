@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../core/config/approutes/app_routes.dart';
+import '../../../../../core/controllers/session_controller.dart';
 import '../../../../../core/helpers/toast_message_helper.dart';
 import '../../../../../core/services/api_service.dart';
 import '../../../../../core/services/connectivity_service.dart';
@@ -83,14 +84,34 @@ class EventDetailsController extends GetxController {
   }
 
   void registerNow(BuildContext context) async {
-    final eventId = event.value?.id;
+    final currentEvent = event.value;
+    final eventId = currentEvent?.id;
     if (eventId == null || eventId.isEmpty) return;
+
+    // Pre-validate paid events before hitting the API
+    final paymentType = currentEvent?.paymentType?.toUpperCase() ?? '';
+    final price = currentEvent?.price ?? 0.0;
+    final isPaidEvent = paymentType == 'STRIPE' || paymentType == 'PAID';
+
+    if (isPaidEvent && price <= 0) {
+      const msg = 'This event has incomplete pricing setup. Please contact the organizer.';
+      errorMessage.value = msg;
+      ToastMessageHelper.showToastMessage(msg, title: 'Registration Failed');
+      return;
+    }
+
+    if (isPaidEvent && price > 0) {
+      const msg = 'This event requires payment. Online payment integration is coming soon. Please contact the organizer to register.';
+      errorMessage.value = msg;
+      ToastMessageHelper.showToastMessage(msg, title: 'Payment Required');
+      return;
+    }
 
     try {
       isRegistering.value = true;
       errorMessage.value = '';
 
-      final result = await _repository.initiateRegistration(eventId);
+      final result = await _repository.initiateRegistration(eventId, price: price);
 
       if (result != null) {
         final status = result['status'] as String? ?? '';
@@ -100,6 +121,8 @@ class EventDetailsController extends GetxController {
               : 'Registration submitted. Status: $status',
           title: 'Success',
         );
+        // Set session and connect socket ONLY after successful registration
+        await SessionController.to.setEvent(eventId, title: currentEvent?.title ?? '');
         await loadEvent(eventId);
         await Future.delayed(const Duration(seconds: 1));
         if (context.mounted) {
@@ -107,24 +130,22 @@ class EventDetailsController extends GetxController {
         }
       }
     } catch (e) {
-      // Cleans "Exception: " prefix and shows user-friendly messages
       final rawMsg = e.toString()
           .replaceAll('Exception: ', '')
           .replaceAll('Exception:', '')
           .trim();
-      
-      // Map technical errors to user-friendly messages
+
       String userFriendlyMsg;
-      if (rawMsg.contains('Stripe')) {
-        userFriendlyMsg = 'Event registration with payment is integrated. Stripe setup is pending for production.';
-      } else if (rawMsg.contains('payment')) {
+      if (rawMsg.toLowerCase().contains('price')) {
+        userFriendlyMsg = 'This event has incomplete pricing setup. Please contact the organizer.';
+      } else if (rawMsg.contains('Stripe') || rawMsg.toLowerCase().contains('payment')) {
         userFriendlyMsg = 'Payment integration is being configured. Please try again later.';
       } else if (rawMsg.toLowerCase().contains('organizer')) {
         userFriendlyMsg = 'Event organizer setup is incomplete. Please contact support.';
       } else {
         userFriendlyMsg = rawMsg;
       }
-      
+
       errorMessage.value = userFriendlyMsg;
       ToastMessageHelper.showToastMessage(userFriendlyMsg, title: 'Error');
     } finally {

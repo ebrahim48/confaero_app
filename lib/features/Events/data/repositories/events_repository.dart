@@ -61,10 +61,10 @@ class EventsRepository {
 
   // ── POST /attendee/events/{id}/initiate-registration ─────────────────────
 
-  Future<Map<String, dynamic>?> initiateRegistration(String eventId) async {
+  Future<Map<String, dynamic>?> initiateRegistration(String eventId, {double price = 0.0}) async {
     try {
       _logger.d('initiateRegistration: $eventId');
-      return await _eventsService.initiateRegistration(eventId);
+      return await _eventsService.initiateRegistration(eventId, price: price);
     } catch (e) {
       _logger.e('initiateRegistration failed', error: e);
       throw Exception('Failed to initiate registration: $e');

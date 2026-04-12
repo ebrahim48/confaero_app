@@ -322,9 +322,12 @@ class EventsController extends GetxController {
   }
 
   void openEventDetails(BuildContext context, String eventId, {String title = '', String registrationStatus = ''}) {
-    // Persist the selected event so all controllers can use it.
-    SessionController.to.setEvent(eventId, title: title);
-    // Pass both eventId and registration status
+    // Only set the session (and connect socket) if the user is already registered.
+    // For unregistered events we just navigate to view details — the socket must
+    // not attempt to join an event room the user doesn't belong to yet.
+    if (registrationStatus == 'VERIFIED' || registrationStatus == 'PENDING') {
+      SessionController.to.setEvent(eventId, title: title);
+    }
     context.pushNamed(AppRoutes.eventsDetailsScreen, extra: {
       'eventId': eventId,
       'registrationStatus': registrationStatus,
@@ -332,8 +335,8 @@ class EventsController extends GetxController {
   }
 
   void registerEvent(BuildContext context, String eventId, {String title = ''}) {
-    SessionController.to.setEvent(eventId, title: title);
-    // Navigate to event details screen where user can complete registration
+    // Do NOT call setEvent here — session is set only after successful registration
+    // inside EventDetailsController.registerNow.
     context.pushNamed(AppRoutes.eventsDetailsScreen, extra: {
       'eventId': eventId,
       'registrationStatus': '', // Not registered yet

@@ -38,6 +38,7 @@ class _EventsScreenState extends State<EventsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: controller.scaffoldKey,
       drawer: Obx(() {
         final role = RoleController.to.activeRole.value.toUpperCase();
         if (role == 'SPEAKER') {
