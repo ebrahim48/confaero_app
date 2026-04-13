@@ -7,6 +7,7 @@ import '../../../../core/services/connectivity_service.dart';
 import '../../../attendees/data/event_home_model.dart';
 import '../../data/models/event_model.dart';
 import '../../data/models/my_event_model.dart';
+import '../../data/models/my_events_and_invitations_model.dart';
 
 class EventsService {
   final ApiService _apiService;
@@ -107,6 +108,35 @@ class EventsService {
       return [];
     } catch (e) {
       _logger.e('getMyEvents failed', error: e);
+      rethrow;
+    }
+  }
+
+  // ── GET /attendee/my-events ───────────────────────────────────────────────
+  // Response: { "data": [ { "event": {...}, "status": "REGISTERED"|"INVITED", "invitationRole": "SPEAKER" } ] }
+
+  Future<List<MyEventsAndInvitationsModel>> getMyEventsAndInvitations() async {
+    try {
+      await _checkConnectivity();
+      _logger.i('Fetching my events and invitations');
+
+      final response = await _apiService.get(ApiConstants.getMyEventsAndInvitations);
+      _logger.d('Status: ${response.statusCode}');
+
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        if ((data['success'] as bool? ?? false) && data['data'] is List) {
+          final eventsAndInvitations =
+              (data['data'] as List)
+                  .map((e) => MyEventsAndInvitationsModel.fromJson(e as Map<String, dynamic>))
+                  .toList();
+          _logger.i('Parsed ${eventsAndInvitations.length} events and invitations');
+          return eventsAndInvitations;
+        }
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getMyEventsAndInvitations failed', error: e);
       rethrow;
     }
   }
