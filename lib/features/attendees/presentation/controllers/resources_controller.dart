@@ -9,6 +9,7 @@ import '../../../resources/domain/services/resource_service.dart';
 class ResourcesController extends GetxController {
   final ResourceService _service = Get.find<ResourceService>();
   final RxBool isLoading = false.obs;
+  final RxBool isSurveyLoading = false.obs;
 
   // Read event ID from global session state
   String get currentEventId => SessionController.to.eventId;
@@ -26,6 +27,14 @@ class ResourcesController extends GetxController {
   void onInit() {
     super.onInit();
     fetchData();
+    suggestionController.addListener(() {
+      final text = suggestionController.text.trim();
+      if (text.isNotEmpty && text.length < 80) {
+        suggestionError.value = 'Minimum 80 characters required (${text.length}/80)';
+      } else {
+        suggestionError.value = '';
+      }
+    });
   }
 
   Future<void> fetchData() async {
@@ -43,16 +52,15 @@ class ResourcesController extends GetxController {
     }
   }
 
-  Future<void> submitPollVote(String pollId, String optionId) async {
+  Future<void> submitPollVote(String pollId, int selectedOptionIndex) async {
     try {
       await _service.submitPollVote(
         pollId: pollId,
         eventId: currentEventId,
-        optionId: optionId,
+        selectedOptionIndex: selectedOptionIndex,
       );
       SnackbarHelper.showSuccess('Success', 'Vote submitted successfully!');
-      // Refresh
-      fetchData();
+      await fetchData();
     } catch (e) {
       SnackbarHelper.showError('Error', 'Failed to submit vote');
     }
@@ -76,6 +84,7 @@ class ResourcesController extends GetxController {
   final RxInt selectedRating = 0.obs;
   final RxString selectedOption = ''.obs;
   final TextEditingController suggestionController = TextEditingController();
+  final RxString suggestionError = ''.obs;
 
   // Set rating
   void setRating(int rating) {
@@ -88,17 +97,35 @@ class ResourcesController extends GetxController {
   }
 
   // Submit survey
-  void submitSurvey() {
-    print('Rating: ${selectedRating.value}');
-    print('Option: ${selectedOption.value}');
-    print('Suggestion: ${suggestionController.text}');
-
-    SnackbarHelper.showSuccess('Success', 'Survey submitted successfully!');
-
-    // Reset
-    selectedRating.value = 0;
-    selectedOption.value = '';
-    suggestionController.clear();
+  Future<void> submitSurvey() async {
+    if (selectedRating.value == 0) {
+      SnackbarHelper.showError('Error', 'Please select a rating');
+      return;
+    }
+    if (selectedOption.value.isEmpty) {
+      SnackbarHelper.showError('Error', 'Please answer all questions');
+      return;
+    }
+    final suggestion = suggestionController.text.trim();
+    try {
+      isSurveyLoading.value = true;
+      final payload = <String, dynamic>{
+        'rating': selectedRating.value,
+        'helpful': selectedOption.value == 'Yes',
+      };
+      if (suggestion.isNotEmpty) {
+        payload['suggestion'] = suggestion;
+      }
+      await _service.submitSurvey(currentEventId, payload);
+      SnackbarHelper.showSuccess('Success', 'Survey submitted successfully!');
+      selectedRating.value = 0;
+      selectedOption.value = '';
+      suggestionController.clear();
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to submit survey');
+    } finally {
+      isSurveyLoading.value = false;
+    }
   }
 
   @override

@@ -57,7 +57,7 @@ class LiveMeetingController extends GetxController {
       await _resourceService.submitPollVote(
         pollId: pollId,
         eventId: currentEventId,
-        optionId: selectedIndices.first.toString(),
+        selectedOptionIndex: selectedIndices.first,
       );
 
       Get.snackbar(

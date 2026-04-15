@@ -1,6 +1,6 @@
 class ApiConstants {
-  static const String baseUrl = 'https://reaz8080.syedbipul.me/api/v1';
-  static const String imageUrl = "https://reaz8080.syedbipul.me";
+  static const String baseUrl = 'https://reazul8078.suplify.life/api/v1/';
+  static const String imageUrl = "https://reazul8078.suplify.life";
 
   static Map<String, String> headers = {'Content-Type': 'application/json'};
 
@@ -24,7 +24,7 @@ class ApiConstants {
   //--------------------------Events----------------------------
   static const String getAllUpcomingEvents = '/attendee/events';
   static const String getExploreEvents = '/superAdmin/events';
-  static const String getMyAllEvents = '/attendee/my-event';
+  static const String getMyAllEvents = '/attendee/my-events';
   static const String getEventDetails = '/attendee/events';
   static const String initiateRegistration = '/attendee/events';
   static const String getEventHome = '/attendee/events';
@@ -107,8 +107,7 @@ class ApiConstants {
   //--------------------------Resources (Q&A/Polls)---------------
   static const String getEventQnA = '/resouce/event/qna'; // append /:eventId
   static const String getEventPolls = '/resouce/event/poll'; // append /:eventId
-  static const String submitPollVote =
-      '/resouce/poll'; // append /:id/:eventId/submit
+  static const String submitPollVote = '/resouce/poll'; // append /:id/:eventId/submit
 
   //--------------------------Resources CRUD (Organizer)----------
   static const String createQnA = '/resouce/qna'; // POST /:eventId

@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../controllers/resources_controller.dart';
-import '../character_limit_text.dart';
 import '../custom_app_bar_widget.dart';
 import '../multiline_text_field_widget.dart';
 import '../qa_expansiontile_widget.dart';
@@ -102,17 +101,14 @@ class ResourcesScreen extends StatelessWidget {
                       creator: poll.isActive ? 'Active Poll' : 'Closed Poll',
                       responses: '$totalVotes response(s)',
                       onAnswerTap: () {
-                        // Pass poll data to PollScreen in the future
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const PollScreen(),
+                            builder: (context) => PollScreen(poll: poll),
                           ),
                         );
                       },
-                      onMenuTap: () {
-                        // Menu action
-                      },
+                      onMenuTap: () {},
                     );
                   },
                 );
@@ -208,10 +204,27 @@ class ResourcesScreen extends StatelessWidget {
                         maxLength: 200,
                       ),
 
-                      const CharacterLimitText(limit: 80),
+                      Obx(() {
+                        final error = controller.suggestionError.value;
+                        if (error.isEmpty) return const SizedBox.shrink();
+                        return Padding(
+                          padding: EdgeInsets.only(top: 4.h),
+                          child: CustomText(
+                            text: error,
+                            fontsize: 12.sp,
+                            color: const Color(0xffE53935),
+                            textAlign: TextAlign.start,
+                          ),
+                        );
+                      }),
                       SizedBox(height: 32.h),
 
-                      CustomButton(title: 'Submit Survey', onpress: () {}),
+                      Obx(() => controller.isSurveyLoading.value
+                          ? const Center(child: CircularProgressIndicator())
+                          : CustomButton(
+                              title: 'Submit Survey',
+                              onpress: () => controller.submitSurvey(),
+                            )),
                     ],
                   ),
                 );

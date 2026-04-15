@@ -61,14 +61,14 @@ class ResourceService {
   Future<void> submitPollVote({
     required String pollId,
     required String eventId,
-    required String optionId,
+    required int selectedOptionIndex,
   }) async {
     await _checkConnectivity();
-    _logger.i('Submitting vote for poll: $pollId in event: $eventId');
+    _logger.i('Submitting vote for poll: $pollId in event: $eventId, index: $selectedOptionIndex');
 
     await _apiService.post(
       '${ApiConstants.submitPollVote}/$pollId/$eventId/submit',
-      data: {'optionId': optionId},
+      data: {'selectedOptionIndex': selectedOptionIndex},
     );
   }
 

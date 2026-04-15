@@ -16,7 +16,6 @@ class HomeController extends GetxController {
   late final EventsRepository _repository;
 
   final selectedCategory = 0.obs;
-  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Home API data
   final eventHome = Rxn<EventHomeModel>();
@@ -70,7 +69,7 @@ class HomeController extends GetxController {
     selectedCategory.value = index;
   }
 
-  void openDrawer() {
+  void openDrawer(GlobalKey<ScaffoldState> scaffoldKey) {
     scaffoldKey.currentState?.openDrawer();
   }
 

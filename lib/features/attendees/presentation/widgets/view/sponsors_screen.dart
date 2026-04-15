@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
-import '../../../../../core/config/approutes/app_routes.dart';
-import '../custom_app_bar_widget.dart';
-import '../../controllers/sponsors_controller.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
+import '../../../../../core/config/approutes/app_routes.dart';
+import '../../controllers/sponsors_controller.dart';
+import '../custom_app_bar_widget.dart';
 
 class SponsorsScreen extends StatelessWidget {
   const SponsorsScreen({super.key});
@@ -24,7 +25,7 @@ class SponsorsScreen extends StatelessWidget {
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
+                return _buildShimmer();
               }
               if (controller.sponsors.isEmpty) {
                 return const Center(child: Text('No sponsors found'));
@@ -59,6 +60,31 @@ class SponsorsScreen extends StatelessWidget {
             }),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildShimmer() {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        child: GridView.builder(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 16.w,
+            mainAxisSpacing: 16.h,
+            childAspectRatio: 1,
+          ),
+          itemCount: 6,
+          itemBuilder: (_, __) => Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+          ),
+        ),
       ),
     );
   }

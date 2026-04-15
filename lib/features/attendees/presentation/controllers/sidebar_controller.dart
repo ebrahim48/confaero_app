@@ -1,4 +1,6 @@
 import 'package:confaero_app/core/config/approutes/app_routes.dart';
+import 'package:confaero_app/core/constants/app_constants.dart';
+import 'package:confaero_app/core/helpers/prefs_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
@@ -134,7 +136,11 @@ class SidebarController extends GetxController {
   }
 
   // Logout
-  void logout(BuildContext context) {
-    context.pushNamed(AppRoutes.signInScreen);
+  Future<void> logout(BuildContext context) async {
+    await PrefsHelper.remove(AppConstants.bearerToken);
+    await PrefsHelper.setBool(AppConstants.isLogged, false);
+    if (context.mounted) {
+      context.pushNamed(AppRoutes.signInScreen);
+    }
   }
 }
