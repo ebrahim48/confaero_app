@@ -1,7 +1,10 @@
 import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:confaero_app/core/constants/app_constants.dart';
+
+
 import 'package:confaero_app/core/controllers/role_controller.dart';
 import 'package:confaero_app/core/controllers/session_controller.dart';
+
 import 'package:confaero_app/core/helpers/prefs_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -141,6 +144,10 @@ class SidebarController extends GetxController {
 
   // Logout
   Future<void> logout(BuildContext context) async {
+
+    await PrefsHelper.remove(AppConstants.bearerToken);
+    await PrefsHelper.setBool(AppConstants.isLogged, false);
+
     // Clear role from RoleController
     await Get.find<RoleController>().clearRole();
 
@@ -154,6 +161,7 @@ class SidebarController extends GetxController {
     Get.find<SessionController>().clearEvent();
 
     // Navigate to sign in screen
+
     if (context.mounted) {
       context.pushNamed(AppRoutes.signInScreen);
     }

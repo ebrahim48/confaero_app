@@ -1,3 +1,19 @@
+class SocialLink {
+  final String platform;
+  final String url;
+
+  SocialLink({this.platform = '', this.url = ''});
+
+  factory SocialLink.fromJson(Map<String, dynamic> json) {
+    return SocialLink(
+      platform: json['platform'] ?? '',
+      url: json['url'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {'platform': platform, 'url': url};
+}
+
 class ProfileModel {
   final String id;
   final String firstName;
@@ -7,7 +23,7 @@ class ProfileModel {
   final String company;
   final String? profileImage;
   final String? resumeUrl;
-  final List<String> socialLinks;
+  final List<SocialLink> socialLinks;
 
   ProfileModel({
     this.id = '',
@@ -33,7 +49,9 @@ class ProfileModel {
       resumeUrl: json['resumeUrl'] ?? json['resume'],
       socialLinks:
           json['socialLinks'] != null
-              ? List<String>.from(json['socialLinks'])
+              ? (json['socialLinks'] as List)
+                  .map((e) => SocialLink.fromJson(e as Map<String, dynamic>))
+                  .toList()
               : [],
     );
   }
@@ -48,7 +66,7 @@ class ProfileModel {
       'company': company,
       'profileImage': profileImage,
       'resumeUrl': resumeUrl,
-      'socialLinks': socialLinks,
+      'socialLinks': socialLinks.map((e) => e.toJson()).toList(),
     };
   }
 }

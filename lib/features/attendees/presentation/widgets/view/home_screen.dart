@@ -27,6 +27,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late final HomeController controller;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String _displayName = 'Hello!';
 
   @override
@@ -49,6 +50,11 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
+      key: _scaffoldKey,
+      drawer: const SidebarDrawer(),
+
+
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -122,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                         SizedBox(width: 16.w),
                         GestureDetector(
-                          onTap: controller.openDrawer,
+                          onTap: () => controller.openDrawer(_scaffoldKey),
                           child: SvgPicture.asset(
                             'assets/icons/menusidebar.svg',
                             width: 24.w,

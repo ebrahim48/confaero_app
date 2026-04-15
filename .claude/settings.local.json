@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze *)",
+      "Bash(cmd *)",
+      "Bash(where flutter *)",
+      "Read(//c/Users/ebu/flutter/bin/**)",
+      "Read(//c/development/flutter/bin/**)",
+      "Read(//c/Users/ebu/**)",
+      "Bash(/c/Users/ebu/fvm/versions/3.29.0/bin/flutter analyze *)"
+    ]
+  }
+}

@@ -23,10 +23,16 @@ class ExhibitorBannerWidget extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12.r),
-        child: Image.asset(
-          imagePath,
-          fit: BoxFit.cover,
-        ),
+        child: imagePath.startsWith('http')
+            ? Image.network(
+                imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: const Color(0xFFF5F5F5),
+                  child: const Icon(Icons.image_not_supported, size: 48),
+                ),
+              )
+            : Image.asset(imagePath, fit: BoxFit.cover),
       ),
     );
   }

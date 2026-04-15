@@ -38,6 +38,7 @@ import '../../../features/attendees/presentation/widgets/view/my_profile_screen.
 import '../../../features/attendees/presentation/widgets/view/pdf_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/photos_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/poll_screen.dart';
+import '../../../features/resources/data/models/resource_model.dart';
 import '../../../features/attendees/presentation/widgets/view/qr_scanner_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/quick_notes_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/resources_screen.dart';
@@ -441,6 +442,9 @@ class AppRoutes {
       GoRoute(
         path: pollScreen,
         name: pollScreen,
+
+        builder: (context, state) => PollScreen(poll: state.extra as PollModel?),
+
         builder: (context, state) {
           final poll = state.extra as Map<String, dynamic>?;
           if (poll != null && poll['poll'] != null) {
@@ -452,6 +456,7 @@ class AppRoutes {
             ),
           );
         },
+
       ),
       GoRoute(
         path: documentScreen,
@@ -527,7 +532,7 @@ class AppRoutes {
       GoRoute(
         path: exhibitorDetailsScreen,
         name: exhibitorDetailsScreen,
-        builder: (context, state) => ExhibitorDetailsScreen(),
+        builder: (context, state) => const ExhibitorDetailsScreen(),
       ),
 
       // =================== Role-Specific Routes ===================

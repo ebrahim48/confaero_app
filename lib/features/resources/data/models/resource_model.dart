@@ -41,7 +41,7 @@ class PollOptionModel {
     return PollOptionModel(
       id: json['_id']?.toString() ?? '',
       text: json['text']?.toString() ?? '',
-      votes: json['votes'] as int? ?? 0,
+      votes: json['voteCount'] as int? ?? json['votes'] as int? ?? 0,
     );
   }
 }

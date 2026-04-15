@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ResourcesSectionWidget extends StatelessWidget {
   final List<Map<String, String>> resources;
@@ -12,6 +13,7 @@ class ResourcesSectionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (resources.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -24,20 +26,19 @@ class ResourcesSectionWidget extends StatelessWidget {
           ),
         ),
         SizedBox(height: 12.h),
-
         ...resources.map((resource) => _buildResourceItem(
-          name: resource['name']!,
-          size: resource['size']!,
-          onDownload: () {},
-        )),
+              name: resource['name'] ?? '',
+              subtitle: resource['type'] ?? resource['size'] ?? '',
+              url: resource['url'] ?? '',
+            )),
       ],
     );
   }
 
   Widget _buildResourceItem({
     required String name,
-    required String size,
-    required VoidCallback onDownload,
+    required String subtitle,
+    required String url,
   }) {
     return Container(
       width: 346.w,
@@ -75,15 +76,17 @@ class ResourcesSectionWidget extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 2.h),
-                Text(
-                  size,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w400,
-                    color: const Color(0xFF7E7F7E),
+                if (subtitle.isNotEmpty) ...[
+                  SizedBox(height: 2.h),
+                  Text(
+                    subtitle.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xFF7E7F7E),
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -94,7 +97,14 @@ class ResourcesSectionWidget extends StatelessWidget {
               height: 20.h,
               color: const Color(0xFF252525),
             ),
-            onPressed: onDownload,
+            onPressed: () async {
+              if (url.isNotEmpty) {
+                await launchUrl(
+                  Uri.parse(url),
+                  mode: LaunchMode.externalApplication,
+                );
+              }
+            },
           ),
         ],
       ),
