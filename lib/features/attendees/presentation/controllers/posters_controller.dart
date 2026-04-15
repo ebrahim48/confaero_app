@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/services/poster_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class PostersController extends GetxController {
   final PosterService _posterService = Get.find<PosterService>();
@@ -36,15 +37,30 @@ class PostersController extends GetxController {
       final response = await _posterService.getAcceptedPosters();
 
       final success = response['success'] as bool? ?? false;
-      if (success && response['data'] is List) {
-        posters.value =
-            (response['data'] as List)
-                .map((e) => PosterModel.fromJson(e as Map<String, dynamic>))
-                .toList();
+      // Handle nested data structure: response.data.data[]
+      List<dynamic> postersData = [];
+      if (success && response['data'] != null) {
+        if (response['data'] is Map && response['data']['data'] is List) {
+          postersData = response['data']['data'] as List;
+        } else if (response['data'] is List) {
+          postersData = response['data'] as List;
+        }
+      }
+      
+      if (postersData.isNotEmpty) {
+        posters.value = postersData
+            .map((e) => PosterModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else {
+        // Show message if no posters available
+        ToastMessageHelper.showToastMessage(
+          'Posters information coming soon. Check back later!',
+          title: 'Info',
+        );
       }
       filteredPosters.value = posters;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load posters');
+      ToastMessageHelper.showToastMessage('Posters information coming soon. Check back later!', title: 'Info');
     } finally {
       isLoading.value = false;
     }
@@ -68,7 +84,7 @@ class PostersController extends GetxController {
   }
 
   void downloadPoster(String posterId) {
-    Get.snackbar('Download', 'Poster download started');
+    ToastMessageHelper.showToastMessage('Poster download started', title: 'Download');
   }
 
   void viewPoster(BuildContext context) {

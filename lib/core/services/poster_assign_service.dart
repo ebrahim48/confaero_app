@@ -100,20 +100,6 @@ class PosterAssignService {
     return response.data as Map<String, dynamic>;
   }
 
-  /// POST /poster-assign/review/:eventId
-  Future<Map<String, dynamic>> submitReview(
-    String eventId,
-    Map<String, dynamic> data,
-  ) async {
-    await _checkConnectivity();
-    _logger.i('Submitting review for event: $eventId');
-    final response = await _apiService.post(
-      '${ApiConstants.submitPosterReview}/$eventId',
-      data: data,
-    );
-    return response.data as Map<String, dynamic>;
-  }
-
   /// GET /poster-assign/reported/:eventId
   Future<Map<String, dynamic>> getReportedPosters(String eventId) async {
     await _checkConnectivity();

@@ -8,6 +8,8 @@ import '../../../../../core/helpers/logger_helper.dart';
 import '../../../../../core/helpers/prefs_helper.dart';
 import '../../../../../core/helpers/toast_message_helper.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/controllers/role_controller.dart';
+import '../../../../../core/controllers/session_controller.dart';
 import '../../../data/repositories/auth_repository.dart';
 
 class SignInController extends GetxController {
@@ -107,9 +109,28 @@ class SignInController extends GetxController {
           emailController.text.trim(),
         );
 
+        // Update RoleController with the active role
+        Get.find<RoleController>().setRole(activeRole);
+
+        // ========== Clear previous event selection on login ==========
+        // Always show EventsScreen first so user can select/switch events
+        await Get.find<SessionController>().clearEvent();
+        // ==========================================================
+
+        // ========== DEMO MODE: Auto-select default event ==========
+        if (AppConstants.DEMO_MODE) {
+          Get.find<SessionController>().setEvent(
+            AppConstants.DEMO_EVENT_ID,
+            title: AppConstants.DEMO_EVENT_TITLE,
+          );
+        }
+        // ==========================================================
+
         await Future.delayed(const Duration(milliseconds: 100));
         if (!context.mounted) return;
-        _logger.i('Navigating to main navigation screen');
+        _logger.i('Navigating to events screen (user must select an event)');
+        // Navigate to events screen - user must select an event first
+        // The routing redirect will handle if they already have an event
         context.go(AppRoutes.eventsScreen);
       } else {
         final errorMessage = response['message'] as String? ?? 'Login failed';

@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
+import '../../../../core/controllers/session_controller.dart';
 import '../../domain/services/agenda_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class SpeakerProfileController extends GetxController {
   final AgendaService _agendaService = Get.find<AgendaService>();
@@ -16,8 +18,8 @@ class SpeakerProfileController extends GetxController {
   // Favorite session IDs
   final RxList<String> favoriteSessions = <String>[].obs;
 
-  // Event ID
-  final String currentEventId = 'default_event_id';
+  // Event ID from global session state
+  String get currentEventId => SessionController.to.eventId;
 
   @override
   void onInit() {
@@ -50,11 +52,7 @@ class SpeakerProfileController extends GetxController {
             speaker.value = data;
           }
         } catch (e) {
-          Get.snackbar(
-            'Error',
-            'Failed to load speaker details',
-            snackPosition: SnackPosition.BOTTOM,
-          );
+          ToastMessageHelper.showToastMessage('Failed to load speaker details', title: 'Error');
         }
       }
     }
@@ -115,11 +113,7 @@ class SpeakerProfileController extends GetxController {
     if (linkedin != null && linkedin.toString().isNotEmpty) {
       openLink(linkedin.toString());
     } else {
-      Get.snackbar(
-        'Not Available',
-        'LinkedIn profile not available',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('LinkedIn profile not available', title: 'Not Available');
     }
   }
 
@@ -129,11 +123,7 @@ class SpeakerProfileController extends GetxController {
     if (website != null && website.toString().isNotEmpty) {
       openLink(website.toString());
     } else {
-      Get.snackbar(
-        'Not Available',
-        'Website not available',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Website not available', title: 'Not Available');
     }
   }
 
@@ -143,11 +133,7 @@ class SpeakerProfileController extends GetxController {
     if (email != null && email.toString().isNotEmpty) {
       // TODO: use url_launcher to open mailto
     } else {
-      Get.snackbar(
-        'Not Available',
-        'Email not available',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Email not available', title: 'Not Available');
     }
   }
 

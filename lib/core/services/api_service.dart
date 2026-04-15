@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:get/get.dart' hide Response;
+import 'package:go_router/go_router.dart';
 
 import '../constants/api_constants.dart';
 import '../constants/app_constants.dart';
 import '../exceptions/app_exceptions.dart';
 import '../helpers/prefs_helper.dart';
+import '../helpers/toast_message_helper.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -16,14 +19,14 @@ class ApiService {
   factory ApiService() {
     return _instance;
   }
-
+  //*------------------ Singleton Implementation ------------------*//
   ApiService._internal() {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
         headers: ApiConstants.headers,
-        connectTimeout: const Duration(minutes: 2),
-        receiveTimeout: const Duration(minutes: 2),
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
       ),
     );
 
@@ -74,13 +77,30 @@ class ApiService {
             print('└─────────────────────────────────────────');
           }
 
+          // Show user-friendly error toast for common errors
+          _showErrorToast(error);
+
           final statusCode = error.response?.statusCode;
           final requestOptions = error.requestOptions;
 
           final isRefreshCall =
               requestOptions.path == ApiConstants.refreshTokenApi;
 
-          if (statusCode == 401 && !isRefreshCall) {
+          // Backend incorrectly returns 500 for expired JWT instead of 401.
+          // Detect jwt expired by checking the response message.
+          final responseData = error.response?.data;
+          final serverMessage =
+              (responseData is Map ? responseData['message'] : null)
+                  ?.toString()
+                  .toLowerCase() ??
+              '';
+          final isJwtExpired = serverMessage.contains('jwt expired') ||
+              serverMessage.contains('token expired');
+
+          final isAuthError =
+              (statusCode == 401) || (statusCode == 500 && isJwtExpired);
+
+          if (isAuthError && !isRefreshCall) {
             try {
               final newAccessToken = await _handleTokenRefresh();
 
@@ -128,6 +148,77 @@ class ApiService {
 
   Dio get dio => _dio;
 
+  /// Show user-friendly error toast based on error type
+  void _showErrorToast(DioException error) {
+    // Don't show toast for 401 (handled by token refresh)
+    if (error.response?.statusCode == 401) return;
+
+    // Suppress toasts for endpoints that might not be implemented yet
+    final path = error.requestOptions.path;
+    final suppressedPaths = [
+      '/resource/event/qna/',
+      '/resource/event/poll/',
+      '/resource/poll/',
+      '/resource/survey/',
+      '/eventAttendee/events/',
+      '/connection/request/',
+    ];
+    
+    if (suppressedPaths.any((suppressed) => path.contains(suppressed))) {
+      return; // Don't show toast for these endpoints
+    }
+
+    String errorMessage = 'Something went wrong';
+    String title = 'Error';
+
+    // Check if it's a network/connectivity error
+    if (error.type == DioExceptionType.connectionError ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.receiveTimeout) {
+      errorMessage = 'Please check your internet connection and try again';
+      title = 'No Internet';
+    } else if (error.response != null) {
+      // Try to get error message from backend response
+      final responseData = error.response?.data;
+      if (responseData is Map<String, dynamic>) {
+        final message = responseData['message'] as String?;
+        if (message != null && message.isNotEmpty) {
+          errorMessage = message;
+        }
+      }
+
+      // Status code specific messages
+      switch (error.response?.statusCode) {
+        case 400:
+          title = 'Bad Request';
+          break;
+        case 403:
+          errorMessage = 'You don\'t have permission to perform this action';
+          title = 'Access Denied';
+          break;
+        case 404:
+          errorMessage = 'The requested resource was not found';
+          title = 'Not Found';
+          break;
+        case 500:
+          errorMessage = 'Server error. Please try again later';
+          title = 'Server Error';
+          break;
+        case 502:
+        case 503:
+          errorMessage = 'Service temporarily unavailable';
+          title = 'Service Unavailable';
+          break;
+      }
+    }
+
+    // Show toast in debug mode only to avoid spamming users during development
+    if (kDebugMode) {
+      ToastMessageHelper.showToastMessage(errorMessage, title: title);
+    }
+  }
+
+  //*---------------- Handle Refresh Token ----------------*//
   Future<String?> _handleTokenRefresh() async {
     if (_isRefreshing && _refreshTokenFuture != null) {
       return _refreshTokenFuture;
@@ -143,7 +234,7 @@ class ApiService {
       _refreshTokenFuture = null;
     }
   }
-
+  //*------------ Access Token Refresh Logic ------------*//
   Future<String?> _refreshAccessToken() async {
     try {
       final refreshToken = await PrefsHelper.getString(
@@ -154,10 +245,16 @@ class ApiService {
         return null;
       }
 
+      // Backend expects refreshToken in HTTP-only cookie, but we also send it
+      // in body as fallback since Flutter can't manage cookies like a browser.
       final response = await _dio.post(
         ApiConstants.refreshTokenApi,
         data: {'refreshToken': refreshToken},
-        options: Options(headers: {'Content-Type': 'application/json'}),
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+          // Send cookies with request (for when cookie-based auth is available)
+          extra: {'withCredentials': true},
+        ),
       );
 
       final responseData = response.data as Map<String, dynamic>?;
@@ -169,7 +266,6 @@ class ApiService {
       }
 
       final newAccessToken = data['accessToken'] as String? ?? '';
-      final newRefreshToken = data['refreshToken'] as String? ?? refreshToken;
 
       if (newAccessToken.isEmpty) {
         return null;
@@ -177,6 +273,8 @@ class ApiService {
 
       await PrefsHelper.setString(AppConstants.bearerToken, newAccessToken);
 
+      // Update refresh token if backend rotated it
+      final newRefreshToken = data['refreshToken'] as String? ?? refreshToken;
       await PrefsHelper.setString(AppConstants.refreshToken, newRefreshToken);
 
       return newAccessToken;
@@ -184,15 +282,24 @@ class ApiService {
       return null;
     }
   }
-
+  //*---------Clear Session and Redirect to Login --------*//
   Future<void> _clearSession() async {
     await PrefsHelper.remove(AppConstants.bearerToken);
     await PrefsHelper.remove(AppConstants.refreshToken);
     await PrefsHelper.remove(AppConstants.userRole);
     await PrefsHelper.remove(AppConstants.email);
     await PrefsHelper.setBool(AppConstants.isLogged, false);
-  }
 
+    // Redirect to login — use a small delay so any in-flight UI settles first
+    await Future.delayed(const Duration(milliseconds: 300));
+    final context = Get.context;
+    if (context != null && context.mounted) {
+      context.go('/signInScreen');
+    }
+  }
+  //------------------ API Methods ------------------*//
+  //__________________________________________________//
+  //*_________________GET___________________*//
   Future<Response> get(
     String path, {
     Map<String, dynamic>? queryParameters,
@@ -212,7 +319,7 @@ class ApiService {
       throw UnknownException(e.toString());
     }
   }
-
+  //*_________________POST___________________*//
   Future<Response> post(
     String path, {
     dynamic data,
@@ -237,7 +344,7 @@ class ApiService {
       throw UnknownException(e.toString());
     }
   }
-
+  //*_________________PUT___________________*//
   Future<Response> put(
     String path, {
     dynamic data,
@@ -259,7 +366,7 @@ class ApiService {
       throw UnknownException(e.toString());
     }
   }
-
+  //*_________________PATCH___________________*//
   Future<Response> patch(
     String path, {
     dynamic data,
@@ -281,7 +388,7 @@ class ApiService {
       throw UnknownException(e.toString());
     }
   }
-
+  //*_________________DELETE___________________*//
   Future<Response> delete(
     String path, {
     dynamic data,
@@ -303,7 +410,7 @@ class ApiService {
       throw UnknownException(e.toString());
     }
   }
-
+  //*------------------ Error Handling ------------------*//
   AppException _handleDioError(DioException error) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:

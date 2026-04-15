@@ -131,6 +131,10 @@ class AgendaScreen extends StatelessWidget {
               child: Obx(() {
                 final sessions = controller.currentSessions;
 
+                if (sessions.isEmpty) {
+                  return _buildEmptyState(controller.selectedTab.value);
+                }
+
                 return ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 14.w),
                   itemCount: sessions.length,
@@ -212,6 +216,45 @@ class AgendaScreen extends StatelessWidget {
                   },
                 );
               }),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(int selectedTab) {
+    final isMyAgenda = selectedTab == 1;
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isMyAgenda ? Icons.calendar_today_outlined : Icons.event_note_outlined,
+              size: 80.sp,
+              color: const Color(0xFFAD9D8D),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              isMyAgenda ? 'My Agenda is Empty' : 'No Sessions Scheduled',
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF252525),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              isMyAgenda
+                  ? 'Sessions you bookmark will appear here. Browse the agenda and add sessions to your personal schedule.'
+                  : 'Sessions for this event will be published soon. Check back later or contact the event organizer.',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF757575),
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

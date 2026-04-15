@@ -7,31 +7,32 @@ import '../../../../presentations/widgets/custom_text.dart';
 class EventTabSwitcher extends StatelessWidget {
   final int selectedTab;
   final Function(int) onTabChanged;
+  final List<String> tabLabels;
 
   const EventTabSwitcher({
     super.key,
     required this.selectedTab,
     required this.onTabChanged,
+    this.tabLabels = const ['My Events', 'Explore Events'],
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 345.w,
+      width: double.infinity,
       height: 42.h,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(50.r),
         border: Border.all(color: const Color(0xffD2D2D2)),
       ),
       child: Row(
-        children: [
-          Expanded(
-            child: _buildTab('My Events', 0),
-          ),
-          Expanded(
-            child: _buildTab('Explore Events', 1),
-          ),
-        ],
+        children: tabLabels.asMap().entries.map((entry) {
+          final index = entry.key;
+          final label = entry.value;
+          return Expanded(
+            child: _buildTab(label, index),
+          );
+        }).toList(),
       ),
     );
   }

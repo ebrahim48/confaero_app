@@ -1,6 +1,7 @@
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class NewEventProposalController extends GetxController {
   // Text Editing Controllers
@@ -99,31 +100,31 @@ class NewEventProposalController extends GetxController {
   void onSubmit() {
     // Validation
     if (emailController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter your email');
+      ToastMessageHelper.showToastMessage('Please enter your email', title: 'Error');
       return;
     }
     if (eventNameController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter event name');
+      ToastMessageHelper.showToastMessage('Please enter event name', title: 'Error');
       return;
     }
     if (selectedAttendees.value == 'Select') {
-      Get.snackbar('Error', 'Please select number of attendees');
+      ToastMessageHelper.showToastMessage('Please select number of attendees', title: 'Error');
       return;
     }
     if (selectedFutureEvents.value == 'Select') {
-      Get.snackbar('Error', 'Please select future events');
+      ToastMessageHelper.showToastMessage('Please select future events', title: 'Error');
       return;
     }
     if (countryController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter country/area');
+      ToastMessageHelper.showToastMessage('Please enter country/area', title: 'Error');
       return;
     }
     if (selectedCountry.value == null || phoneController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter contact number');
+      ToastMessageHelper.showToastMessage('Please enter contact number', title: 'Error');
       return;
     }
     if (messageController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter message');
+      ToastMessageHelper.showToastMessage('Please enter message', title: 'Error');
       return;
     }
 
@@ -138,7 +139,7 @@ class NewEventProposalController extends GetxController {
     print('Phone: $phoneNumber');
     print('Message: ${messageController.text}');
 
-    Get.snackbar('Success', 'Event proposal submitted successfully!');
+    ToastMessageHelper.showToastMessage('Event proposal submitted successfully!', title: 'Success');
   }
 
   @override

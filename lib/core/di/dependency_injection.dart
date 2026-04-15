@@ -12,6 +12,8 @@ import '../../features/sponsors/domain/services/sponsor_service.dart';
 import '../../features/documents/domain/services/document_service.dart';
 import '../../features/photos/domain/services/photo_service.dart';
 import '../../features/resources/domain/services/resource_service.dart';
+import '../../features/video_conference/domain/services/event_live_service.dart';
+import '../../features/video_conference/presentation/controllers/event_live_controller.dart';
 import '../services/api_service.dart';
 import '../services/cache_service.dart';
 import '../services/connectivity_service.dart';
@@ -28,8 +30,11 @@ import '../services/reviewer_service.dart';
 import '../services/volunteer_service.dart';
 import '../services/video_conference_service.dart';
 import '../services/organizer_message_service.dart';
+import '../services/socket_service.dart';
 import '../services/verified_email_service.dart';
+import '../services/speaker_service.dart';
 import '../controllers/session_controller.dart';
+import '../controllers/role_controller.dart';
 
 /// Dependency Injection setup for the application.
 ///
@@ -81,10 +86,16 @@ class DependencyInjection {
     // Global session state (must come first)
     Get.put<SessionController>(SessionController(), permanent: true);
 
+    // Role controller (must be initialized early for role-based UI)
+    Get.put<RoleController>(RoleController(), permanent: true);
+
     // Core Services (Singletons)
     Get.lazyPut<ApiService>(() => ApiService(), fenix: true);
     Get.lazyPut<CacheService>(() => CacheService(), fenix: true);
     Get.lazyPut<ConnectivityService>(() => ConnectivityService(), fenix: true);
+
+    // Socket.IO Service (real-time communication)
+    Get.lazyPut<SocketService>(() => SocketService(), fenix: true);
 
     // Auth Repository
     Get.lazyPut<AuthRepository>(
@@ -319,6 +330,30 @@ class DependencyInjection {
         apiService: Get.find<ApiService>(),
         connectivityService: Get.find<ConnectivityService>(),
       ),
+      fenix: true,
+    );
+
+    // Speaker Service
+    Get.lazyPut<SpeakerService>(
+      () => SpeakerService(
+        apiService: Get.find<ApiService>(),
+        connectivityService: Get.find<ConnectivityService>(),
+      ),
+      fenix: true,
+    );
+
+    // Event Live Service (for live session REST APIs)
+    Get.lazyPut<EventLiveService>(
+      () => EventLiveService(
+        apiService: Get.find<ApiService>(),
+        connectivityService: Get.find<ConnectivityService>(),
+      ),
+      fenix: true,
+    );
+
+    // Event Live Controller (manages real-time live session features)
+    Get.lazyPut<EventLiveController>(
+      () => EventLiveController(),
       fenix: true,
     );
   }

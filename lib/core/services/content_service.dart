@@ -19,29 +19,31 @@ class ContentService {
     }
   }
 
-  /// Get Terms & Conditions content
-  Future<String> getTermsAndConditions() async {
-    await _checkConnectivity();
-    final response = await _apiService.get(ApiConstants.getTermsCondition);
+  // REMOVED: endpoint no longer available in backend API
+  // /// Get Terms & Conditions content
+  // Future<String> getTermsAndConditions() async {
+  //   await _checkConnectivity();
+  //   final response = await _apiService.get(ApiConstants.getTermsCondition);
+  //
+  //   if (response.data is Map<String, dynamic>) {
+  //     final data = response.data as Map<String, dynamic>;
+  //     if ((data['success'] as bool? ?? false) && data['data'] != null) {
+  //       return data['data']['content']?.toString() ?? '';
+  //     }
+  //   }
+  //   return '';
+  // }
 
-    if (response.data is Map<String, dynamic>) {
-      final data = response.data as Map<String, dynamic>;
-      if ((data['success'] as bool? ?? false) && data['data'] != null) {
-        return data['data']['content']?.toString() ?? '';
-      }
-    }
-    return '';
-  }
-
-  /// POST /appContent/create — create app content (admin)
-  Future<Map<String, dynamic>> createAppContent(
-    Map<String, dynamic> data,
-  ) async {
-    await _checkConnectivity();
-    final response = await _apiService.post(
-      ApiConstants.createAppContent,
-      data: data,
-    );
-    return response.data as Map<String, dynamic>;
-  }
+  // REMOVED: endpoint no longer available in backend API
+  // /// POST /appContent/create — create app content (admin)
+  // Future<Map<String, dynamic>> createAppContent(
+  //   Map<String, dynamic> data,
+  // ) async {
+  //   await _checkConnectivity();
+  //   final response = await _apiService.post(
+  //     ApiConstants.createAppContent,
+  //     data: data,
+  //   );
+  //   return response.data as Map<String, dynamic>;
+  // }
 }

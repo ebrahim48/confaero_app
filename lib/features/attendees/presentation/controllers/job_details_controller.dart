@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/services/job_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 // Job Details Model
 class JobDetails {
@@ -110,11 +111,7 @@ class JobDetailsController extends GetxController {
         jobDetails.value = JobDetails.fromJson(data);
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load job details',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Failed to load job details', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -122,16 +119,6 @@ class JobDetailsController extends GetxController {
 
   // Apply for job
   void applyForJob() {
-    Get.snackbar(
-      'Success',
-      'Your application has been submitted',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: const Color(0xff32A69A),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 8,
-      icon: const Icon(Icons.check_circle, color: Colors.white),
-    );
+    ToastMessageHelper.showToastMessage('Your application has been submitted', title: 'Success');
   }
 }

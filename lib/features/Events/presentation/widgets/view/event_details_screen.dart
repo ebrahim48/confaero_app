@@ -31,7 +31,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     controller = Get.put(EventDetailsController());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final extra = GoRouterState.of(context).extra;
-      if (extra is String && extra.isNotEmpty) {
+      if (extra is Map<String, dynamic>) {
+        final eventId = extra['eventId'] as String? ?? '';
+        final registrationStatus = extra['registrationStatus'] as String? ?? '';
+        if (eventId.isNotEmpty) {
+          controller.loadEvent(eventId, status: registrationStatus);
+        }
+      } else if (extra is String && extra.isNotEmpty) {
+        // Fallback for old navigation calls
         controller.loadEvent(extra);
       }
     });
@@ -363,15 +370,13 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
           SizedBox(height: 12.h),
 
-          // Go to Event button
+          // Go to Home button (navigates to MainNavigationScreen)
           GestureDetector(
             onTap: () {
               final event = controller.event.value;
               if (event != null && event.id.isNotEmpty) {
-                context.pushNamed(
-                  AppRoutes.attendeeHomeScreen,
-                  pathParameters: {'eventId': event.id},
-                );
+                // Navigate to main navigation screen (role-based home)
+                context.goNamed(AppRoutes.mainNavigationScreen);
               }
             },
             child: Container(
@@ -386,13 +391,13 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CustomText(
-                    text: 'Go to Event',
+                    text: 'Go to Home',
                     fontsize: 14.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
                   SizedBox(width: 8.w),
-                  Icon(Icons.arrow_forward_rounded,
+                  Icon(Icons.home_rounded,
                       color: Colors.white, size: 18.sp),
                 ],
               ),

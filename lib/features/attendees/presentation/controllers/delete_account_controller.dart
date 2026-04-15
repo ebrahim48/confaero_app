@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../auth/data/repositories/auth_repository.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class DeleteAccountController extends GetxController {
   // Text Controller
@@ -15,7 +16,7 @@ class DeleteAccountController extends GetxController {
 
   void showDeleteConfirmationDialog() {
     if (passwordController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter your password');
+      ToastMessageHelper.showToastMessage('Please enter your password', title: 'Error');
       return;
     }
 
@@ -54,16 +55,13 @@ class DeleteAccountController extends GetxController {
       final success = response['success'] as bool? ?? false;
       if (success) {
         // Assume API service and pref clears here or via another service
-        Get.snackbar('Success', 'Account deleted successfully');
+        ToastMessageHelper.showToastMessage('Account deleted successfully', title: 'Success');
         Get.offAllNamed('/login');
       } else {
-        Get.snackbar(
-          'Error',
-          response['message'] ?? 'Failed to delete account',
-        );
+        ToastMessageHelper.showToastMessage(response['message'] ?? 'Failed to delete account', title: 'Error');
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred while deleting account');
+      ToastMessageHelper.showToastMessage('An error occurred while deleting account', title: 'Error');
     } finally {
       isLoading.value = false;
     }

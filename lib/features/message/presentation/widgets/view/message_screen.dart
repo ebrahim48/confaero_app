@@ -81,21 +81,110 @@ class MessageScreen extends StatelessWidget {
 
             /// Message List
             Expanded(
-              child: Obx(
-                    () => ListView.builder(
-                  itemCount: controller.messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = controller.messages[index];
-                    return MessageItemWidget(
-                      message: msg,
-                      onTap: () {
-                        controller.markAsRead(msg.id);
-                        context.pushNamed(AppRoutes.messageChatScreen);
-                      },
-                    );
+              child: RefreshIndicator(
+                onRefresh: () => controller.refreshConversations(),
+                color: const Color(0xff32A69A),
+                child: Obx(
+                      () {
+                    if (controller.isLoading.value) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xff32A69A),
+                        ),
+                      );
+                    }
+                    
+                    if (controller.messages.isEmpty) {
+                      return _buildEmptyState();
+                    }
+                    return ListView.builder(
+                    itemCount: controller.messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = controller.messages[index];
+                      return MessageItemWidget(
+                        message: msg,
+                        onTap: () {
+                          controller.markAsRead(msg.id);
+                          context.pushNamed(
+                            AppRoutes.messageChatScreen,
+                            extra: {
+                              'conversationId': msg.id,
+                              'receiverId': msg.id,
+                            },
+                          );
+                        },
+                      );
+                    },
+                  );
                   },
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.chat_bubble_outline,
+              size: 80.sp,
+              color: const Color(0xFFAD9D8D),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'No Conversations Yet',
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF252525),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Start connecting with other attendees. Your conversations will appear here once you message someone.',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF757575),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 24.h),
+            ElevatedButton.icon(
+              onPressed: () {
+                // Navigate to attendee home to browse attendees
+                Get.toNamed(AppRoutes.attendeeHomeScreen);
+              },
+              icon: Icon(Icons.people_alt_outlined, size: 20.sp),
+              label: Text(
+                'Browse Attendees',
+                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF32A69A),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              'Tap "Say Hi" on any attendee profile to start messaging',
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.grey.shade500,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

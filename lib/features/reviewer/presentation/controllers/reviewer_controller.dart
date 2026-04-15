@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/reviewer_service.dart';
 
 class ReviewerController extends GetxController {
@@ -34,7 +35,7 @@ class ReviewerController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load dashboard');
+      ToastMessageHelper.showToastMessage('Failed to load dashboard', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -51,7 +52,7 @@ class ReviewerController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load submissions');
+      ToastMessageHelper.showToastMessage('Failed to load submissions', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -60,36 +61,36 @@ class ReviewerController extends GetxController {
   Future<void> approveAttachment(String id) async {
     try {
       await _service.approveAttachment(id);
-      Get.snackbar('Success', 'Attachment approved');
+      ToastMessageHelper.showToastMessage('Attachment approved', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to approve');
+      ToastMessageHelper.showToastMessage('Failed to approve', title: 'Error');
     }
   }
 
   Future<void> rejectAttachment(String id) async {
     try {
       await _service.rejectAttachment(id);
-      Get.snackbar('Success', 'Attachment rejected');
+      ToastMessageHelper.showToastMessage('Attachment rejected', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to reject');
+      ToastMessageHelper.showToastMessage('Failed to reject', title: 'Error');
     }
   }
 
   Future<void> requestRevision(String id) async {
     try {
       await _service.reviseAttachment(id);
-      Get.snackbar('Success', 'Revision requested');
+      ToastMessageHelper.showToastMessage('Revision requested', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to request revision');
+      ToastMessageHelper.showToastMessage('Failed to request revision', title: 'Error');
     }
   }
 
   Future<void> flagToAdmin(String id) async {
     try {
       await _service.flagToAdmin(id);
-      Get.snackbar('Success', 'Flagged to admin');
+      ToastMessageHelper.showToastMessage('Flagged to admin', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to flag');
+      ToastMessageHelper.showToastMessage('Failed to flag', title: 'Error');
     }
   }
 
@@ -103,7 +104,7 @@ class ReviewerController extends GetxController {
       final response = await _service.getAttachmentDetails(attachmentId);
       attachmentDetail.value = response['data'] as Map<String, dynamic>?;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load attachment details');
+      ToastMessageHelper.showToastMessage('Failed to load attachment details', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -115,9 +116,9 @@ class ReviewerController extends GetxController {
   ) async {
     try {
       await _service.reviewPosterImage(attachmentId, data);
-      Get.snackbar('Success', 'Image review submitted');
+      ToastMessageHelper.showToastMessage('Image review submitted', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to submit image review');
+      ToastMessageHelper.showToastMessage('Failed to submit image review', title: 'Error');
     }
   }
 }

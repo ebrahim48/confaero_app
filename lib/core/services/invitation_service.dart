@@ -20,11 +20,15 @@ class InvitationService {
   }
 
   /// Get my invitations for an event
-  Future<List<Map<String, dynamic>>> getMyInvitations(String eventId) async {
+  /// If eventId is empty, fetches all invitations across all events
+  Future<List<Map<String, dynamic>>> getMyInvitations([String eventId = '']) async {
     await _checkConnectivity();
-    final response = await _apiService.get(
-      '${ApiConstants.getMyInvitations}/$eventId',
-    );
+    
+    final endpoint = eventId.isEmpty
+        ? ApiConstants.getMyInvitations
+        : '${ApiConstants.getMyInvitations}/$eventId';
+    
+    final response = await _apiService.get(endpoint);
 
     if (response.data is Map<String, dynamic>) {
       final data = response.data as Map<String, dynamic>;

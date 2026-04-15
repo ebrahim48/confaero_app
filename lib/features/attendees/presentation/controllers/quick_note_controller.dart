@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../notes/domain/services/note_service.dart';
-import '../../../../core/helpers/snackbar_helper.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class QuickNotesController extends GetxController {
   final NoteService _noteService = Get.find<NoteService>();
@@ -39,7 +39,7 @@ class QuickNotesController extends GetxController {
             };
           }).toList();
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to load notes');
+      ToastMessageHelper.showToastMessage('Failed to load notes', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -72,9 +72,9 @@ class QuickNotesController extends GetxController {
       // Reload from server to get actual ID
       await loadNotes();
 
-      SnackbarHelper.showSuccess('Success', 'Note saved successfully!');
+      ToastMessageHelper.showToastMessage('Note saved successfully!', title: 'Success');
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to save note');
+      ToastMessageHelper.showToastMessage('Failed to save note', title: 'Error');
       // Revert if failed
       await loadNotes();
     }
@@ -103,9 +103,9 @@ class QuickNotesController extends GetxController {
           content: content,
         );
 
-        SnackbarHelper.showSuccess('Success', 'Note updated successfully!');
+        ToastMessageHelper.showToastMessage('Note updated successfully!', title: 'Success');
       } catch (e) {
-        SnackbarHelper.showError('Error', 'Failed to update note');
+        ToastMessageHelper.showToastMessage('Failed to update note', title: 'Error');
         await loadNotes(); // Revert on failure
       }
     }
@@ -115,14 +115,7 @@ class QuickNotesController extends GetxController {
   void deleteNote(String id) {
     notes.removeWhere((note) => note['id'] == id);
 
-    Get.snackbar(
-      'Deleted',
-      'Note deleted successfully!',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
-    );
+    ToastMessageHelper.showToastMessage('Note deleted successfully!', title: 'Deleted');
   }
 
   // Get formatted date

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/helpers/snackbar_helper.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../data/models/announcement_model.dart';
 import '../../domain/services/announcement_service.dart';
 
@@ -39,7 +39,7 @@ class AnnouncementCrudController extends GetxController {
       final data = await _service.getAnnouncements(eventId);
       announcements.assignAll(data);
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to load announcements');
+      ToastMessageHelper.showToastMessage('Failed to load announcements', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -49,7 +49,7 @@ class AnnouncementCrudController extends GetxController {
     final title = titleController.text.trim();
     final content = contentController.text.trim();
     if (title.isEmpty || content.isEmpty) {
-      SnackbarHelper.showError('Validation', 'Title and content are required');
+      ToastMessageHelper.showToastMessage('Title and content are required', title: 'Validation');
       return;
     }
     isSaving.value = true;
@@ -61,10 +61,10 @@ class AnnouncementCrudController extends GetxController {
       );
       titleController.clear();
       contentController.clear();
-      SnackbarHelper.showSuccess('Success', 'Announcement created');
+      ToastMessageHelper.showToastMessage('Announcement created', title: 'Success');
       await loadAnnouncements();
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to create announcement');
+      ToastMessageHelper.showToastMessage('Failed to create announcement', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -117,10 +117,10 @@ class AnnouncementCrudController extends GetxController {
       );
       titleController.clear();
       contentController.clear();
-      SnackbarHelper.showSuccess('Success', 'Announcement updated');
+      ToastMessageHelper.showToastMessage('Announcement updated', title: 'Success');
       await loadAnnouncements();
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to update announcement');
+      ToastMessageHelper.showToastMessage('Failed to update announcement', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -147,10 +147,10 @@ class AnnouncementCrudController extends GetxController {
 
     try {
       await _service.deleteAnnouncement(item.id, eventId);
-      SnackbarHelper.showSuccess('Deleted', 'Announcement deleted');
+      ToastMessageHelper.showToastMessage('Announcement deleted', title: 'Deleted');
       await loadAnnouncements();
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to delete announcement');
+      ToastMessageHelper.showToastMessage('Failed to delete announcement', title: 'Error');
     }
   }
 }

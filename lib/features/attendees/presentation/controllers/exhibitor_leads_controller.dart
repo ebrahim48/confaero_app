@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../core/helpers/snackbar_helper.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/qr_service.dart';
 
 /// Controller for exhibitor lead management scanned via QR.
@@ -36,7 +36,7 @@ class ExhibitorLeadsController extends GetxController {
       final data = await _qrService.getExhibitorLeads(boothId);
       leads.assignAll(data);
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to load leads');
+      ToastMessageHelper.showToastMessage('Failed to load leads', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -93,10 +93,10 @@ class ExhibitorLeadsController extends GetxController {
     isSaving.value = true;
     try {
       await _qrService.addLeadNote(leadId, noteController.text.trim());
-      SnackbarHelper.showSuccess('Success', 'Note saved');
+      ToastMessageHelper.showToastMessage('Note saved', title: 'Success');
       await loadLeads();
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to save note');
+      ToastMessageHelper.showToastMessage('Failed to save note', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -139,10 +139,10 @@ class ExhibitorLeadsController extends GetxController {
     isSaving.value = true;
     try {
       await _qrService.tagLead(leadId, tags);
-      SnackbarHelper.showSuccess('Success', 'Tags saved');
+      ToastMessageHelper.showToastMessage('Tags saved', title: 'Success');
       await loadLeads();
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to save tags');
+      ToastMessageHelper.showToastMessage('Failed to save tags', title: 'Error');
     } finally {
       isSaving.value = false;
     }

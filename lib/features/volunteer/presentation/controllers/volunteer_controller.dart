@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/volunteer_service.dart';
 
 class VolunteerController extends GetxController {
@@ -46,7 +47,7 @@ class VolunteerController extends GetxController {
         }
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load dashboard');
+      ToastMessageHelper.showToastMessage('Failed to load dashboard', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -54,7 +55,7 @@ class VolunteerController extends GetxController {
 
   Future<void> createTask() async {
     if (taskNameCtrl.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter task name');
+      ToastMessageHelper.showToastMessage('Please enter task name', title: 'Error');
       return;
     }
     try {
@@ -68,10 +69,10 @@ class VolunteerController extends GetxController {
       taskDescCtrl.clear();
       taskLocationCtrl.clear();
       Get.back();
-      Get.snackbar('Success', 'Task created');
+      ToastMessageHelper.showToastMessage('Task created', title: 'Success');
       loadDashboard();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to create task');
+      ToastMessageHelper.showToastMessage('Failed to create task', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -80,10 +81,10 @@ class VolunteerController extends GetxController {
   Future<void> completeTask(String taskId) async {
     try {
       await _service.completeTask(taskId);
-      Get.snackbar('Success', 'Task completed');
+      ToastMessageHelper.showToastMessage('Task completed', title: 'Success');
       loadDashboard();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to complete task');
+      ToastMessageHelper.showToastMessage('Failed to complete task', title: 'Error');
     }
   }
 
@@ -105,7 +106,7 @@ class VolunteerController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load tasks');
+      ToastMessageHelper.showToastMessage('Failed to load tasks', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -117,7 +118,7 @@ class VolunteerController extends GetxController {
       final response = await _service.getTaskDetail(taskId);
       taskDetail.value = response['data'] as Map<String, dynamic>?;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load task detail');
+      ToastMessageHelper.showToastMessage('Failed to load task detail', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -133,7 +134,7 @@ class VolunteerController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      Get.snackbar('Error', 'Search failed');
+      ToastMessageHelper.showToastMessage('Search failed', title: 'Error');
     }
   }
 
@@ -142,7 +143,7 @@ class VolunteerController extends GetxController {
       final response = await _service.getTodayProgress();
       todayProgress.value = response['data'] as Map<String, dynamic>?;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load progress');
+      ToastMessageHelper.showToastMessage('Failed to load progress', title: 'Error');
     }
   }
 
@@ -151,7 +152,7 @@ class VolunteerController extends GetxController {
       final response = await _service.getReportDetail(reportId);
       reportDetail.value = response['data'] as Map<String, dynamic>?;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load report');
+      ToastMessageHelper.showToastMessage('Failed to load report', title: 'Error');
     }
   }
 
@@ -159,9 +160,9 @@ class VolunteerController extends GetxController {
     try {
       isSaving.value = true;
       await _service.submitReport(data);
-      Get.snackbar('Success', 'Report submitted');
+      ToastMessageHelper.showToastMessage('Report submitted', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to submit report');
+      ToastMessageHelper.showToastMessage('Failed to submit report', title: 'Error');
     } finally {
       isSaving.value = false;
     }

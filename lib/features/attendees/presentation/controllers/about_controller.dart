@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/services/content_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class AboutUsController extends GetxController {
   final ContentService _contentService = Get.find<ContentService>();
@@ -18,20 +19,10 @@ class AboutUsController extends GetxController {
     // TODO: Launch email client with support address
   }
 
-  /// Load terms & conditions from API
+  /// Load terms & conditions — endpoint removed from backend API
   Future<void> loadTermsAndConditions() async {
-    isLoading.value = true;
-    try {
-      termsContent.value = await _contentService.getTermsAndConditions();
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load terms',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    } finally {
-      isLoading.value = false;
-    }
+    // REMOVED: appContent/TERMS_CONDITION endpoint no longer available
+    termsContent.value = 'Terms and conditions will be available soon.';
   }
 
   @override

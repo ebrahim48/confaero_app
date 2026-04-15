@@ -37,7 +37,11 @@ class ProfileService {
     }
   }
 
-  /// Update User Profile using FormData for multipart requests
+  /// Update User Profile.
+  ///
+  /// Sends JSON when only text fields are changed, and multipart FormData
+  /// when a file (avatar / resume) is included. This avoids the backend
+  /// receiving "undefined" for missing multipart fields.
   Future<ProfileModel?> updateProfile({
     String? firstName,
     String? lastName,
@@ -53,27 +57,40 @@ class ProfileService {
         throw Exception('No internet connection');
       }
 
-      // Build formData
-      final Map<String, dynamic> formMap = {};
-      if (firstName != null) formMap['firstName'] = firstName;
-      if (lastName != null) formMap['lastName'] = lastName;
-      if (title != null) formMap['title'] = title;
-      if (bio != null) formMap['bio'] = bio;
-      if (company != null) formMap['company'] = company;
+      final bool hasFile = avatarFile != null || resumeFile != null;
 
-      if (avatarFile != null) {
-        formMap['avatar'] = await MultipartFile.fromFile(avatarFile.path);
+      // Collect only non-null, non-empty text fields
+      final Map<String, dynamic> fields = {};
+      if (firstName != null && firstName.isNotEmpty) {
+        fields['firstName'] = firstName;
       }
-
-      if (resumeFile != null) {
-        formMap['resume'] = await MultipartFile.fromFile(resumeFile.path);
+      if (lastName != null && lastName.isNotEmpty) {
+        fields['lastName'] = lastName;
       }
+      if (title != null && title.isNotEmpty) fields['title'] = title;
+      if (bio != null && bio.isNotEmpty) fields['bio'] = bio;
+      if (company != null && company.isNotEmpty) fields['company'] = company;
 
-      final formData = FormData.fromMap(formMap);
+      dynamic data;
+
+      if (hasFile) {
+        // Use multipart FormData when uploading files
+        final Map<String, dynamic> formMap = Map.from(fields);
+        if (avatarFile != null) {
+          formMap['avatar'] = await MultipartFile.fromFile(avatarFile.path);
+        }
+        if (resumeFile != null) {
+          formMap['resume'] = await MultipartFile.fromFile(resumeFile.path);
+        }
+        data = FormData.fromMap(formMap);
+      } else {
+        // Use plain JSON when only updating text fields
+        data = fields;
+      }
 
       final response = await _apiService.patch(
         ApiConstants.updateProfile,
-        data: formData,
+        data: data,
       );
 
       if (response.data != null && response.data['data'] != null) {

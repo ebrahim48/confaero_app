@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/approutes/app_routes.dart';
 import '../../../auth/data/repositories/auth_repository.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class SettingsController extends GetxController {
   final AuthRepository _authRepository = Get.find<AuthRepository>();
@@ -21,14 +22,13 @@ class SettingsController extends GetxController {
       _logger.d('Notification updated: $value');
     } catch (e) {
       notificationEnabled.value = !value; // Revert on failure
-      Get.snackbar('Error', 'Failed to update notification settings');
+      ToastMessageHelper.showToastMessage('Failed to update notification settings', title: 'Error');
       _logger.e('Failed to toggle notification: $e');
     }
   }
 
-  void navigateToRoleSwitch() {
-    // Navigate to role switch screen
-    Get.toNamed('/role-switch');
+  void navigateToRoleSwitch(BuildContext context) {
+    context.pushNamed(AppRoutes.roleSwitchScreen);
   }
 
   void navigateToChangePassword(BuildContext context) {
@@ -40,10 +40,4 @@ class SettingsController extends GetxController {
   }
 
   // changePassword and deleteAccount moved to dedicated controllers
-
-  @override
-  void onInit() {
-    super.onInit();
-    // Load notification preference
-  }
 }

@@ -25,17 +25,30 @@ class ResourceService {
   Future<List<QnAModel>> getEventQnA(String eventId) async {
     await _checkConnectivity();
     _logger.i('Fetching Q&A for event: $eventId');
-    final response = await _apiService.get(
-      '${ApiConstants.getEventQnA}/$eventId',
-    );
+    try {
+      final response = await _apiService.get(
+        '${ApiConstants.getEventQnA}/$eventId',
+      );
 
-    if (response.data is Map<String, dynamic>) {
-      final resData = response.data as Map<String, dynamic>;
-      if ((resData['success'] == true) && resData['data'] is List) {
-        return (resData['data'] as List)
-            .map((e) => QnAModel.fromJson(e))
-            .toList();
+      _logger.i('Q&A Response: ${response.data}');
+      
+      if (response.data is Map<String, dynamic>) {
+        final resData = response.data as Map<String, dynamic>;
+        _logger.i('Q&A success: ${resData['success']}, data type: ${resData['data'].runtimeType}');
+        
+        if ((resData['success'] == true) && resData['data'] is List) {
+          final dataList = resData['data'] as List;
+          _logger.i('Q&A count: ${dataList.length}');
+          return dataList.map((e) => QnAModel.fromJson(e)).toList();
+        } else if (resData['success'] != true) {
+          _logger.e('Q&A API returned success=false. Response: $resData');
+        }
+      } else {
+        _logger.w('Q&A response is not a Map. Type: ${response.data.runtimeType}');
       }
+    } catch (e) {
+      _logger.e('Error fetching Q&A: $e');
+      rethrow;
     }
     return [];
   }
@@ -43,17 +56,30 @@ class ResourceService {
   Future<List<PollModel>> getEventPolls(String eventId) async {
     await _checkConnectivity();
     _logger.i('Fetching Polls for event: $eventId');
-    final response = await _apiService.get(
-      '${ApiConstants.getEventPolls}/$eventId',
-    );
+    try {
+      final response = await _apiService.get(
+        '${ApiConstants.getEventPolls}/$eventId',
+      );
 
-    if (response.data is Map<String, dynamic>) {
-      final resData = response.data as Map<String, dynamic>;
-      if ((resData['success'] == true) && resData['data'] is List) {
-        return (resData['data'] as List)
-            .map((e) => PollModel.fromJson(e))
-            .toList();
+      _logger.i('Polls Response: ${response.data}');
+      
+      if (response.data is Map<String, dynamic>) {
+        final resData = response.data as Map<String, dynamic>;
+        _logger.i('Polls success: ${resData['success']}, data type: ${resData['data'].runtimeType}');
+        
+        if ((resData['success'] == true) && resData['data'] is List) {
+          final dataList = resData['data'] as List;
+          _logger.i('Polls count: ${dataList.length}');
+          return dataList.map((e) => PollModel.fromJson(e)).toList();
+        } else if (resData['success'] != true) {
+          _logger.e('Polls API returned success=false. Response: $resData');
+        }
+      } else {
+        _logger.w('Polls response is not a Map. Type: ${response.data.runtimeType}');
       }
+    } catch (e) {
+      _logger.e('Error fetching Polls: $e');
+      rethrow;
     }
     return [];
   }
