@@ -12,7 +12,7 @@ class EventBannerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 345.w,
+      width: double.infinity,
       height: 190.h,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24.r),
@@ -23,21 +23,21 @@ class EventBannerWidget extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24.r),
-        child: Image.asset(
-          imageUrl,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: const Color(0xFFE0E0E0),
-              child: Icon(
-                Icons.image,
-                size: 60.sp,
-                color: Colors.grey,
-              ),
-            );
-          },
-        ),
+        child: imageUrl.isNotEmpty
+            ? Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _placeholder(),
+              )
+            : _placeholder(),
       ),
     );
   }
+
+  Widget _placeholder() => Container(
+        color: const Color(0xFFE0E0E0),
+        child: Center(
+          child: Icon(Icons.image, size: 60, color: Colors.grey),
+        ),
+      );
 }

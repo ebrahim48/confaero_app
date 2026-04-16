@@ -25,8 +25,13 @@ class PresenterCardWidget extends StatelessWidget {
             // Avatar
             CircleAvatar(
               radius: 30.r,
-              backgroundImage: AssetImage(presenter.image),
+              backgroundImage: presenter.avatar.isNotEmpty
+                  ? NetworkImage(presenter.avatar)
+                  : null,
               backgroundColor: const Color(0xFFE0E0E0),
+              child: presenter.avatar.isEmpty
+                  ? Icon(Icons.person, size: 24.sp, color: Colors.grey)
+                  : null,
             ),
             SizedBox(width: 16.w),
 
@@ -49,14 +54,6 @@ class PresenterCardWidget extends StatelessWidget {
                     fontsize: 12.sp,
                     fontWeight: FontWeight.w400,
                     color: const Color(0xFF999999),
-                  ),
-                  CustomText(
-                    text: presenter.company,
-                    fontsize: 12.sp,
-                    fontWeight: FontWeight.w400,
-                    color: const Color(0xFF666666),
-                    maxline: 1,
-                    textOverflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

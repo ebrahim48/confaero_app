@@ -367,7 +367,9 @@ class AppRoutes {
       GoRoute(
         path: eventPostersDetailsScreen,
         name: eventPostersDetailsScreen,
-        builder: (context, state) => EventPosterDetailsScreen(),
+        builder: (context, state) => EventPosterDetailsScreen(
+          posterId: state.extra as String? ?? '',
+        ),
       ),
       GoRoute(
         path: pdfScreen,

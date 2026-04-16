@@ -210,11 +210,11 @@ class ApiConstants {
   //--------------------------Poster----------------------------------
   static const String uploadPosterFile = '/poster/upload-file';
   static const String uploadPosterFiles = '/poster/upload-files';
+  static const String getRevisedPosters = '/poster/revised';
+  static const String updatePosterAttachment = '/poster/author/attachments'; // PATCH /:id
+
   static const String createPoster = '/poster/create'; // POST /:eventId
   static const String getAcceptedPosters = '/poster/accepted';
-  static const String getRevisedPosters = '/poster/revised';
-  static const String updatePosterAttachment =
-      '/poster/author/attachments'; // PATCH /:id
   static const String getSinglePoster = '/poster/accepted'; // GET /:id
 
   //--------------------------Poster Assign----------------------------

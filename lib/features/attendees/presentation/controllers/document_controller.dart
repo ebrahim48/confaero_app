@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../../core/helpers/snackbar_helper.dart';
 import '../../../documents/data/models/document_model.dart';
@@ -17,6 +18,7 @@ class DocumentsController extends GetxController {
   final Rx<DocumentDetailsModel?> documentDetails =
       Rx<DocumentDetailsModel?>(null);
   final RxBool isLoadingDetails = false.obs;
+
 
   String get currentEventId => SessionController.to.eventId;
 
@@ -66,6 +68,15 @@ class DocumentsController extends GetxController {
 
   void changeFilter(int index) {
     selectedFilter.value = index;
+  }
+
+  Future<void> openDocumentUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      SnackbarHelper.showError('Error', 'Could not open the document');
+    }
   }
 
   @override

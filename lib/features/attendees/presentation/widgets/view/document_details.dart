@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../controllers/document_controller.dart';
 import '../custom_app_bar_widget.dart';
 
@@ -36,11 +37,11 @@ class _DocumentDetailsScreenState extends State<DocumentDetailsScreen> {
 
         return Column(
           children: [
-            CustomAppBarWidget(title: title),
+            CustomAppBarWidget(title: isLoading ? '...' : title),
 
             Expanded(
               child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? _DocumentDetailsShimmer()
                   : SingleChildScrollView(
                       padding: EdgeInsets.all(24.w),
                       child: Container(
@@ -88,6 +89,34 @@ class _DocumentDetailsScreenState extends State<DocumentDetailsScreen> {
           ],
         );
       }),
+    );
+  }
+}
+
+class _DocumentDetailsShimmer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // PDF preview placeholder
+            Container(
+              width: double.infinity,
+              height: 742.h,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4.r),
+                border: Border.all(color: const Color(0xFFDFDFDF)),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
