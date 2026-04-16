@@ -137,77 +137,63 @@ class AgendaScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final session = sessions[index];
 
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Timeline
-                        Column(
-                          children: [
-                            // Dot
-                            Container(
-                              width: 20.w,
-                              height: 20.h,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color(0xff5BB8AE),
-                                  width: 2,
-                                ),
-                                color: Colors.white,
-                              ),
-                            ),
-
-                            // Dashed Line
-                            if (index < sessions.length - 1)
-                              CustomPaint(
-                                size: Size(1, 155.h),
-                                painter: DashedLinePainter(),
-                              ),
-                          ],
-                        ),
-                        SizedBox(width: 10.w),
-
-                        // Time and Card
-                        Expanded(
-                          child: Column(
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: index < sessions.length - 1 ? 18.h : 0,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Timeline column (dot + dashed line)
+                          Column(
                             children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Time
-                                  TimelineWidget(time: session.startTime),
-                                  SizedBox(width: 10.w),
-
-                                  // Session Card with all data
-                                  Expanded(
-                                    child: SessionCard(
-                                      type: 'SESSION',
-                                      title: session.title,
-                                      duration:
-                                          '${session.startTime} - ${session.endTime}',
-                                      attendees: 0, // Placeholder
-                                      favorites: session.likesCount,
-                                      isBreak: false, // Placeholder
-                                      location: session.location,
-                                      onFavorite:
-                                          () =>
-                                              controller.toggleFavorite(index),
-                                      onTap: () {
-                                        context.pushNamed(
-                                          AppRoutes.agendaDetailsScreen,
-                                        );
-                                        print('Tapped on: ${session.title}');
-                                      },
-                                    ),
+                              Container(
+                                width: 20.w,
+                                height: 20.h,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xff5BB8AE),
+                                    width: 2,
                                   ),
-                                ],
+                                  color: Colors.white,
+                                ),
                               ),
                               if (index < sessions.length - 1)
-                                SizedBox(height: 18.h),
+                                CustomPaint(
+                                  size: Size(1, 155.h),
+                                  painter: DashedLinePainter(),
+                                ),
                             ],
                           ),
-                        ),
-                      ],
+                          SizedBox(width: 10.w),
+
+                          // Time widget
+                          TimelineWidget(time: session.startTime),
+                          SizedBox(width: 10.w),
+
+                          // Session Card — takes all remaining width
+                          Expanded(
+                            child: SessionCard(
+                              type: 'SESSION',
+                              title: session.title,
+                              duration:
+                                  '${session.startTime} - ${session.endTime}',
+                              attendees: 0,
+                              favorites: session.likesCount,
+                              isBreak: false,
+                              location: session.location,
+                              onFavorite: () =>
+                                  controller.toggleFavorite(index),
+                              onTap: () {
+                                context.pushNamed(
+                                  AppRoutes.agendaDetailsScreen,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   },
                 );

@@ -11,11 +11,13 @@ class DocumentsController extends GetxController {
 
   final RxInt selectedFilter = 0.obs;
 
-  // Observable variables
   final RxList<DocumentModel> allDocuments = <DocumentModel>[].obs;
   final RxBool isLoading = false.obs;
 
-  // Read event ID from global session state
+  final Rx<DocumentDetailsModel?> documentDetails =
+      Rx<DocumentDetailsModel?>(null);
+  final RxBool isLoadingDetails = false.obs;
+
   String get currentEventId => SessionController.to.eventId;
 
   @override
@@ -27,7 +29,7 @@ class DocumentsController extends GetxController {
   Future<void> fetchDocuments() async {
     isLoading.value = true;
     try {
-      final docs = await _service.getAllDocuments(currentEventId);
+      final docs = await _service.getPublicDocuments(currentEventId);
       allDocuments.assignAll(docs);
     } catch (e) {
       SnackbarHelper.showError('Error', 'Failed to load documents');
@@ -36,25 +38,39 @@ class DocumentsController extends GetxController {
     }
   }
 
-  // Filtered documents (simplifying filter since types might not exist on API)
+  Future<void> fetchDocumentDetails(String documentId) async {
+    isLoadingDetails.value = true;
+    documentDetails.value = null;
+    try {
+      final details =
+          await _service.getDocumentDetails(currentEventId, documentId);
+      documentDetails.value = details;
+    } catch (e) {
+      SnackbarHelper.showError('Error', 'Failed to load document details');
+    } finally {
+      isLoadingDetails.value = false;
+    }
+  }
+
+  // Filter by documentType based on selected chip index
   RxList<DocumentModel> get filteredDocuments {
-    return allDocuments; // Currently ignoring filters since dummy data filters don't map to real model yet
+    if (selectedFilter.value == 0) return allDocuments;
+    final typeMap = {1: 'Abstracts', 2: 'Booklet', 3: 'Panels'};
+    final type = typeMap[selectedFilter.value];
+    if (type == null) return allDocuments;
+    return allDocuments
+        .where((d) => d.documentType.toLowerCase() == type.toLowerCase())
+        .toList()
+        .obs;
+  }
+
+  void changeFilter(int index) {
+    selectedFilter.value = index;
   }
 
   @override
   void onClose() {
     searchController.dispose();
     super.onClose();
-  }
-
-  // Change filter
-  void changeFilter(int index) {
-    selectedFilter.value = index;
-  }
-
-  // Open document
-  void openDocument(DocumentModel document) {
-    print('Opening: ${document.name} at ${document.fileUrl}');
-    // Ideally use url_launcher to open PDF
   }
 }

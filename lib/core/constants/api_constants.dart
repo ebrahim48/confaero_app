@@ -288,11 +288,10 @@ class ApiConstants {
       '/messageOrganizer/notifications'; // GET /:eventId
 
   //--------------------------Document (Organizer)---------------------
-  static const String getPendingDocuments =
-      '/document'; // GET /:eventId/pending
-  static const String getDocumentDetails =
-      '/document'; // GET /:eventId/details/:id
-  static const String approveDocument = '/document/status'; // PATCH /:id
+
+  static const String getAllPublicDocuments = '/document'; // GET /:eventId/all
+  static const String getDocumentDetails = '/document'; // GET /:eventId/details/:id
+
 
   //--------------------------Photo (Delete)----------------------------
   static const String deletePhoto = '/photo/photos'; // DELETE /:id

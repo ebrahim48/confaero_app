@@ -1,7 +1,5 @@
-import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../presentations/widgets/custom_text.dart';
 
@@ -67,9 +65,7 @@ class DocumentItem extends StatelessWidget {
 
                 // File Size and Action
                 GestureDetector(
-                  onTap: () {
-                    context.pushNamed(AppRoutes.documentDetailsScreen);
-                  },
+                  onTap: onTap,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [

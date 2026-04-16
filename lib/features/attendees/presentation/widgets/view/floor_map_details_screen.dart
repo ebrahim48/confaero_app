@@ -66,7 +66,7 @@ class _FloorMapDetailsScreenState extends State<FloorMapDetailsScreen>
               child: Stack(
                 children: [
                   // Map image — network
-                  Obx(() => InteractiveViewer(
+                  InteractiveViewer(
                     minScale: 0.5,
                     maxScale: 4.0,
                     child: map != null && map.imageUrl.isNotEmpty
@@ -82,7 +82,7 @@ class _FloorMapDetailsScreenState extends State<FloorMapDetailsScreen>
                       errorBuilder: (_, __, ___) => _errorMap(),
                     )
                         : _shimmerMap(),
-                  )),
+                  ),
 
                   // Zoom buttons (top right)
                   Positioned(

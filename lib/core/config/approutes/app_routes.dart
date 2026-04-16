@@ -402,7 +402,9 @@ class AppRoutes {
       GoRoute(
         path: documentDetailsScreen,
         name: documentDetailsScreen,
-        builder: (context, state) => DocumentDetailsScreen(),
+        builder: (context, state) => DocumentDetailsScreen(
+          documentId: state.extra as String? ?? '',
+        ),
       ),
       GoRoute(
         path: photosScreen,

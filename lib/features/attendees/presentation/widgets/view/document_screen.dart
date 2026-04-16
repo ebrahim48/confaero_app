@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/config/approutes/app_routes.dart';
 import '../../controllers/document_controller.dart';
 import '../../widgets/custom_app_bar_widget.dart';
 import '../document_filter_chips.dart';
@@ -95,12 +97,15 @@ class DocumentScreen extends StatelessWidget {
                     return Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12.w),
                       child: DocumentItem(
-                        title: document.name,
+                        title: document.documentType,
                         subtitle: document.createdAt,
-                        fileSize: 'N/A', // Or size calculation if available
+                        fileSize: 'PDF',
                         iconPath: 'assets/images/pdf1.png',
                         showArrow: true,
-                        onTap: () => controller.openDocument(document),
+                        onTap: () => context.pushNamed(
+                          AppRoutes.documentDetailsScreen,
+                          extra: document.id,
+                        ),
                       ),
                     );
                   },
