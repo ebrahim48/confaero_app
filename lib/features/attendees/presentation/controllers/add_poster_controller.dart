@@ -163,8 +163,6 @@ class AddPosterController extends GetxController {
 
       await _posterService.createPoster(currentEventId, body);
 
-      ToastMessageHelper.showToastMessage('Poster submitted successfully!', title: 'Success');
-
       // Refresh poster list if controller is active
       if (Get.isRegistered<PostersController>()) {
         Get.find<PostersController>().loadPosters();
