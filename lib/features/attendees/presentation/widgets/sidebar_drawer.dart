@@ -14,7 +14,7 @@ class SidebarDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(SidebarController());
+    final controller = Get.find<SidebarController>();
 
     return Drawer(
       backgroundColor: Colors.white,
@@ -47,19 +47,29 @@ class SidebarDrawer extends StatelessWidget {
                       ),
                     ),
                     child: ClipOval(
-                      child: Obx(
-                            () => Image.asset(
-                          controller.userAvatar.value,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
+                      child: Obx(() {
+                        final url = controller.userAvatar.value;
+                        if (controller.isNetworkAvatar.value) {
+                          return Image.network(
+                            url,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(
                               Icons.person,
                               size: 30.sp,
                               color: AppColors.textColor7E7F7E,
-                            );
-                          },
-                        ),
-                      ),
+                            ),
+                          );
+                        }
+                        return Image.asset(
+                          url,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.person,
+                            size: 30.sp,
+                            color: AppColors.textColor7E7F7E,
+                          ),
+                        );
+                      }),
                     ),
                   ),
 

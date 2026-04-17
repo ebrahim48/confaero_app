@@ -38,6 +38,7 @@ class SidebarController extends GetxController {
   final userName = ''.obs;
   final userEmail = ''.obs;
   final userAvatar = 'assets/images/profile.png'.obs;
+  final isNetworkAvatar = false.obs;
   final isLoading = false.obs;
 
   // Sidebar menu items with proper routes
@@ -111,9 +112,10 @@ class SidebarController extends GetxController {
       // Try to load profile image
       final profile = await _profileService.getMyProfile();
       if (profile != null &&
-          profile.profileImage != null &&
-          profile.profileImage!.isNotEmpty) {
-        userAvatar.value = profile.profileImage!;
+          profile.avatar != null &&
+          profile.avatar!.isNotEmpty) {
+        userAvatar.value = profile.avatar!;
+        isNetworkAvatar.value = true;
       }
     } catch (_) {
       // Fail silently — sidebar still works with defaults
