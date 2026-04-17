@@ -75,7 +75,7 @@ class CheckInOutController extends GetxController {
 
       // Send scan result to API
       try {
-        await _qrService.scanQR(result);
+        await _qrService.scanQR(result, currentEventId);
         ToastMessageHelper.showToastMessage('Attendee scanned successfully!', title: 'Success');
       } catch (e) {
         ToastMessageHelper.showToastMessage('Failed to process scan', title: 'Error');

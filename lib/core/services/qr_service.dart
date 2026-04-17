@@ -28,11 +28,11 @@ class QrService {
     return response.data as Map<String, dynamic>;
   }
 
-  /// Scan QR token — POST /qr/scan with { qrToken }
-  Future<Map<String, dynamic>> scanQR(String qrToken) async {
+  /// Scan QR token — POST /qr/scan/:eventId with { qrToken }
+  Future<Map<String, dynamic>> scanQR(String qrToken, String eventId) async {
     await _checkConnectivity();
     final response = await _apiService.post(
-      ApiConstants.scanQR,
+      '${ApiConstants.scanQR}/$eventId',
       data: {'qrToken': qrToken},
     );
     return response.data as Map<String, dynamic>;

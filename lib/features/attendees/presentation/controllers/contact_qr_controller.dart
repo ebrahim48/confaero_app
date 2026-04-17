@@ -57,7 +57,7 @@ class ContactQrController extends GetxController {
 
     try {
       isScanLoading.value = true;
-      final response = await _qrService.scanQR(result);
+      final response = await _qrService.scanQR(result, eventId);
       if (response['success'] == true) {
         scanSuccess.value = true;
       } else {
