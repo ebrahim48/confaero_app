@@ -84,7 +84,7 @@ class ResourcesController extends GetxController {
         selectedOptionIndex: selectedOptionIndex,
       );
 
-      SnackbarHelper.showSuccess('Success', 'Vote submitted successfully!');
+      ToastMessageHelper.showToastMessage('Vote submitted successfully!', title: 'Success');
       await fetchData();
 
       ToastMessageHelper.showToastMessage('Vote submitted successfully!', title: 'Success');
@@ -130,11 +130,11 @@ class ResourcesController extends GetxController {
   // Submit survey
   Future<void> submitSurvey() async {
     if (selectedRating.value == 0) {
-      SnackbarHelper.showError('Error', 'Please select a rating');
+      ToastMessageHelper.showToastMessage('Please select a rating', title: 'Error');
       return;
     }
     if (selectedOption.value.isEmpty) {
-      SnackbarHelper.showError('Error', 'Please answer all questions');
+      ToastMessageHelper.showToastMessage('Please answer all questions', title: 'Error');
       return;
     }
     final suggestion = suggestionController.text.trim();
@@ -148,7 +148,7 @@ class ResourcesController extends GetxController {
         payload['suggestion'] = suggestion;
       }
       await _service.submitSurvey(currentEventId, payload);
-      SnackbarHelper.showSuccess('Success', 'Survey submitted successfully!');
+      ToastMessageHelper.showToastMessage('Survey submitted successfully!', title: 'Success');
 
   // Submit survey — calls actual API
   Future<void> submitSurvey() async {
@@ -175,7 +175,7 @@ class ResourcesController extends GetxController {
       suggestionController.clear();
     } catch (e) {
 
-      SnackbarHelper.showError('Error', 'Failed to submit survey');
+      ToastMessageHelper.showToastMessage('Failed to submit survey', title: 'Error');
     } finally {
       isSurveyLoading.value = false;
 

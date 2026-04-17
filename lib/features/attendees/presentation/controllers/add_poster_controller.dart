@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/controllers/session_controller.dart';
-import '../../../../core/helpers/snackbar_helper.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/poster_service.dart';
 import 'posters_controller.dart';
 
@@ -83,10 +83,10 @@ class AddPosterController extends GetxController {
       if (url.isNotEmpty) {
         bannerUrl.value = url;
       } else {
-        SnackbarHelper.showError('Error', 'Failed to get banner URL');
+        ToastMessageHelper.showToastMessage('Failed to get banner URL', title: 'Error');
       }
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Banner upload failed');
+      ToastMessageHelper.showToastMessage('Banner upload failed', title: 'Error');
     } finally {
       isBannerUploading.value = false;
     }
@@ -119,10 +119,10 @@ class AddPosterController extends GetxController {
           'icon': type == 'pdf' ? Icons.picture_as_pdf : Icons.image,
         });
       } else {
-        SnackbarHelper.showError('Error', 'Failed to get attachment URL');
+        ToastMessageHelper.showToastMessage('Failed to get attachment URL', title: 'Error');
       }
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Attachment upload failed');
+      ToastMessageHelper.showToastMessage('Attachment upload failed', title: 'Error');
     } finally {
       isAttachmentUploading.value = false;
     }
@@ -130,11 +130,11 @@ class AddPosterController extends GetxController {
 
   Future<void> submitForm() async {
     if (titleController.text.trim().isEmpty) {
-      SnackbarHelper.showError('Error', 'Please enter a title');
+      ToastMessageHelper.showToastMessage('Please enter a title', title: 'Error');
       return;
     }
     if (abstractController.text.trim().isEmpty) {
-      SnackbarHelper.showError('Error', 'Please enter an abstract');
+      ToastMessageHelper.showToastMessage('Please enter an abstract', title: 'Error');
       return;
     }
 
@@ -163,7 +163,7 @@ class AddPosterController extends GetxController {
 
       await _posterService.createPoster(currentEventId, body);
 
-      SnackbarHelper.showSuccess('Success', 'Poster submitted successfully!');
+      ToastMessageHelper.showToastMessage('Poster submitted successfully!', title: 'Success');
 
       // Refresh poster list if controller is active
       if (Get.isRegistered<PostersController>()) {
@@ -172,7 +172,7 @@ class AddPosterController extends GetxController {
 
       Get.back();
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to submit poster');
+      ToastMessageHelper.showToastMessage('Failed to submit poster', title: 'Error');
     } finally {
       isSubmitting.value = false;
     }
