@@ -160,7 +160,7 @@ class AddPosterScreen extends StatelessWidget {
                       children: controller.attachments.map((attachment) {
                         return AttachmentItem(
                           fileName: attachment['name'],
-                          fileSize: attachment['size'],
+                          fileSize: '${((attachment['size'] as int) / 1024).toStringAsFixed(1)} KB',
                           fileIcon: attachment['icon'],
                           onDelete: () =>
                               controller.removeAttachment(attachment),
