@@ -4,16 +4,70 @@ import 'package:get/get.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../../../../presentations/widgets/custom_button.dart';
-import '../../controllers/profile_forms_controller.dart';
+import '../../../../profile/data/models/profile_model.dart';
 import '../form_input_widget.dart';
 
-class EducationFormScreen extends StatelessWidget {
+// ══════════════════════════════════════════════════════
+// EDUCATION FORM  — returns EducationModel
+// ══════════════════════════════════════════════════════
+class EducationFormScreen extends StatefulWidget {
   const EducationFormScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(ProfileFormsController());
+  State<EducationFormScreen> createState() => _EducationFormScreenState();
+}
 
+class _EducationFormScreenState extends State<EducationFormScreen> {
+  final _schoolController = TextEditingController();
+  final _degreeController = TextEditingController();
+  final _majorController  = TextEditingController();
+  int? _fromYear;
+  int? _toYear;
+  bool _isCurrent = false;
+
+  List<int> get _years {
+    final current = DateTime.now().year;
+    return List.generate(current - 1949, (i) => current - i);
+  }
+
+  @override
+  void dispose() {
+    _schoolController.dispose();
+    _degreeController.dispose();
+    _majorController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (_schoolController.text.trim().isEmpty) {
+      Get.snackbar('Error', 'School name is required', backgroundColor: Colors.red[100]);
+      return;
+    }
+    if (_fromYear == null) {
+      Get.snackbar('Error', 'Please select start year', backgroundColor: Colors.red[100]);
+      return;
+    }
+    if (!_isCurrent && _toYear == null) {
+      Get.snackbar('Error', 'Please select end year or check "I currently study here"',
+          backgroundColor: Colors.red[100]);
+      return;
+    }
+
+    Navigator.pop(
+      context,
+      EducationModel(
+        institute: _schoolController.text.trim(),
+        degree: _degreeController.text.trim(),
+        major: _majorController.text.trim(),
+        from: '$_fromYear',
+        to: _isCurrent ? '' : '$_toYear',
+        isCurrent: _isCurrent,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: Column(
@@ -27,52 +81,46 @@ class EducationFormScreen extends StatelessWidget {
                 children: [
                   _buildSectionHeader('Education'),
                   SizedBox(height: 16.h),
-                  FormInputWidget(
-                    controller: controller.schoolController,
-                    hintText: 'School',
-                  ),
+                  FormInputWidget(controller: _schoolController, hintText: 'School *'),
                   SizedBox(height: 12.h),
-                  FormInputWidget(
-                    controller: controller.degreeController,
-                    hintText: 'Degree',
-                  ),
+                  FormInputWidget(controller: _degreeController, hintText: 'Degree'),
                   SizedBox(height: 12.h),
-                  FormInputWidget(
-                    controller: controller.majorController,
-                    hintText: 'Major',
-                  ),
+                  FormInputWidget(controller: _majorController, hintText: 'Major / Field of Study'),
                   SizedBox(height: 16.h),
                   Row(
                     children: [
                       Expanded(
-                        child: FormInputWidget(
-                          controller: controller.eduFromController,
-                          hintText: 'From',
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CustomText(text: 'From *', fontsize: 13.sp,
+                                fontWeight: FontWeight.w500, color: AppColors.textColor424242),
+                            SizedBox(height: 8.h),
+                            _yearDropdown(_fromYear, 'Year', (v) => setState(() => _fromYear = v)),
+                          ],
                         ),
                       ),
                       SizedBox(width: 12.w),
-                      Expanded(
-                        child: FormInputWidget(
-                          controller: controller.eduToController,
-                          hintText: 'To',
+                      if (!_isCurrent)
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CustomText(text: 'To *', fontsize: 13.sp,
+                                  fontWeight: FontWeight.w500, color: AppColors.textColor424242),
+                              SizedBox(height: 8.h),
+                              _yearDropdown(_toYear, 'Year', (v) => setState(() => _toYear = v)),
+                            ],
+                          ),
                         ),
-                      ),
                     ],
                   ),
                   SizedBox(height: 16.h),
-                  Obx(() => _buildCheckbox(
-                    'I currently study here',
-                    controller.currentlyStudyHere.value,
-                        (value) => controller.currentlyStudyHere.value = value ?? false,
-                  )),
+                  _buildCheckbox('I currently study here', _isCurrent,
+                      (v) => setState(() => _isCurrent = v ?? false)),
                   SizedBox(height: 32.h),
-                  CustomButton(
-                    title: 'Save',
-                    onpress: () => controller.saveEducation(),
-                    color: const Color(0xff32A69A),
-                    height: 48.h,
-                    borderRadius: 8.r,
-                  ),
+                  CustomButton(title: 'Add', onpress: _save,
+                      color: const Color(0xff32A69A), height: 48.h, borderRadius: 8.r),
                 ],
               ),
             ),
@@ -81,16 +129,63 @@ class EducationFormScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _yearDropdown(int? value, String hint, ValueChanged<int?> onChanged) {
+    return DropdownButtonFormField<int>(
+      value: value,
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(fontSize: 13.sp, color: AppColors.textColor7E7F7E),
+        contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.r),
+            borderSide: const BorderSide(color: Color(0xffD9D9D9))),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.r),
+            borderSide: const BorderSide(color: Color(0xffD9D9D9))),
+      ),
+      isExpanded: true,
+      items: _years
+          .map((y) => DropdownMenuItem(value: y, child: Text('$y', style: TextStyle(fontSize: 13.sp))))
+          .toList(),
+      onChanged: onChanged,
+    );
+  }
 }
 
-// ========== LOCATION FORM ==========
-class LocationFormScreen extends StatelessWidget {
+// ══════════════════════════════════════════════════════
+// LOCATION FORM  — returns LocationModel
+// ══════════════════════════════════════════════════════
+class LocationFormScreen extends StatefulWidget {
   const LocationFormScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(ProfileFormsController());
+  State<LocationFormScreen> createState() => _LocationFormScreenState();
+}
 
+class _LocationFormScreenState extends State<LocationFormScreen> {
+  final _addressController = TextEditingController();
+  bool _isCurrent = false;
+
+  @override
+  void dispose() {
+    _addressController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (_addressController.text.trim().isEmpty) {
+      Get.snackbar('Error', 'Please enter address', backgroundColor: Colors.red[100]);
+      return;
+    }
+    Navigator.pop(
+      context,
+      LocationModel(address: _addressController.text.trim(), isCurrent: _isCurrent),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: Column(
@@ -104,32 +199,17 @@ class LocationFormScreen extends StatelessWidget {
                 children: [
                   _buildSectionHeader('Location'),
                   SizedBox(height: 8.h),
-                  CustomText(
-                    text: 'Full Address *',
-                    fontsize: 13.sp,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textColor424242,
-                  ),
+                  CustomText(text: 'Full Address *', fontsize: 13.sp,
+                      fontWeight: FontWeight.w500, color: AppColors.textColor424242),
                   SizedBox(height: 8.h),
-                  FormInputWidget(
-                    controller: controller.fullAddressController,
-                    hintText: 'Full Address',
-                    maxLines: 5,
-                  ),
+                  FormInputWidget(controller: _addressController,
+                      hintText: 'e.g. Dhaka, Bangladesh', maxLines: 3),
                   SizedBox(height: 16.h),
-                  Obx(() => _buildCheckbox(
-                    'I currently live here',
-                    controller.currentlyLiveHere.value,
-                        (value) => controller.currentlyLiveHere.value = value ?? false,
-                  )),
+                  _buildCheckbox('I currently live here', _isCurrent,
+                      (v) => setState(() => _isCurrent = v ?? false)),
                   SizedBox(height: 32.h),
-                  CustomButton(
-                    title: 'Save',
-                    onpress: () => controller.saveLocation(),
-                    color: const Color(0xff32A69A),
-                    height: 48.h,
-                    borderRadius: 8.r,
-                  ),
+                  CustomButton(title: 'Add', onpress: _save,
+                      color: const Color(0xff32A69A), height: 48.h, borderRadius: 8.r),
                 ],
               ),
             ),
@@ -140,14 +220,48 @@ class LocationFormScreen extends StatelessWidget {
   }
 }
 
-// ========== CONTACT FORM ==========
-class ContactFormScreen extends StatelessWidget {
+// ══════════════════════════════════════════════════════
+// CONTACT FORM  — returns ContactModel
+// ══════════════════════════════════════════════════════
+class ContactFormScreen extends StatefulWidget {
   const ContactFormScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(ProfileFormsController());
+  State<ContactFormScreen> createState() => _ContactFormScreenState();
+}
 
+class _ContactFormScreenState extends State<ContactFormScreen> {
+  final _phoneController  = TextEditingController();
+  final _mobileController = TextEditingController();
+  final _emailController  = TextEditingController();
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _mobileController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (_phoneController.text.trim().isEmpty &&
+        _mobileController.text.trim().isEmpty &&
+        _emailController.text.trim().isEmpty) {
+      Get.snackbar('Error', 'Please enter at least one contact', backgroundColor: Colors.red[100]);
+      return;
+    }
+    Navigator.pop(
+      context,
+      ContactModel(
+        phone: _phoneController.text.trim(),
+        mobile: _mobileController.text.trim(),
+        email: _emailController.text.trim(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: Column(
@@ -161,30 +275,17 @@ class ContactFormScreen extends StatelessWidget {
                 children: [
                   _buildSectionHeader('Contact'),
                   SizedBox(height: 16.h),
-                  FormInputWidget(
-                    controller: controller.phoneController,
-                    hintText: 'Phone number',
-                    keyboardType: TextInputType.phone,
-                  ),
+                  FormInputWidget(controller: _phoneController,
+                      hintText: 'Phone number', keyboardType: TextInputType.phone),
                   SizedBox(height: 12.h),
-                  FormInputWidget(
-                    controller: controller.emailController,
-                    hintText: 'Email',
-                    keyboardType: TextInputType.emailAddress,
-                  ),
+                  FormInputWidget(controller: _mobileController,
+                      hintText: 'Mobile number', keyboardType: TextInputType.phone),
                   SizedBox(height: 12.h),
-                  FormInputWidget(
-                    controller: controller.linkedinController,
-                    hintText: 'linkedin',
-                  ),
+                  FormInputWidget(controller: _emailController,
+                      hintText: 'Email', keyboardType: TextInputType.emailAddress),
                   SizedBox(height: 32.h),
-                  CustomButton(
-                    title: 'Save',
-                    onpress: () => controller.saveContact(),
-                    color: const Color(0xff32A69A),
-                    height: 48.h,
-                    borderRadius: 8.r,
-                  ),
+                  CustomButton(title: 'Add', onpress: _save,
+                      color: const Color(0xff32A69A), height: 48.h, borderRadius: 8.r),
                 ],
               ),
             ),
@@ -195,14 +296,42 @@ class ContactFormScreen extends StatelessWidget {
   }
 }
 
-// ========== ABOUT FORM ==========
-class AboutFormScreen extends StatelessWidget {
-  const AboutFormScreen({super.key});
+// ══════════════════════════════════════════════════════
+// ABOUT FORM  — returns String (bio)
+// ══════════════════════════════════════════════════════
+class AboutFormScreen extends StatefulWidget {
+  final String initialBio;
+  const AboutFormScreen({super.key, this.initialBio = ''});
+
+  @override
+  State<AboutFormScreen> createState() => _AboutFormScreenState();
+}
+
+class _AboutFormScreenState extends State<AboutFormScreen> {
+  late final TextEditingController _bioController;
+
+  @override
+  void initState() {
+    super.initState();
+    _bioController = TextEditingController(text: widget.initialBio);
+  }
+
+  @override
+  void dispose() {
+    _bioController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (_bioController.text.trim().isEmpty) {
+      Get.snackbar('Error', 'Please enter bio', backgroundColor: Colors.red[100]);
+      return;
+    }
+    Navigator.pop(context, _bioController.text.trim());
+  }
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(ProfileFormsController());
-
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: Column(
@@ -216,26 +345,14 @@ class AboutFormScreen extends StatelessWidget {
                 children: [
                   _buildSectionHeader('About'),
                   SizedBox(height: 8.h),
-                  CustomText(
-                    text: 'Bio',
-                    fontsize: 13.sp,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textColor424242,
-                  ),
+                  CustomText(text: 'Bio', fontsize: 13.sp,
+                      fontWeight: FontWeight.w500, color: AppColors.textColor424242),
                   SizedBox(height: 8.h),
-                  FormInputWidget(
-                    controller: controller.bioController,
-                    hintText: 'Enter your bio',
-                    maxLines: 5,
-                  ),
+                  FormInputWidget(controller: _bioController,
+                      hintText: 'Tell people about yourself...', maxLines: 6),
                   SizedBox(height: 32.h),
-                  CustomButton(
-                    title: 'Save',
-                    onpress: () => controller.saveAbout(),
-                    color: const Color(0xff32A69A),
-                    height: 48.h,
-                    borderRadius: 8.r,
-                  ),
+                  CustomButton(title: 'Save', onpress: _save,
+                      color: const Color(0xff32A69A), height: 48.h, borderRadius: 8.r),
                 ],
               ),
             ),
@@ -246,14 +363,44 @@ class AboutFormScreen extends StatelessWidget {
   }
 }
 
-// ========== SOCIAL LINK FORM ==========
-class SocialLinkFormScreen extends StatelessWidget {
+// ══════════════════════════════════════════════════════
+// SOCIAL LINK FORM  — returns SocialLink
+// ══════════════════════════════════════════════════════
+class SocialLinkFormScreen extends StatefulWidget {
   const SocialLinkFormScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(ProfileFormsController());
+  State<SocialLinkFormScreen> createState() => _SocialLinkFormScreenState();
+}
 
+class _SocialLinkFormScreenState extends State<SocialLinkFormScreen> {
+  String _platform = 'LinkedIn';
+  final _urlController = TextEditingController();
+
+  static const _platforms = [
+    'LinkedIn', 'GitHub', 'Twitter', 'Facebook',
+    'Instagram', 'YouTube', 'ResearchGate', 'Other',
+  ];
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (_urlController.text.trim().isEmpty) {
+      Get.snackbar('Error', 'Please enter URL', backgroundColor: Colors.red[100]);
+      return;
+    }
+    Navigator.pop(
+      context,
+      SocialLink(platform: _platform, url: _urlController.text.trim()),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: Column(
@@ -266,27 +413,36 @@ class SocialLinkFormScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionHeader('Social account link'),
+                  SizedBox(height: 16.h),
+                  CustomText(text: 'Platform', fontsize: 13.sp,
+                      fontWeight: FontWeight.w500, color: AppColors.textColor424242),
                   SizedBox(height: 8.h),
-                  CustomText(
-                    text: 'Enter social link',
-                    fontsize: 13.sp,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textColor424242,
+                  DropdownButtonFormField<String>(
+                    value: _platform,
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                          borderSide: const BorderSide(color: Color(0xffD9D9D9))),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                          borderSide: const BorderSide(color: Color(0xffD9D9D9))),
+                    ),
+                    items: _platforms
+                        .map((p) => DropdownMenuItem(
+                            value: p, child: Text(p, style: TextStyle(fontSize: 13.sp))))
+                        .toList(),
+                    onChanged: (v) => setState(() => _platform = v ?? 'LinkedIn'),
                   ),
+                  SizedBox(height: 12.h),
+                  CustomText(text: 'Profile URL', fontsize: 13.sp,
+                      fontWeight: FontWeight.w500, color: AppColors.textColor424242),
                   SizedBox(height: 8.h),
-                  FormInputWidget(
-                    controller: controller.socialLinkController,
-                    hintText: 'Enter social link',
-                    maxLines: 5,
-                  ),
+                  FormInputWidget(controller: _urlController,
+                      hintText: 'https://...', keyboardType: TextInputType.url),
                   SizedBox(height: 32.h),
-                  CustomButton(
-                    title: 'Save',
-                    onpress: () => controller.saveSocialLink(),
-                    color: const Color(0xff32A69A),
-                    height: 48.h,
-                    borderRadius: 8.r,
-                  ),
+                  CustomButton(title: 'Add', onpress: _save,
+                      color: const Color(0xff32A69A), height: 48.h, borderRadius: 8.r),
                 ],
               ),
             ),
@@ -297,14 +453,35 @@ class SocialLinkFormScreen extends StatelessWidget {
   }
 }
 
-// ========== WEBPAGE FORM ==========
-class WebpageFormScreen extends StatelessWidget {
+// ══════════════════════════════════════════════════════
+// WEBPAGE FORM  — returns String (url)
+// ══════════════════════════════════════════════════════
+class WebpageFormScreen extends StatefulWidget {
   const WebpageFormScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(ProfileFormsController());
+  State<WebpageFormScreen> createState() => _WebpageFormScreenState();
+}
 
+class _WebpageFormScreenState extends State<WebpageFormScreen> {
+  final _urlController = TextEditingController();
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (_urlController.text.trim().isEmpty) {
+      Get.snackbar('Error', 'Please enter webpage URL', backgroundColor: Colors.red[100]);
+      return;
+    }
+    Navigator.pop(context, _urlController.text.trim());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: Column(
@@ -318,26 +495,14 @@ class WebpageFormScreen extends StatelessWidget {
                 children: [
                   _buildSectionHeader('Personal webpages'),
                   SizedBox(height: 8.h),
-                  CustomText(
-                    text: 'Enter personal webpage link',
-                    fontsize: 13.sp,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textColor424242,
-                  ),
+                  CustomText(text: 'Webpage URL', fontsize: 13.sp,
+                      fontWeight: FontWeight.w500, color: AppColors.textColor424242),
                   SizedBox(height: 8.h),
-                  FormInputWidget(
-                    controller: controller.webpageController,
-                    hintText: 'Enter personal webpage link',
-                    maxLines: 5,
-                  ),
+                  FormInputWidget(controller: _urlController,
+                      hintText: 'https://...', keyboardType: TextInputType.url),
                   SizedBox(height: 32.h),
-                  CustomButton(
-                    title: 'Save',
-                    onpress: () => controller.saveWebpage(),
-                    color: const Color(0xff32A69A),
-                    height: 48.h,
-                    borderRadius: 8.r,
-                  ),
+                  CustomButton(title: 'Add', onpress: _save,
+                      color: const Color(0xff32A69A), height: 48.h, borderRadius: 8.r),
                 ],
               ),
             ),
@@ -348,7 +513,9 @@ class WebpageFormScreen extends StatelessWidget {
   }
 }
 
-// ========== HELPER WIDGETS ==========
+// ══════════════════════════════════════════════════════
+// SHARED HELPERS
+// ══════════════════════════════════════════════════════
 Widget _buildHeader(BuildContext context, String title) {
   return Container(
     width: double.infinity,
@@ -361,11 +528,7 @@ Widget _buildHeader(BuildContext context, String title) {
         children: [
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
-            child: Icon(
-              Icons.arrow_back,
-              size: 24.sp,
-              color: AppColors.textColor424242,
-            ),
+            child: Icon(Icons.arrow_back, size: 24.sp, color: AppColors.textColor424242),
           ),
           SizedBox(width: 16.w),
           Expanded(

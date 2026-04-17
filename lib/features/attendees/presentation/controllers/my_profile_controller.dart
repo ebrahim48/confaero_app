@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 
 import '../../../../core/helpers/logger_helper.dart';
 import '../../../auth/data/repositories/auth_repository.dart';
+import '../../../profile/data/models/profile_model.dart';
 import '../../../profile/domain/services/profile_service.dart';
 import '../widgets/view/affiliation_form_screen.dart';
 import '../widgets/view/all_forms_screen.dart';
@@ -15,23 +16,32 @@ class MyProfileController extends GetxController {
   final ProfileService _profileService = Get.find<ProfileService>();
   final AuthRepository _authRepository = Get.find<AuthRepository>();
   final _logger = LoggerHelper('MyProfileController');
-  // User profile data
-  final userName = 'Albert Flamingo'.obs;
+
+  // ── Display ──────────────────────────────────────────────────────────────
+  final userName = ''.obs;
+  // Current avatar: network URL or asset path
   final userAvatar = 'assets/images/profile.png'.obs;
+  final isNetworkAvatar = false.obs;
 
-  // Profile sections
-  final affiliations = <String>[].obs;
-  final education = <String>[].obs;
-  final location = ''.obs;
-  final contacts = <String>[].obs;
-  final resumeUploaded = false.obs;
-  final bio = ''.obs;
-  final socialLinks = <String>[].obs;
-  final webpages = <String>[].obs;
+  // ── Pending files (not yet uploaded — sent on Save) ──────────────────────
+  final pendingAvatarFile = Rxn<File>();   // local file picked by user
+  final pendingResumeFile = Rxn<File>();
+  final pendingResumeName = ''.obs;
+  final deleteResumeOnSave = false.obs;    // user tapped "Remove resume"
 
-  // Loading state
+  // ── Editable profile sections ────────────────────────────────────────────
+  final affiliationList = <AffiliationModel>[].obs;
+  final educationList   = <EducationModel>[].obs;
+  final locationModel   = Rxn<LocationModel>();
+  final contactModel    = Rxn<ContactModel>();
+  final resumeUploaded  = false.obs;
+  final resumeUrl       = ''.obs;
+  final bio             = ''.obs;
+  final socialLinkList  = <SocialLink>[].obs;
+  final webpageList     = <String>[].obs;
+
   final isLoading = false.obs;
-  final isSaving = false.obs;
+  final isSaving  = false.obs;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -41,41 +51,40 @@ class MyProfileController extends GetxController {
     loadProfileData();
   }
 
-  // Load profile data
+  // ── Load ─────────────────────────────────────────────────────────────────
+
   Future<void> loadProfileData() async {
     try {
       isLoading.value = true;
 
-      // Load user profile and user info
       final profile = await _profileService.getMyProfile();
-      final user = await _authRepository.getMe();
+      final user    = await _authRepository.getMe();
 
       if (profile != null) {
-        bio.value = profile.bio;
-        location.value = profile.title; // map jobTitle to location for now
-        resumeUploaded.value =
-            profile.resumeUrl != null && profile.resumeUrl!.isNotEmpty;
-
-        if (profile.profileImage != null && profile.profileImage!.isNotEmpty) {
-          userAvatar.value = profile.profileImage!;
+        bio.value          = profile.about;
+        resumeUploaded.value = profile.resumeUrl != null && profile.resumeUrl!.isNotEmpty;
+        resumeUrl.value    = profile.resumeUrl ?? '';
+        affiliationList.value = profile.affiliations;
+        educationList.value   = profile.education;
+        locationModel.value   = profile.location;
+        contactModel.value    = profile.contact;
+        socialLinkList.value  = profile.socialLinks;
+        webpageList.value     = profile.personalWebsites;
+        if (profile.name.isNotEmpty) userName.value = profile.name;
+        if (profile.avatar != null && profile.avatar!.isNotEmpty) {
+          userAvatar.value    = profile.avatar!;
+          isNetworkAvatar.value = true;
         }
-
-        // Additional profile fields
-        // affiliations.value = profile.company.isNotEmpty ? [profile.company] : [];
-        // socialLinks.value = profile.socialLinks;
       }
 
-      // Parse AuthRepository.getMe() response
-      // API shape: { data: { account: {...}, profile: { name, ... } } }
+      // Fallback name from auth response
       final success = user['success'] as bool? ?? false;
-      if (success && user['data'] != null) {
-        final userData = user['data'] as Map<String, dynamic>;
+      if (success && user['data'] != null && userName.value.isEmpty) {
+        final userData    = user['data'] as Map<String, dynamic>;
         final profileData = userData['profile'] as Map<String, dynamic>?;
         final accountData = userData['account'] as Map<String, dynamic>?;
-        userName.value =
-            profileData?['name'] as String? ??
-            accountData?['name'] as String? ??
-            'Unknown User';
+        userName.value    =
+            profileData?['name'] as String? ?? accountData?['name'] as String? ?? '';
       }
     } catch (e) {
       _logger.e('Failed to load profile data: $e');
@@ -85,144 +94,193 @@ class MyProfileController extends GetxController {
     }
   }
 
-  // Change profile picture
-  Future<void> changeProfilePicture() async {
-    try {
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 512,
-        maxHeight: 512,
-      );
+  // ── Avatar — pick locally, show preview, upload on Save ──────────────────
 
-      if (image != null) {
-        isSaving.value = true;
-        ToastMessageHelper.showToastMessage('Uploading profile image', title: 'Processing...');
+  Future<void> changeProfilePicture(BuildContext context) async {
+    final source = await _showImageSourceSheet(context);
+    if (source == null) return;
 
-        final File file = File(image.path);
-        final updatedProfile = await _profileService.updateProfile(
-          avatarFile: file,
-        );
+    final XFile? image = await _picker.pickImage(
+      source: source,
+      maxWidth: 800,
+      maxHeight: 800,
+      imageQuality: 85,
+    );
+    if (image == null) return;
 
-        if (updatedProfile != null && updatedProfile.profileImage != null) {
-          userAvatar.value = updatedProfile.profileImage!;
-        }
-
-        ToastMessageHelper.showToastMessage('Profile picture updated', title: 'Success');
-      }
-    } catch (e) {
-      _logger.e('Failed to upload image: $e');
-      ToastMessageHelper.showToastMessage('Failed to upload image', title: 'Error');
-    } finally {
-      isSaving.value = false;
-    }
+    // Store file for Save; show local preview immediately
+    pendingAvatarFile.value = File(image.path);
+    userAvatar.value        = image.path;
+    isNetworkAvatar.value   = false;
   }
 
-  // Add affiliation
-  void addAffiliation(BuildContext context) {
-    // Navigate to affiliation form
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const AffiliationFormScreen()),
+  Future<ImageSource?> _showImageSourceSheet(BuildContext context) {
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: const Text('Take a photo'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Choose from gallery'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(Icons.close),
+              title: const Text('Cancel'),
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  // Add education
-  void addEducation(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const EducationFormScreen()),
-    );
-  }
+  // ── Resume — pick locally, upload on Save ────────────────────────────────
 
-  // Add location
-  void addLocation(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LocationFormScreen()),
-    );
-  }
-
-  // Add contact
-  void addContact(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ContactFormScreen()),
-    );
-  }
-
-  // Add/remove resume
   Future<void> addResume(BuildContext context) async {
-    if (resumeUploaded.value) {
-      // Delete resume
-      try {
-        isSaving.value = true;
-        await _profileService.deleteResume();
-        resumeUploaded.value = false;
-        ToastMessageHelper.showToastMessage('Resume removed', title: 'Success');
-      } catch (e) {
-        _logger.e('Failed to delete resume: $e');
-        ToastMessageHelper.showToastMessage('Failed to remove resume', title: 'Error');
-      } finally {
-        isSaving.value = false;
+    if (resumeUploaded.value || pendingResumeFile.value != null) {
+      // Mark for deletion / clear pending
+      pendingResumeFile.value = null;
+      pendingResumeName.value = '';
+      if (resumeUploaded.value) {
+        deleteResumeOnSave.value = true;
+        resumeUploaded.value     = false;
+        resumeUrl.value          = '';
       }
     } else {
-      // Upload resume via file picker
-      try {
-        final result = await FilePicker.platform.pickFiles(
-          type: FileType.custom,
-          allowedExtensions: ['pdf', 'doc', 'docx'],
-        );
-
-        if (result != null && result.files.single.path != null) {
-          isSaving.value = true;
-          final file = File(result.files.single.path!);
-          await _profileService.updateProfile(resumeFile: file);
-          resumeUploaded.value = true;
-          ToastMessageHelper.showToastMessage('Resume uploaded successfully', title: 'Success');
-        }
-      } catch (e) {
-        _logger.e('Failed to upload resume: $e');
-        ToastMessageHelper.showToastMessage('Failed to upload resume', title: 'Error');
-      } finally {
-        isSaving.value = false;
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+      if (result != null && result.files.single.path != null) {
+        pendingResumeFile.value = File(result.files.single.path!);
+        pendingResumeName.value = result.files.single.name;
+        deleteResumeOnSave.value = false;
       }
     }
   }
 
-  // Add bio
-  void addBio(BuildContext context) {
-    Navigator.push(
+  // ── Sections ─────────────────────────────────────────────────────────────
+
+  Future<void> addAffiliation(BuildContext context) async {
+    final result = await Navigator.push<AffiliationModel>(
       context,
-      MaterialPageRoute(builder: (context) => const AboutFormScreen()),
+      MaterialPageRoute(builder: (_) => const AffiliationFormScreen()),
     );
+    if (result != null) affiliationList.add(result);
   }
 
-  // Add social link
-  void addSocialLink(BuildContext context) {
-    Navigator.push(
+  void removeAffiliation(int index) => affiliationList.removeAt(index);
+
+  Future<void> addEducation(BuildContext context) async {
+    final result = await Navigator.push<EducationModel>(
       context,
-      MaterialPageRoute(builder: (context) => const SocialLinkFormScreen()),
+      MaterialPageRoute(builder: (_) => const EducationFormScreen()),
     );
+    if (result != null) educationList.add(result);
   }
 
-  // Add webpage
-  void addWebpage(BuildContext context) {
-    Navigator.push(
+  void removeEducation(int index) => educationList.removeAt(index);
+
+  Future<void> addLocation(BuildContext context) async {
+    final result = await Navigator.push<LocationModel>(
       context,
-      MaterialPageRoute(builder: (context) => const WebpageFormScreen()),
+      MaterialPageRoute(builder: (_) => const LocationFormScreen()),
     );
+    if (result != null) locationModel.value = result;
   }
 
-  // Save profile
+  Future<void> addContact(BuildContext context) async {
+    final result = await Navigator.push<ContactModel>(
+      context,
+      MaterialPageRoute(builder: (_) => const ContactFormScreen()),
+    );
+    if (result != null) contactModel.value = result;
+  }
+
+  Future<void> addBio(BuildContext context) async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => AboutFormScreen(initialBio: bio.value)),
+    );
+    if (result != null) bio.value = result;
+  }
+
+  Future<void> addSocialLink(BuildContext context) async {
+    final result = await Navigator.push<SocialLink>(
+      context,
+      MaterialPageRoute(builder: (_) => const SocialLinkFormScreen()),
+    );
+    if (result != null) socialLinkList.add(result);
+  }
+
+  void removeSocialLink(int index) => socialLinkList.removeAt(index);
+
+  Future<void> addWebpage(BuildContext context) async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const WebpageFormScreen()),
+    );
+    if (result != null && result.isNotEmpty) webpageList.add(result);
+  }
+
+  void removeWebpage(int index) => webpageList.removeAt(index);
+
+  // ── Save — ONE PATCH with everything ─────────────────────────────────────
+
   Future<void> saveProfile() async {
     try {
       isSaving.value = true;
 
-      // Update basic fields like bio
-      await _profileService.updateProfile(
-        bio: bio.value,
-        title: location.value,
+      // Delete resume if user removed it
+      if (deleteResumeOnSave.value) {
+        await _profileService.deleteResume();
+        deleteResumeOnSave.value = false;
+      }
+
+      final updated = await _profileService.updateFullProfile(
+        about:            bio.value,
+        affiliations:     affiliationList.toList(),
+        education:        educationList.toList(),
+        location:         locationModel.value,
+        contact:          contactModel.value,
+        socialLinks:      socialLinkList.toList(),
+        personalWebsites: webpageList.toList(),
+        avatarFile:       pendingAvatarFile.value,
+        resumeFile:       pendingResumeFile.value,
       );
+
+      if (updated != null) {
+        bio.value             = updated.about;
+        affiliationList.value = updated.affiliations;
+        educationList.value   = updated.education;
+        locationModel.value   = updated.location;
+        contactModel.value    = updated.contact;
+        socialLinkList.value  = updated.socialLinks;
+        webpageList.value     = updated.personalWebsites;
+        resumeUploaded.value  = updated.resumeUrl != null && updated.resumeUrl!.isNotEmpty;
+        resumeUrl.value       = updated.resumeUrl ?? '';
+
+        if (updated.avatar != null && updated.avatar!.isNotEmpty) {
+          userAvatar.value      = updated.avatar!;
+          isNetworkAvatar.value = true;
+        }
+      }
+
+      // Clear pending files after successful save
+      pendingAvatarFile.value = null;
+      pendingResumeFile.value = null;
+      pendingResumeName.value = '';
 
       ToastMessageHelper.showToastMessage('Profile saved successfully', title: 'Success');
     } catch (e) {
@@ -231,34 +289,5 @@ class MyProfileController extends GetxController {
     } finally {
       isSaving.value = false;
     }
-  }
-
-  // Build input dialog
-  Widget _buildInputDialog({
-    required String title,
-    required String hint,
-    int maxLines = 1,
-    required Function(String) onSubmit,
-  }) {
-    final controller = TextEditingController();
-
-    return AlertDialog(
-      title: Text(title),
-      content: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          hintText: hint,
-          border: OutlineInputBorder(),
-        ),
-        maxLines: maxLines,
-      ),
-      actions: [
-        TextButton(onPressed: () => Get.back(), child: Text('Cancel')),
-        TextButton(
-          onPressed: () => onSubmit(controller.text),
-          child: Text('Add'),
-        ),
-      ],
-    );
   }
 }

@@ -97,7 +97,8 @@ class SessionCard extends StatelessWidget {
     // Regular Session Card Style - FIXED VERSION
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: IntrinsicHeight(
+        child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
@@ -231,6 +232,7 @@ class SessionCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

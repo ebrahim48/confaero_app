@@ -58,11 +58,6 @@ class MessageController extends GetxController {
               .toList();
       filteredMessages.value = messages;
     } catch (e) {
-      print('Error loading conversations: $e');
-      // Don't show toast for 404 - just show empty state
-      if (!e.toString().contains('404')) {
-        ToastMessageHelper.showToastMessage('Failed to load conversations', title: 'Error');
-      }
       messages.clear();
       filteredMessages.clear();
     } finally {

@@ -29,7 +29,6 @@ class PostersController extends GetxController {
 
       final success = response['success'] as bool? ?? false;
       if (success) {
-        // Response: { data: { meta: {...}, data: [...] } }
         final outer = response['data'];
         List<dynamic> list = [];
         if (outer is Map<String, dynamic> && outer['data'] is List) {
