@@ -79,6 +79,7 @@ class AddPosterScreen extends StatelessWidget {
                   CustomTextField(
                     controller: controller.titleController,
                     hintText: '',
+                    maxLength: 25,
                   ),
                   const CharacterLimitText(limit: 25),
                   SizedBox(height: 16.h),
