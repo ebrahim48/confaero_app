@@ -9,14 +9,11 @@ import '../../../resources/domain/services/resource_service.dart';
 class ResourcesController extends GetxController {
   final ResourceService _service = Get.find<ResourceService>();
   final RxBool isLoading = false.obs;
-
   final RxBool isSurveyLoading = false.obs;
-
   final RxBool isSubmitting = false.obs;
 
-
-  // Read event ID from global session state
   String get currentEventId => SessionController.to.eventId;
+
   // Selected tab index (0 = Q&A, 1 = Polls, 2 = Survey)
   final RxInt selectedTabIndex = 0.obs;
 
@@ -28,6 +25,12 @@ class ResourcesController extends GetxController {
   // Polls List
   final RxList<PollModel> pollsList = <PollModel>[].obs;
   final RxMap<String, List<bool>> pollSelectedOptions = <String, List<bool>>{}.obs;
+
+  // Survey related
+  final RxInt selectedRating = 0.obs;
+  final RxString selectedOption = ''.obs;
+  final TextEditingController suggestionController = TextEditingController();
+  final RxString suggestionError = ''.obs;
 
   @override
   void onInit() {
@@ -48,18 +51,13 @@ class ResourcesController extends GetxController {
     try {
       final qnaData = await _service.getEventQnA(currentEventId);
       qaList.assignAll(qnaData);
-      print('Q&A loaded: ${qnaData.length} items');
 
       final pollData = await _service.getEventPolls(currentEventId);
       pollsList.assignAll(pollData);
-      print('Polls loaded: ${pollData.length} items');
     } catch (e) {
-      print('Error loading resources: $e');
-      // Don't show error toast for 404 - just show empty state
       if (!e.toString().contains('404')) {
         ToastMessageHelper.showToastMessage('Failed to load resources', title: 'Error');
       }
-      // Keep lists empty to show empty states
       qaList.clear();
       pollsList.clear();
     } finally {
@@ -67,30 +65,19 @@ class ResourcesController extends GetxController {
     }
   }
 
-
-  Future<void> submitPollVote(String pollId, int selectedOptionIndex) async {
-
-  // Refresh data
   Future<void> refreshData() async {
     await fetchData();
   }
 
-  Future<void> submitPollVote(String pollId, String optionId) async {
-
+  Future<void> submitPollVote(String pollId, int selectedOptionIndex) async {
     try {
       await _service.submitPollVote(
         pollId: pollId,
         eventId: currentEventId,
         selectedOptionIndex: selectedOptionIndex,
       );
-
-      SnackbarHelper.showSuccess('Success', 'Vote submitted successfully!');
-      await fetchData();
-
       ToastMessageHelper.showToastMessage('Vote submitted successfully!', title: 'Success');
-      // Refresh
-      fetchData();
-
+      await fetchData();
     } catch (e) {
       ToastMessageHelper.showToastMessage('Failed to submit vote', title: 'Error');
     }
@@ -110,31 +97,21 @@ class ResourcesController extends GetxController {
     }
   }
 
-  // Survey related
-  final RxInt selectedRating = 0.obs;
-  final RxString selectedOption = ''.obs;
-  final TextEditingController suggestionController = TextEditingController();
-  final RxString suggestionError = ''.obs;
-
-  // Set rating
   void setRating(int rating) {
     selectedRating.value = rating;
   }
 
-  // Set option
   void setOption(String option) {
     selectedOption.value = option;
   }
 
-
-  // Submit survey
   Future<void> submitSurvey() async {
     if (selectedRating.value == 0) {
-      SnackbarHelper.showError('Error', 'Please select a rating');
+      ToastMessageHelper.showToastMessage('Please select a rating', title: 'Error');
       return;
     }
     if (selectedOption.value.isEmpty) {
-      SnackbarHelper.showError('Error', 'Please answer all questions');
+      ToastMessageHelper.showToastMessage('Please answer all questions', title: 'Error');
       return;
     }
     final suggestion = suggestionController.text.trim();
@@ -148,44 +125,20 @@ class ResourcesController extends GetxController {
         payload['suggestion'] = suggestion;
       }
       await _service.submitSurvey(currentEventId, payload);
-      SnackbarHelper.showSuccess('Success', 'Survey submitted successfully!');
-
-  // Submit survey — calls actual API
-  Future<void> submitSurvey() async {
-    if (selectedRating.value == 0 && selectedOption.value.isEmpty) {
-      ToastMessageHelper.showToastMessage('Please provide a rating or select an option', title: 'Error');
-      return;
-    }
-
-    try {
-      final surveyData = <String, dynamic>{};
-      if (selectedRating.value > 0) surveyData['rating'] = selectedRating.value;
-      if (selectedOption.value.isNotEmpty) surveyData['option'] = selectedOption.value;
-      if (suggestionController.text.trim().isNotEmpty) {
-        surveyData['suggestion'] = suggestionController.text.trim();
-      }
-
-      await _service.submitSurvey(currentEventId, surveyData);
       ToastMessageHelper.showToastMessage('Survey submitted successfully!', title: 'Success');
-
-      // Reset
-
       selectedRating.value = 0;
       selectedOption.value = '';
       suggestionController.clear();
     } catch (e) {
-
-      SnackbarHelper.showError('Error', 'Failed to submit survey');
+      ToastMessageHelper.showToastMessage('Failed to submit survey', title: 'Error');
     } finally {
       isSurveyLoading.value = false;
-
-      ToastMessageHelper.showToastMessage('Failed to submit survey', title: 'Error');
-
     }
   }
 
   @override
   void onClose() {
+    questionController.dispose();
     suggestionController.dispose();
     super.onClose();
   }

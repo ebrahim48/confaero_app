@@ -44,23 +44,13 @@ class PosterCardWidget extends StatelessWidget {
           Positioned.fill(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16.r),
-              child: Image.asset(
-                poster.posterImage,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE0E0E0),
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                    child: Icon(
-                      Icons.image,
-                      color: Colors.grey,
-                      size: 40.sp,
-                    ),
-                  );
-                },
-              ),
+              child: poster.banner.isNotEmpty
+                  ? Image.network(
+                      poster.banner,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _bannerPlaceholder(),
+                    )
+                  : _bannerPlaceholder(),
             ),
           ),
 
@@ -94,9 +84,13 @@ class PosterCardWidget extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 13.r,
-                      backgroundImage: AssetImage(poster.authorImage),
-                      onBackgroundImageError: (_, __) {},
+                      backgroundImage: poster.authorAvatar.isNotEmpty
+                          ? NetworkImage(poster.authorAvatar)
+                          : null,
                       backgroundColor: const Color(0xFFE0E0E0),
+                      child: poster.authorAvatar.isEmpty
+                          ? Icon(Icons.person, size: 14.sp, color: Colors.grey)
+                          : null,
                     ),
                     SizedBox(width: 8.w),
                     Expanded(
@@ -141,7 +135,7 @@ class PosterCardWidget extends StatelessWidget {
                 // Upload Date
                 CustomText(
                   textAlign: TextAlign.start,
-                  text: 'Uploaded: ${poster.uploadDate}',
+                  text: 'Due: ${poster.dueDate}',
                   fontsize: 10.sp,
                   fontWeight: FontWeight.w400,
                   color: const Color(0xFF999999),
@@ -210,4 +204,9 @@ class PosterCardWidget extends StatelessWidget {
       ),
     );
   }
+
+  Widget _bannerPlaceholder() => Container(
+        color: const Color(0xFFE0E0E0),
+        child: Center(child: Icon(Icons.image, color: Colors.grey)),
+      );
 }

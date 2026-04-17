@@ -85,6 +85,10 @@ class SponsorsScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(12.r),
             ),
           ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildEmptyState() {
     return Center(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../../../global/custom_assets/assets.gen.dart';
 import '../../controllers/posters_controller.dart';
 import '../../widgets/custom_app_bar_widget.dart';
@@ -17,14 +18,10 @@ class EventsPostersScreen extends StatelessWidget {
     final controller = Get.put(PostersController());
 
     return Scaffold(
-
       body: Column(
         children: [
-          CustomAppBarWidget(
-            title: 'Posters',
-          ),
+          const CustomAppBarWidget(title: 'Posters'),
 
-          // Search Field
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
             child: SearchFieldWidget(
@@ -33,15 +30,10 @@ class EventsPostersScreen extends StatelessWidget {
             ),
           ),
 
-          // Posters List
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF32A69A),
-                  ),
-                );
+                return _PostersShimmer();
               }
 
               if (controller.filteredPosters.isEmpty) {
@@ -55,8 +47,8 @@ class EventsPostersScreen extends StatelessWidget {
                   final poster = controller.filteredPosters[index];
                   return PosterCardWidget(
                     poster: poster,
-                    onDownload: () => controller.downloadPoster(poster.id),
-                    onView: () => controller.viewPoster(context),
+                    onDownload: () {},
+                    onView: () => controller.viewPoster(context, poster.id),
                   );
                 },
               );
@@ -65,13 +57,10 @@ class EventsPostersScreen extends StatelessWidget {
         ],
       ),
 
-
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-         context.pushNamed(AppRoutes.addPosterScreen);
-        },
+        onPressed: () => context.pushNamed(AppRoutes.addPosterScreen),
         backgroundColor: const Color(0xFF32A69A),
-        child: Assets.icons.addicon.svg()
+        child: Assets.icons.addicon.svg(),
       ),
     );
   }
@@ -109,6 +98,29 @@ class EventsPostersScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PostersShimmer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(horizontal: 22.w),
+        itemCount: 5,
+        itemBuilder: (_, __) => Container(
+          width: double.infinity,
+          height: 160.h,
+          margin: EdgeInsets.only(bottom: 12.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+          ),
         ),
       ),
     );

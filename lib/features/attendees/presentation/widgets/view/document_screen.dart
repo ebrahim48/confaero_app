@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
+import '../../../../../core/config/approutes/app_routes.dart';
 import '../../controllers/document_controller.dart';
 import '../../widgets/custom_app_bar_widget.dart';
 import '../document_filter_chips.dart';
@@ -73,6 +76,10 @@ class DocumentScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4.r),
               ),
               child: Obx(() {
+                if (controller.isLoading.value) {
+                  return _DocumentListShimmer();
+                }
+
                 final documents = controller.filteredDocuments;
 
                 if (documents.isEmpty) {
@@ -95,12 +102,17 @@ class DocumentScreen extends StatelessWidget {
                     return Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12.w),
                       child: DocumentItem(
-                        title: document.name,
+                        title: document.documentType,
                         subtitle: document.createdAt,
-                        fileSize: 'N/A', // Or size calculation if available
+                        fileSize: 'PDF',
                         iconPath: 'assets/images/pdf1.png',
                         showArrow: true,
-                        onTap: () => controller.openDocument(document),
+                        onTap: () => context.pushNamed(
+                          AppRoutes.documentDetailsScreen,
+                          extra: document.id,
+                        ),
+                        onDownload: () =>
+                            controller.openDocumentUrl(document.documentUrl),
                       ),
                     );
                   },
@@ -109,6 +121,73 @@ class DocumentScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DocumentListShimmer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: ListView.separated(
+        padding: EdgeInsets.symmetric(horizontal: 12.w),
+        itemCount: 6,
+        separatorBuilder: (_, __) => Container(
+          height: 0.5.h,
+          color: Colors.white,
+        ),
+        itemBuilder: (_, __) => Padding(
+          padding: EdgeInsets.symmetric(vertical: 12.h),
+          child: Row(
+            children: [
+              Container(
+                width: 40.w,
+                height: 40.h,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6.r),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 14.h,
+                      width: 160.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Container(
+                      height: 12.h,
+                      width: 100.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Container(
+                width: 22.w,
+                height: 22.h,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4.r),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

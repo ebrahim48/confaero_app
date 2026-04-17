@@ -72,10 +72,6 @@ class HomeController extends GetxController {
 
   void openDrawer(GlobalKey<ScaffoldState> scaffoldKey) {
     scaffoldKey.currentState?.openDrawer();
-
-  void openDrawer() {
-    Get.find<GlobalKey<ScaffoldState>>().currentState?.openDrawer();
-
   }
 
   void openSponsorDetails(BuildContext context) {}

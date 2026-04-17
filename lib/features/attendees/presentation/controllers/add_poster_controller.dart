@@ -1,10 +1,11 @@
-import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 
+import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/poster_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
+import 'posters_controller.dart';
 
 class AddPosterController extends GetxController {
   final PosterService _posterService = Get.find<PosterService>();
@@ -13,18 +14,21 @@ class AddPosterController extends GetxController {
   final TextEditingController abstractController = TextEditingController();
   final TextEditingController tagController = TextEditingController();
   final TextEditingController presentersController = TextEditingController();
+  final TextEditingController presenterRoleController = TextEditingController();
   final TextEditingController videoLinkController = TextEditingController();
 
   final RxList<String> tags = <String>[].obs;
+  final RxList<Map<String, String>> presenters = <Map<String, String>>[].obs;
   final RxBool isSubmitting = false.obs;
 
-  // Uploaded file paths
-  final Rx<String?> bannerFilePath = Rx<String?>(null);
-  final RxList<Map<String, dynamic>> attachments = <Map<String, dynamic>>[].obs;
-  final RxList<String> attachmentFilePaths = <String>[].obs;
+  // Uploaded URLs
+  final RxString bannerUrl = ''.obs;
+  final RxBool isBannerUploading = false.obs;
 
-  // Event ID for poster creation
-  String currentEventId = '';
+  final RxList<Map<String, dynamic>> attachments = <Map<String, dynamic>>[].obs;
+  final RxBool isAttachmentUploading = false.obs;
+
+  String get currentEventId => SessionController.to.eventId;
 
   @override
   void onClose() {
@@ -32,11 +36,11 @@ class AddPosterController extends GetxController {
     abstractController.dispose();
     tagController.dispose();
     presentersController.dispose();
+    presenterRoleController.dispose();
     videoLinkController.dispose();
     super.onClose();
   }
 
-  // Add Tag
   void addTag() {
     final tag = tagController.text.trim();
     if (tag.isNotEmpty && !tags.contains(tag)) {
@@ -45,67 +49,91 @@ class AddPosterController extends GetxController {
     }
   }
 
-  // Remove Tag
-  void removeTag(String tag) {
-    tags.remove(tag);
-  }
+  void removeTag(String tag) => tags.remove(tag);
 
-  // Remove Attachment
-  void removeAttachment(Map<String, dynamic> attachment) {
-    final index = attachments.indexOf(attachment);
-    attachments.remove(attachment);
-    if (index >= 0 && index < attachmentFilePaths.length) {
-      attachmentFilePaths.removeAt(index);
+  void addPresenter() {
+    final name = presentersController.text.trim();
+    final role = presenterRoleController.text.trim();
+    if (name.isNotEmpty) {
+      presenters.add({'name': name, 'role': role.isEmpty ? 'Presenter' : role});
+      presentersController.clear();
+      presenterRoleController.clear();
     }
   }
 
-  /// Upload banner via file picker + PosterService
+  void removePresenter(Map<String, String> p) => presenters.remove(p);
+
+  void removeAttachment(Map<String, dynamic> attachment) =>
+      attachments.remove(attachment);
+
   Future<void> addBanner() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: false,
+    );
+    if (result == null || result.files.isEmpty) return;
+
+    final path = result.files.single.path!;
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-      );
-      if (result != null && result.files.single.path != null) {
-        bannerFilePath.value = result.files.single.path;
-        ToastMessageHelper.showToastMessage(
-          'Banner selected: ${result.files.single.name}',
-          title: 'Success',
-        );
+      isBannerUploading.value = true;
+      final response = await _posterService.uploadPosterFile(path);
+      final url = response['data']?['url'] as String? ??
+          response['url'] as String? ??
+          '';
+      if (url.isNotEmpty) {
+        bannerUrl.value = url;
+      } else {
+        ToastMessageHelper.showToastMessage('Failed to get banner URL', title: 'Error');
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to pick banner image', title: 'Error');
+      ToastMessageHelper.showToastMessage('Banner upload failed', title: 'Error');
+    } finally {
+      isBannerUploading.value = false;
     }
   }
 
-  /// Upload attachment via file picker + PosterService
   Future<void> addAttachment() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+      allowMultiple: false,
+    );
+    if (result == null || result.files.isEmpty) return;
+
+    final file = result.files.single;
+    final path = file.path!;
     try {
-      final result = await FilePicker.platform.pickFiles();
-      if (result != null && result.files.single.path != null) {
-        final path = result.files.single.path!;
-        attachmentFilePaths.add(path);
+      isAttachmentUploading.value = true;
+      final response = await _posterService.uploadPosterFile(path);
+      final url = response['data']?['url'] as String? ??
+          response['url'] as String? ??
+          '';
+      if (url.isNotEmpty) {
+        final ext = file.extension?.toLowerCase() ?? '';
+        final type = ext == 'pdf' ? 'pdf' : 'image';
         attachments.add({
-          'name': result.files.single.name,
-          'size': '${(result.files.single.size / 1024 / 1024).toStringAsFixed(1)} MB',
-          'icon': Icons.attach_file,
+          'url': url,
+          'type': type,
+          'name': file.name,
+          'size': file.size,
+          'icon': type == 'pdf' ? Icons.picture_as_pdf : Icons.image,
         });
-        ToastMessageHelper.showToastMessage(
-          'Attachment added: ${result.files.single.name}',
-          title: 'Success',
-        );
+      } else {
+        ToastMessageHelper.showToastMessage('Failed to get attachment URL', title: 'Error');
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to pick attachment', title: 'Error');
+      ToastMessageHelper.showToastMessage('Attachment upload failed', title: 'Error');
+    } finally {
+      isAttachmentUploading.value = false;
     }
   }
 
-  /// Submit poster via PosterService.createPoster()
   Future<void> submitForm() async {
-    if (titleController.text.isEmpty) {
+    if (titleController.text.trim().isEmpty) {
       ToastMessageHelper.showToastMessage('Please enter a title', title: 'Error');
       return;
     }
-    if (abstractController.text.isEmpty) {
+    if (abstractController.text.trim().isEmpty) {
       ToastMessageHelper.showToastMessage('Please enter an abstract', title: 'Error');
       return;
     }
@@ -113,31 +141,35 @@ class AddPosterController extends GetxController {
     try {
       isSubmitting.value = true;
 
-      // Upload banner if selected
-      String? bannerUrl;
-      if (bannerFilePath.value != null) {
-        final bannerResponse = await _posterService.uploadPosterFile(
-          bannerFilePath.value!,
-        );
-        bannerUrl = bannerResponse['data']?['url'] as String?;
-      }
+      final body = <String, dynamic>{
+        'title': titleController.text.trim(),
+        'abstract': abstractController.text.trim(),
+        if (bannerUrl.value.isNotEmpty) 'banner': bannerUrl.value,
+        if (tags.isNotEmpty) 'tags': tags.toList(),
+        if (presenters.isNotEmpty)
+          'presenters': presenters.map((p) => {'name': p['name'], 'role': p['role']}).toList(),
+        if (videoLinkController.text.trim().isNotEmpty)
+          'videoLink': videoLinkController.text.trim(),
+        if (attachments.isNotEmpty)
+          'attachments': attachments
+              .map((a) => {
+                    'url': a['url'],
+                    'type': a['type'],
+                    'name': a['name'],
+                    'size': a['size'],
+                  })
+              .toList(),
+      };
 
-      // Upload attachments if any
-      if (attachmentFilePaths.isNotEmpty) {
-        await _posterService.uploadPosterFiles(attachmentFilePaths);
-      }
-
-      // Create poster
-      await _posterService.createPoster(currentEventId, {
-        'title': titleController.text,
-        'abstract': abstractController.text,
-        'tags': tags,
-        'presenters': presentersController.text,
-        'videoLink': videoLinkController.text,
-        if (bannerUrl != null) 'bannerUrl': bannerUrl,
-      });
+      await _posterService.createPoster(currentEventId, body);
 
       ToastMessageHelper.showToastMessage('Poster submitted successfully!', title: 'Success');
+
+      // Refresh poster list if controller is active
+      if (Get.isRegistered<PostersController>()) {
+        Get.find<PostersController>().loadPosters();
+      }
+
       Get.back();
     } catch (e) {
       ToastMessageHelper.showToastMessage('Failed to submit poster', title: 'Error');

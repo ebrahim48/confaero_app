@@ -417,7 +417,9 @@ class AppRoutes {
       GoRoute(
         path: eventPostersDetailsScreen,
         name: eventPostersDetailsScreen,
-        builder: (context, state) => EventPosterDetailsScreen(),
+        builder: (context, state) => EventPosterDetailsScreen(
+          posterId: state.extra as String? ?? '',
+        ),
       ),
       GoRoute(
         path: pdfScreen,
@@ -445,18 +447,6 @@ class AppRoutes {
 
         builder: (context, state) => PollScreen(poll: state.extra as PollModel?),
 
-        builder: (context, state) {
-          final poll = state.extra as Map<String, dynamic>?;
-          if (poll != null && poll['poll'] != null) {
-            return PollScreen(poll: poll['poll']);
-          }
-          return const Scaffold(
-            body: Center(
-              child: Text('No poll data provided'),
-            ),
-          );
-        },
-
       ),
       GoRoute(
         path: documentScreen,
@@ -466,7 +456,9 @@ class AppRoutes {
       GoRoute(
         path: documentDetailsScreen,
         name: documentDetailsScreen,
-        builder: (context, state) => DocumentDetailsScreen(),
+        builder: (context, state) => DocumentDetailsScreen(
+          documentId: state.extra as String? ?? '',
+        ),
       ),
       GoRoute(
         path: photosScreen,

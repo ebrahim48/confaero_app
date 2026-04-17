@@ -85,18 +85,29 @@ class DocumentService {
 
   // ======================== Organizer Document Management ========================
 
-  /// GET /document/:eventId/pending — get documents pending review
-  Future<Map<String, dynamic>> getPendingDocuments(String eventId) async {
+  /// GET /document/:eventId/all — get all public documents
+  Future<List<DocumentModel>> getPublicDocuments(String eventId) async {
     await _checkConnectivity();
-    _logger.i('Fetching pending documents for event: $eventId');
+    _logger.i('Fetching all public documents for event: $eventId');
     final response = await _apiService.get(
-      '${ApiConstants.getPendingDocuments}/$eventId/pending',
+      '${ApiConstants.getAllPublicDocuments}/$eventId/all',
     );
-    return response.data as Map<String, dynamic>;
+    final body = response.data;
+    if (body is Map<String, dynamic> &&
+        body['success'] == true &&
+        body['data'] is Map<String, dynamic>) {
+      final inner = body['data']['data'];
+      if (inner is List) {
+        return inner
+            .map((e) => DocumentModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+    }
+    return [];
   }
 
   /// GET /document/:eventId/details/:id — get document details
-  Future<Map<String, dynamic>> getDocumentDetails(
+  Future<DocumentDetailsModel> getDocumentDetails(
     String eventId,
     String documentId,
   ) async {
@@ -105,20 +116,14 @@ class DocumentService {
     final response = await _apiService.get(
       '${ApiConstants.getDocumentDetails}/$eventId/details/$documentId',
     );
-    return response.data as Map<String, dynamic>;
+    final body = response.data;
+    if (body is Map<String, dynamic> && body['success'] == true) {
+      return DocumentDetailsModel.fromJson(
+          body['data'] as Map<String, dynamic>);
+    }
+    throw Exception('Failed to parse document details');
   }
 
-  /// PATCH /document/status/:id — approve/reject a document
-  Future<Map<String, dynamic>> approveDocument(
-    String documentId,
-    Map<String, dynamic> data,
-  ) async {
-    await _checkConnectivity();
-    _logger.i('Updating document status: $documentId');
-    final response = await _apiService.patch(
-      '${ApiConstants.approveDocument}/$documentId',
-      data: data,
-    );
-    return response.data as Map<String, dynamic>;
-  }
+
+
 }

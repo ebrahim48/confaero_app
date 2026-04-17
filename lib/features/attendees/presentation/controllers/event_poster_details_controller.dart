@@ -1,43 +1,38 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../core/config/approutes/app_routes.dart';
 import '../../../../core/services/poster_service.dart';
 import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class EventPosterDetailsController extends GetxController {
   final PosterService _posterService = Get.find<PosterService>();
 
-  // Poster ID — read from Get.arguments or route params
-  late final String posterId;
+  final String posterId;
+  EventPosterDetailsController({required this.posterId});
 
-  // Event Details — loaded from API
   final RxString eventTitle = ''.obs;
   final RxString eventDate = ''.obs;
   final RxString eventCategory = ''.obs;
-  final RxString eventBanner = 'assets/images/bannerdetails.png'.obs;
-
-  // Abstract
+  final RxString eventBanner = ''.obs;
   final RxString abstractText = ''.obs;
   final RxBool isAbstractExpanded = false.obs;
+  final RxString videoLink = ''.obs;
 
-  // Presenters
   final RxList<PresenterModel> presenters = <PresenterModel>[].obs;
+  // Only attachments with reviewStatus == 'approved'
+  final RxList<PosterAttachmentModel> approvedAttachments =
+      <PosterAttachmentModel>[].obs;
 
-  // Loading state
   final isLoading = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    posterId = Get.arguments?['posterId'] as String? ?? '';
-    if (posterId.isNotEmpty) {
-      loadEventDetails();
-    }
+    if (posterId.isNotEmpty) loadEventDetails();
   }
 
-  /// Load poster details from API
   Future<void> loadEventDetails() async {
     try {
       isLoading.value = true;
@@ -46,34 +41,38 @@ class EventPosterDetailsController extends GetxController {
       final success = data['success'] as bool? ?? false;
       if (success && data['data'] != null) {
         final poster = data['data'] as Map<String, dynamic>;
-        eventTitle.value = poster['title'] as String? ?? '';
-        eventDate.value = poster['createdAt'] as String? ?? '';
-        eventCategory.value = poster['category'] as String? ?? 'Research';
-        abstractText.value = poster['abstract'] as String? ?? '';
 
-        if (poster['bannerUrl'] != null) {
-          eventBanner.value = poster['bannerUrl'] as String;
-        }
+        eventTitle.value = poster['title']?.toString() ?? '';
+        eventDate.value = _formatDate(poster['dueDate']?.toString() ?? '');
+        eventCategory.value = poster['status']?.toString() ?? '';
+        abstractText.value = poster['abstract']?.toString() ?? '';
+        eventBanner.value = poster['banner']?.toString() ?? '';
+        videoLink.value = poster['videoLink']?.toString() ?? '';
 
-        // Parse presenters if available
+        // Presenters
         if (poster['presenters'] is List) {
-          presenters.value =
-              (poster['presenters'] as List)
-                  .map(
-                    (p) => PresenterModel.fromJson(p as Map<String, dynamic>),
-                  )
-                  .toList();
+          presenters.value = (poster['presenters'] as List)
+              .map((p) => PresenterModel.fromJson(p as Map<String, dynamic>))
+              .toList();
         } else if (poster['author'] != null) {
           final author = poster['author'] as Map<String, dynamic>;
           presenters.value = [
             PresenterModel(
-              id: author['_id'] as String? ?? '',
-              name: author['name'] as String? ?? '',
+              id: author['_id']?.toString() ?? '',
+              name: author['name']?.toString() ?? '',
               role: 'Author',
-              company: author['company'] as String? ?? '',
-              image: author['avatar'] as String? ?? 'assets/images/profile.png',
+              avatar: author['avatar']?.toString() ?? '',
             ),
           ];
+        }
+
+        // Attachments — only approved
+        if (poster['attachments'] is List) {
+          approvedAttachments.value = (poster['attachments'] as List)
+              .map((a) =>
+                  PosterAttachmentModel.fromJson(a as Map<String, dynamic>))
+              .where((a) => a.reviewStatus == 'approved')
+              .toList();
         }
       }
     } catch (e) {
@@ -83,50 +82,74 @@ class EventPosterDetailsController extends GetxController {
     }
   }
 
-  void toggleAbstract() {
-    isAbstractExpanded.value = !isAbstractExpanded.value;
+  String _formatDate(String iso) {
+    if (iso.isEmpty) return '';
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      return DateFormat('dd MMM yyyy, hh:mm a').format(dt);
+    } catch (_) {
+      return iso;
+    }
   }
 
-  void viewPDF(BuildContext context) {
-    context.pushNamed(AppRoutes.pdfScreen);
+  void toggleAbstract() => isAbstractExpanded.value = !isAbstractExpanded.value;
+
+  Future<void> openUrl(String url) async {
+    if (url.isEmpty) return;
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
-  void viewImage(BuildContext context) {
-    context.pushNamed(AppRoutes.imagePdfScreen);
-  }
-
-  void watchVideo() {
-    ToastMessageHelper.showToastMessage('Opening video player', title: 'Video');
-  }
-
-  void viewPresenterDetails(String presenterId) {
-    ToastMessageHelper.showToastMessage('Viewing presenter: $presenterId', title: 'Presenter');
-  }
+  void viewPresenterDetails(String id) {}
 }
 
-// Presenter Model
 class PresenterModel {
   final String id;
   final String name;
   final String role;
-  final String company;
-  final String image;
+  final String avatar;
 
   PresenterModel({
     required this.id,
     required this.name,
     required this.role,
-    required this.company,
-    required this.image,
+    required this.avatar,
   });
 
   factory PresenterModel.fromJson(Map<String, dynamic> json) {
     return PresenterModel(
-      id: json['_id'] as String? ?? '',
-      name: json['name'] as String? ?? '',
-      role: json['role'] as String? ?? 'Presenter',
-      company: json['company'] as String? ?? '',
-      image: json['avatar'] as String? ?? 'assets/images/profile.png',
+      id: json['_id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      role: json['role']?.toString() ?? 'Presenter',
+      avatar: json['avatar']?.toString() ?? '',
+    );
+  }
+}
+
+class PosterAttachmentModel {
+  final String id;
+  final String url;
+  final String type; // 'pdf' or 'image'
+  final String name;
+  final String reviewStatus;
+
+  PosterAttachmentModel({
+    required this.id,
+    required this.url,
+    required this.type,
+    required this.name,
+    required this.reviewStatus,
+  });
+
+  factory PosterAttachmentModel.fromJson(Map<String, dynamic> json) {
+    return PosterAttachmentModel(
+      id: json['_id']?.toString() ?? '',
+      url: json['url']?.toString() ?? '',
+      type: json['type']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      reviewStatus: json['reviewStatus']?.toString() ?? '',
     );
   }
 }

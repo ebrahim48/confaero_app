@@ -2,6 +2,7 @@ import 'package:confaero_app/presentations/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../../../presentations/widgets/custom_text_field.dart';
 import '../../controllers/add_poster_controller.dart';
 import '../add_attachment_tem_widget.dart';
@@ -12,6 +13,19 @@ import '../character_limit_text.dart';
 import '../custom_app_bar_widget.dart';
 import '../form_label_text.dart';
 import '../multiline_text_field_widget.dart';
+
+Widget _shimmerBox(double height) => Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: Container(
+        width: double.infinity,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
 
 class AddPosterScreen extends StatelessWidget {
   const AddPosterScreen({super.key});
@@ -40,9 +54,23 @@ class AddPosterScreen extends StatelessWidget {
                   // Banner
                   const FormLabel(text: 'Banner', isRequired: true),
                   SizedBox(height: 8.h),
-                  AddBannerButton(
-                    onTap: () => controller.addBanner(),
-                  ),
+                  Obx(() {
+                    if (controller.isBannerUploading.value) {
+                      return _shimmerBox(44.h);
+                    }
+                    if (controller.bannerUrl.value.isNotEmpty) {
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(8.r),
+                        child: Image.network(
+                          controller.bannerUrl.value,
+                          height: 120.h,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      );
+                    }
+                    return AddBannerButton(onTap: () => controller.addBanner());
+                  }),
                   SizedBox(height: 16.h),
 
                   // Poster Title
@@ -144,17 +172,22 @@ class AddPosterScreen extends StatelessWidget {
                   SizedBox(height: 8.h),
 
                   // Add Attachment
-                  AddBannerButton(
-                    onTap: () => controller.addAttachment(),
-                    text: 'Add Attachment',
-                  ),
+                  Obx(() => controller.isAttachmentUploading.value
+                      ? _shimmerBox(44.h)
+                      : AddBannerButton(
+                          onTap: () => controller.addAttachment(),
+                          text: 'Add Attachment',
+                        )),
                   SizedBox(height: 24.h),
 
-                 CustomButton(title: 'Submit',
-                   onpress:
-                 () {
-
-                 },),
+                Obx(() => CustomButton(
+                      title: controller.isSubmitting.value
+                          ? 'Submitting...'
+                          : 'Submit',
+                      onpress: controller.isSubmitting.value
+                          ? () {}
+                          : () => controller.submitForm(),
+                    )),
                   SizedBox(height: 24.h),
                 ],
               ),
