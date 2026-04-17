@@ -67,6 +67,22 @@ class AddPosterController extends GetxController {
 
   void removePresenter(Map<String, String> p) => presenters.remove(p);
 
+  void _resetForm() {
+    titleController.clear();
+    abstractController.clear();
+    tagController.clear();
+    presentersController.clear();
+    presenterRoleController.clear();
+    videoLinkController.clear();
+    tags.clear();
+    presenters.clear();
+    attachments.clear();
+    bannerUrl.value = '';
+    titleError.value = '';
+    abstractError.value = '';
+    submitError.value = '';
+  }
+
   void removeAttachment(Map<String, dynamic> attachment) =>
       attachments.remove(attachment);
 
@@ -175,6 +191,7 @@ class AddPosterController extends GetxController {
         Get.find<PostersController>().loadPosters();
       }
 
+      _resetForm();
       onSuccess?.call();
     } catch (e) {
       submitError.value = 'Failed to submit poster. Please try again.';
