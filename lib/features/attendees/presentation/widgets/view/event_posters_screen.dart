@@ -64,29 +64,6 @@ class EventsPostersScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class _PostersShimmer extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: const Color(0xFFE0E0E0),
-      highlightColor: const Color(0xFFF5F5F5),
-      child: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 22.w),
-        itemCount: 5,
-        itemBuilder: (_, __) => Container(
-          width: double.infinity,
-          height: 160.h,
-          margin: EdgeInsets.only(bottom: 12.h),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildEmptyState(bool isSearch) {
     return Center(
@@ -121,6 +98,29 @@ class _PostersShimmer extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PostersShimmer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(horizontal: 22.w),
+        itemCount: 5,
+        itemBuilder: (_, __) => Container(
+          width: double.infinity,
+          height: 160.h,
+          margin: EdgeInsets.only(bottom: 12.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+          ),
         ),
       ),
     );

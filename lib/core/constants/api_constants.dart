@@ -1,8 +1,5 @@
 class ApiConstants {
 
-  static const String baseUrl = 'https://reazul8078.suplify.life/api/v1/';
-  static const String imageUrl = "https://reazul8078.suplify.life";
-
   static const String baseUrl = 'https://reazul8078.suplify.life/api/v1';
   static const String imageUrl = "https://reaz8080.syedbipul.me";
   static const String socketServerUrl = 'https://reazul8078.suplify.life';
@@ -32,8 +29,6 @@ class ApiConstants {
   static const String getExploreEvents = '/superAdmin/events';
 
   static const String getMyAllEvents = '/attendee/my-events';
-
-  static const String getMyAllEvents = '/attendee/my-event';
   static const String getMyEventsAndInvitations = '/attendee/my-events';
 
   static const String getEventDetails = '/attendee/events';
@@ -121,14 +116,9 @@ class ApiConstants {
 
   //--------------------------Resources (Q&A/Polls)---------------
 
-  static const String getEventQnA = '/resouce/event/qna'; // append /:eventId
-  static const String getEventPolls = '/resouce/event/poll'; // append /:eventId
-  static const String submitPollVote = '/resouce/poll'; // append /:id/:eventId/submit
-
   static const String getEventQnA = '/resource/event/qna'; // append /:eventId
   static const String getEventPolls = '/resource/event/poll'; // append /:eventId
-  static const String submitPollVote =
-      '/resource/poll'; // append /:id/:eventId/submit
+  static const String submitPollVote = '/resource/poll'; // append /:id/:eventId/submit
 
 
   //--------------------------Resources CRUD (Organizer)----------

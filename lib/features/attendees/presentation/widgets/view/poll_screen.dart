@@ -8,26 +8,16 @@ import '../../../../resources/data/models/resource_model.dart';
 import '../custom_app_bar_widget.dart';
 import '../../controllers/resources_controller.dart';
 
-
 class PollScreen extends StatefulWidget {
   final PollModel? poll;
 
   const PollScreen({super.key, this.poll});
-
-import '../../../../resources/data/models/resource_model.dart';
-
-class PollScreen extends StatefulWidget {
-  final PollModel poll;
-
-  const PollScreen({super.key, required this.poll});
-
 
   @override
   State<PollScreen> createState() => _PollScreenState();
 }
 
 class _PollScreenState extends State<PollScreen> {
-
   int? _selectedIndex;
   bool _isSubmitting = false;
 
@@ -44,51 +34,6 @@ class _PollScreenState extends State<PollScreen> {
       setState(() => _isSubmitting = false);
       Navigator.pop(context);
     }
-
-  late List<bool> selectedOptions;
-  bool isSubmitting = false;
-
-  @override
-  void initState() {
-    super.initState();
-    selectedOptions = List.filled(widget.poll.options.length, false);
-  }
-
-  void _submitVote() {
-    final selectedIndices = <int>[];
-    for (int i = 0; i < selectedOptions.length; i++) {
-      if (selectedOptions[i]) {
-        selectedIndices.add(i);
-      }
-    }
-
-    if (selectedIndices.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select at least one option'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      isSubmitting = true;
-    });
-
-    // Get the controller and submit vote
-    final controller = Get.find<ResourcesController>();
-    final selectedOptionId = widget.poll.options[selectedIndices.first].id;
-    
-    controller.submitPollVote(widget.poll.id, selectedOptionId);
-    
-    setState(() {
-      isSubmitting = false;
-    });
-
-    // Navigate back
-    Navigator.pop(context);
-
   }
 
   @override
@@ -124,7 +69,6 @@ class _PollScreenState extends State<PollScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   // Status badge
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
@@ -142,41 +86,13 @@ class _PollScreenState extends State<PollScreen> {
                           ? const Color(0xff388E3C)
                           : const Color(0xffF57C00),
                     ),
-
-                  // Creator Info
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 20.r,
-                        backgroundColor: const Color(0xffBDBDBD),
-                        child: Icon(
-                          Icons.person,
-                          size: 24.sp,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: CustomText(
-                          textAlign: TextAlign.start,
-                          text: 'Poll created by organizer',
-                          fontsize: 12.sp,
-                          color: const Color(0xff757575),
-                        ),
-                      ),
-                    ],
-
                   ),
                   SizedBox(height: 16.h),
 
                   // Question
                   CustomText(
                     textAlign: TextAlign.start,
-
                     text: poll.question,
-
-                    text: widget.poll.question,
-
                     fontsize: 18.sp,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xff252525),
@@ -195,25 +111,12 @@ class _PollScreenState extends State<PollScreen> {
                   SizedBox(height: 16.h),
 
                   // Options
-
                   ...List.generate(poll.options.length, (index) {
                     final option = poll.options[index];
                     final isSelected = _selectedIndex == index;
                     return GestureDetector(
                       onTap: poll.isActive
                           ? () => setState(() => _selectedIndex = index)
-
-                  ...List.generate(widget.poll.options.length, (index) {
-                    final option = widget.poll.options[index];
-                    return GestureDetector(
-                      onTap: widget.poll.isActive
-                          ? () {
-                              setState(() {
-                                // Toggle selection
-                                selectedOptions[index] = !selectedOptions[index];
-                              });
-                            }
-
                           : null,
                       child: Container(
                         width: double.infinity,
@@ -225,17 +128,10 @@ class _PollScreenState extends State<PollScreen> {
                               : Colors.white,
                           borderRadius: BorderRadius.circular(8.r),
                           border: Border.all(
-
                             color: isSelected
                                 ? const Color(0xff32A69A)
                                 : const Color(0xff9E9E9E),
                             width: isSelected ? 1.5 : 1,
-
-                            color: selectedOptions[index]
-                                ? const Color(0xff32A69A)
-                                : const Color(0xff9E9E9E),
-                            width: 1,
-
                           ),
                         ),
                         child: Row(
@@ -252,35 +148,24 @@ class _PollScreenState extends State<PollScreen> {
                             SizedBox(width: 12.w),
                             Expanded(
                               child: CustomText(
-
                                 textAlign: TextAlign.start,
-
                                 text: option.text,
                                 fontsize: 14.sp,
                                 color: const Color(0xff252525),
                               ),
-
                             ),
                             CustomText(
                               text: '${option.votes}',
                               fontsize: 12.sp,
                               color: const Color(0xff757575),
                             ),
-
-                            ),
-                            if (option.votes > 0)
-                              CustomText(
-                                text: '${option.votes}',
-                                fontsize: 12.sp,
-                                color: const Color(0xff757575),
-                              ),
-
                           ],
                         ),
                       ),
                     );
                   }),
-                  if (!widget.poll.isActive)
+
+                  if (!poll.isActive)
                     Container(
                       margin: EdgeInsets.only(top: 16.h),
                       padding: EdgeInsets.all(12.w),
@@ -311,7 +196,6 @@ class _PollScreenState extends State<PollScreen> {
             ),
           ),
 
-
           if (poll.isActive)
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
@@ -319,22 +203,6 @@ class _PollScreenState extends State<PollScreen> {
                   ? const Center(child: CircularProgressIndicator())
                   : CustomButton(title: 'Submit Vote', onpress: _submit),
             ),
-
-          SizedBox(height: 16.h),
-
-          if (widget.poll.isActive)
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 23.h, horizontal: 23.w),
-              child: CustomButton(
-                title: isSubmitting ? 'Submitting...' : 'Submit',
-                onpress: () {
-                  if (!isSubmitting) {
-                    _submitVote();
-                  }
-                },
-              ),
-            ),
-
         ],
       ),
     );
