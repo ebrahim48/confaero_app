@@ -189,32 +189,6 @@ class ResourcesScreen extends StatelessWidget {
               }
               // Polls Tab
               else if (controller.selectedTabIndex.value == 1) {
-
-                return ListView.builder(
-                  padding: EdgeInsets.all(24.w),
-                  itemCount: controller.pollsList.length,
-                  itemBuilder: (context, index) {
-                    final poll = controller.pollsList[index];
-                    final totalVotes = poll.options.fold<int>(
-                      0,
-                      (sum, option) => sum + option.votes,
-                    );
-                    return PollCard(
-                      title: poll.question,
-                      creator: poll.isActive ? 'Active Poll' : 'Closed Poll',
-                      responses: '$totalVotes response(s)',
-                      onAnswerTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PollScreen(poll: poll),
-                          ),
-                        );
-                      },
-                      onMenuTap: () {},
-                    );
-                  },
-
                 return RefreshIndicator(
                   onRefresh: () => controller.refreshData(),
                   color: const Color(0xff32A69A),
@@ -267,7 +241,7 @@ class ResourcesScreen extends StatelessWidget {
                               onAnswerTap: () {
                                 context.push(
                                   AppRoutes.pollScreen,
-                                  extra: {'poll': poll},
+                                  extra: poll,
                                 );
                               },
                               onMenuTap: () {
@@ -391,21 +365,6 @@ class ResourcesScreen extends StatelessWidget {
                               title: 'Submit Survey',
                               onpress: () => controller.submitSurvey(),
                             )),
-
-                      Obx(() {
-                        return CustomButton(
-                          title: controller.isSubmitting.value
-                              ? 'Submitting...'
-                              : 'Submit Survey',
-                          onpress: () async {
-                            if (!controller.isSubmitting.value) {
-                              controller.isSubmitting.value = true;
-                              await controller.submitSurvey();
-                              controller.isSubmitting.value = false;
-                            }
-                          },
-                        );
-                      }),
 
                     ],
                   ),
