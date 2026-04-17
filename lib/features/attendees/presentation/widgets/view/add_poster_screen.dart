@@ -2,6 +2,7 @@ import 'package:confaero_app/presentations/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../../../presentations/widgets/custom_text_field.dart';
 import '../../controllers/add_poster_controller.dart';
@@ -208,11 +209,66 @@ class AddPosterScreen extends StatelessWidget {
                           : 'Submit',
                       onpress: controller.isSubmitting.value
                           ? () {}
-                          : () => controller.submitForm(onSuccess: () => context.pop()),
+                          : () => controller.submitForm(onSuccess: () => _showSuccessDialog(context)),
                     )),
                   SizedBox(height: 24.h),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSuccessDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle_outline,
+                size: 64.sp, color: const Color(0xff32A69A)),
+            SizedBox(height: 16.h),
+            Text(
+              'Poster Submitted!',
+              style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xff252525)),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Your poster has been submitted and is now under review. It will appear in the posters list once approved.',
+              style: TextStyle(fontSize: 13.sp, color: const Color(0xff757575)),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // close dialog
+                context.pop();              // go back to poster screen
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xff32A69A),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r)),
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+              ),
+              child: Text('OK',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600)),
             ),
           ),
         ],
