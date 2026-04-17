@@ -82,6 +82,13 @@ class AddPosterScreen extends StatelessWidget {
                     maxLength: 25,
                   ),
                   const CharacterLimitText(limit: 25),
+                  Obx(() => controller.titleError.value.isEmpty
+                      ? const SizedBox.shrink()
+                      : Padding(
+                          padding: EdgeInsets.only(top: 4.h),
+                          child: Text(controller.titleError.value,
+                              style: TextStyle(color: Colors.red, fontSize: 12.sp)),
+                        )),
                   SizedBox(height: 16.h),
 
                   // Abstract
@@ -92,6 +99,13 @@ class AddPosterScreen extends StatelessWidget {
                     maxLength: 200,
                   ),
                   const CharacterLimitText(limit: 200),
+                  Obx(() => controller.abstractError.value.isEmpty
+                      ? const SizedBox.shrink()
+                      : Padding(
+                          padding: EdgeInsets.only(top: 4.h),
+                          child: Text(controller.abstractError.value,
+                              style: TextStyle(color: Colors.red, fontSize: 12.sp)),
+                        )),
                   SizedBox(height: 16.h),
 
                   // Add Tag
@@ -181,13 +195,20 @@ class AddPosterScreen extends StatelessWidget {
                         )),
                   SizedBox(height: 24.h),
 
+                Obx(() => controller.submitError.value.isEmpty
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: EdgeInsets.only(bottom: 8.h, left: 4.w),
+                        child: Text(controller.submitError.value,
+                            style: TextStyle(color: Colors.red, fontSize: 12.sp)),
+                      )),
                 Obx(() => CustomButton(
                       title: controller.isSubmitting.value
                           ? 'Submitting...'
                           : 'Submit',
                       onpress: controller.isSubmitting.value
                           ? () {}
-                          : () => controller.submitForm(),
+                          : () => controller.submitForm(onSuccess: () => context.pop()),
                     )),
                   SizedBox(height: 24.h),
                 ],
