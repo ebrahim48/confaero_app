@@ -1,7 +1,9 @@
 // lib/features/Events/presentation/controllers/events_spekar_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/controllers/session_controller.dart';
 import '../../../agenda/domain/services/agenda_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class EventSpekarController extends GetxController {
   final AgendaService _agendaService = Get.find<AgendaService>();
@@ -20,8 +22,8 @@ class EventSpekarController extends GetxController {
   final RxList<Map<String, dynamic>> allAttendees =
       <Map<String, dynamic>>[].obs;
 
-  // Event ID
-  final String currentEventId = 'default_event_id';
+  // Event ID from global session state
+  String get currentEventId => SessionController.to.eventId;
 
   @override
   void onInit() {
@@ -62,11 +64,7 @@ class EventSpekarController extends GetxController {
       totalAttendees.value = parsed.length;
       bookmarked.value = parsed.where((a) => a['isBookmarked'] == true).length;
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load speakers',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Failed to load speakers', title: 'Error');
     } finally {
       isLoading.value = false;
     }

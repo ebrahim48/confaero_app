@@ -24,6 +24,11 @@ class AttendeeProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isNetworkImage = imagePath.startsWith('http://') || imagePath.startsWith('https://');
+    final imageProvider = isNetworkImage
+        ? NetworkImage(imagePath)
+        : AssetImage(imagePath) as ImageProvider;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -38,7 +43,7 @@ class AttendeeProfileHeader extends StatelessWidget {
               width: 3,
             ),
             image: DecorationImage(
-              image: AssetImage(imagePath),
+              image: imageProvider,
               fit: BoxFit.cover,
             ),
           ),

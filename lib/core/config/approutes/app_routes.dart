@@ -7,10 +7,14 @@ import 'package:confaero_app/features/attendees/presentation/widgets/view/event_
 import 'package:confaero_app/features/attendees/presentation/widgets/view/floormap_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/home_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/job_details_screen.dart';
+import 'package:confaero_app/features/job/presentation/widgets/job_posting_form_screen.dart';
+import 'package:confaero_app/features/job/presentation/widgets/my_jobs_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/new_event_proposal_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../features/Events/presentation/widgets/view/event_speaker_screen.dart';
 import '../../../features/agenda/presentation/widgets/view/agenda_details_screen.dart';
@@ -63,6 +67,7 @@ import '../../../features/volunteer/presentation/widgets/volunteer_dashboard_scr
 import '../../../features/volunteer/presentation/widgets/task_form_screen.dart';
 import '../../../features/video_conference/presentation/widgets/live_session_screen.dart';
 import '../../../features/organizer_messaging/presentation/widgets/organizer_conversations_screen.dart';
+import '../../../features/attendees/presentation/widgets/view/resources_screen.dart' as resources_view;
 import '../../../features/organizer_messaging/presentation/widgets/organizer_chat_screen.dart';
 import '../../../features/invitations/presentation/widgets/invitations_screen.dart';
 import '../../../features/announcements/presentation/widgets/view/organizer_announcements_screen.dart'
@@ -71,6 +76,7 @@ import '../../../features/resources/presentation/widgets/view/organizer_resource
 import '../../../features/invitations/presentation/widgets/view/verified_email_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/exhibitor_leads_screen.dart';
 import '../../../features/organizer/presentation/widgets/organizer_attendee_screen.dart';
+import '../../../features/auth/presentation/role_switch/role_switch_screen.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/helpers/prefs_helper.dart';
@@ -100,6 +106,8 @@ class AppRoutes {
   static const String liveMeetingScreen = "/liveMeetingScreen";
   static const String jobOpeningsScreen = "/jobOpeningsScreen";
   static const String jobDetailsScreen = "/jobDetailsScreen";
+  static const String jobPostingFormScreen = "/jobPostingFormScreen";
+  static const String myJobsScreen = "/myJobsScreen";
   static const String notificationsScreen = "/notificationsScreen";
   static const String myProfileScreen = "/myProfileScreen";
   static const String connectionListScreen = "/connectionListScreen";
@@ -161,6 +169,7 @@ class AppRoutes {
   static const String verifiedEmailScreen = "/verifiedEmailScreen";
   static const String exhibitorLeadsScreen = "/exhibitorLeadsScreen";
   static const String organizerAttendeeScreen = "/organizerAttendeeScreen";
+  static const String roleSwitchScreen = "/roleSwitchScreen";
 
   // verifyScreen and resetPasswordScreen already defined above with API constants
 
@@ -169,6 +178,7 @@ class AppRoutes {
     redirect: (context, state) async {
       final token = await PrefsHelper.getString(AppConstants.bearerToken);
       final isLogged = await PrefsHelper.getBool(AppConstants.isLogged);
+      final currentEventId = await PrefsHelper.getString(AppConstants.currentEventId);
 
       final authRoutes = <String>{
         AppRoutes.onBoardingScreen,
@@ -181,13 +191,41 @@ class AppRoutes {
 
       final currentPath = state.matchedLocation;
       final isGoingToAuth = authRoutes.contains(currentPath);
+      final isGoingToEvents = currentPath == AppRoutes.eventsScreen;
 
-      if (token.isNotEmpty && isLogged && isGoingToAuth) {
-        return AppRoutes.mainNavigationScreen;
+      // Routes accessible even before an event is selected
+      final preEventRoutes = <String>{
+        AppRoutes.eventsScreen,
+        AppRoutes.notificationsScreen,
+        AppRoutes.myProfileScreen,
+        AppRoutes.settingsScreen,
+        AppRoutes.aboutUsScreen,
+        AppRoutes.termsConditionScreen,
+        AppRoutes.changePasswordScreen,
+      };
+      final isPreEventRoute = preEventRoutes.contains(currentPath);
+
+      // Unauthenticated user trying to access protected pages → redirect to sign in
+      if ((token.isEmpty || !isLogged) && !isGoingToAuth && !isGoingToEvents) {
+        return AppRoutes.signInScreen;
       }
 
-      if (token.isEmpty && !isGoingToAuth) {
-        return AppRoutes.signInScreen;
+      // Authenticated user logic
+      if (token.isNotEmpty && isLogged) {
+        // Always allow navigation to EventsScreen and utility screens
+        if (isPreEventRoute) {
+          return null;
+        }
+
+        // If no event selected and trying to access protected routes → redirect to events screen
+        if (currentEventId.isEmpty && !isGoingToAuth && !isPreEventRoute) {
+          return AppRoutes.eventsScreen;
+        }
+
+        // If user has event and trying to access auth pages (except events) → redirect to main nav
+        if (currentEventId.isNotEmpty && isGoingToAuth) {
+          return AppRoutes.mainNavigationScreen;
+        }
       }
 
       return null;
@@ -298,6 +336,18 @@ class AppRoutes {
       ),
 
       GoRoute(
+        path: jobPostingFormScreen,
+        name: jobPostingFormScreen,
+        builder: (context, state) => const JobPostingFormScreen(),
+      ),
+
+      GoRoute(
+        path: myJobsScreen,
+        name: myJobsScreen,
+        builder: (context, state) => const MyJobsScreen(),
+      ),
+
+      GoRoute(
         path: notificationsScreen,
         name: notificationsScreen,
         builder: (context, state) => NotificationsScreen(),
@@ -389,12 +439,26 @@ class AppRoutes {
       GoRoute(
         path: resourcesScreen,
         name: resourcesScreen,
-        builder: (context, state) => ResourcesScreen(),
+        builder: (context, state) => const resources_view.ResourcesScreen(),
       ),
       GoRoute(
         path: pollScreen,
         name: pollScreen,
+
         builder: (context, state) => PollScreen(poll: state.extra as PollModel?),
+
+        builder: (context, state) {
+          final poll = state.extra as Map<String, dynamic>?;
+          if (poll != null && poll['poll'] != null) {
+            return PollScreen(poll: poll['poll']);
+          }
+          return const Scaffold(
+            body: Center(
+              child: Text('No poll data provided'),
+            ),
+          );
+        },
+
       ),
       GoRoute(
         path: documentScreen,
@@ -436,12 +500,23 @@ class AppRoutes {
       GoRoute(
         path: messageChatScreen,
         name: messageChatScreen,
-        builder: (context, state) => MessageChatScreen(),
+        builder: (context, state) {
+          // extra is passed from MessageScreen as { conversationId, receiverId }
+          if (state.extra != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Get.arguments ?? state.extra;
+            });
+          }
+          return MessageChatScreen(args: state.extra as Map<String, dynamic>?);
+        },
       ),
       GoRoute(
         path: attendeeDetailsScreen,
         name: attendeeDetailsScreen,
-        builder: (context, state) => AttendeeDetailsScreen(),
+        builder: (context, state) {
+          final attendeeId = (state.extra as Map<String, dynamic>?)?['attendeeId'] as String? ?? '';
+          return AttendeeDetailsScreen(attendeeId: attendeeId);
+        },
       ),
       GoRoute(
         path: sponsorsScreen,
@@ -571,6 +646,11 @@ class AppRoutes {
           final eventId = state.extra as String? ?? '';
           return OrganizerAttendeeScreen(eventId: eventId);
         },
+      ),
+      GoRoute(
+        path: roleSwitchScreen,
+        name: roleSwitchScreen,
+        builder: (context, state) => const RoleSwitchScreen(),
       ),
 
       GoRoute(

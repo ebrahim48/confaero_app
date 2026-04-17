@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../profile/domain/services/profile_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class ProfileFormsController extends GetxController {
   final ProfileService _profileService = Get.find<ProfileService>();
@@ -71,7 +72,7 @@ class ProfileFormsController extends GetxController {
   Future<void> saveAffiliation() async {
     if (companyController.text.isEmpty ||
         positionTitleController.text.isEmpty) {
-      Get.snackbar('Error', 'Please fill all required fields');
+      ToastMessageHelper.showToastMessage('Please fill all required fields', title: 'Error');
       return;
     }
 
@@ -82,9 +83,9 @@ class ProfileFormsController extends GetxController {
         title: positionTitleController.text,
       );
       Get.back();
-      Get.snackbar('Success', 'Affiliation saved successfully');
+      ToastMessageHelper.showToastMessage('Affiliation saved successfully', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to save affiliation');
+      ToastMessageHelper.showToastMessage('Failed to save affiliation', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -93,7 +94,7 @@ class ProfileFormsController extends GetxController {
   /// Save Education via ProfileService — maps to title field for now
   Future<void> saveEducation() async {
     if (schoolController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter school name');
+      ToastMessageHelper.showToastMessage('Please enter school name', title: 'Error');
       return;
     }
 
@@ -104,9 +105,9 @@ class ProfileFormsController extends GetxController {
         title: '${schoolController.text} — ${degreeController.text}',
       );
       Get.back();
-      Get.snackbar('Success', 'Education saved successfully');
+      ToastMessageHelper.showToastMessage('Education saved successfully', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to save education');
+      ToastMessageHelper.showToastMessage('Failed to save education', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -115,7 +116,7 @@ class ProfileFormsController extends GetxController {
   /// Save Location via ProfileService — maps to title field for now
   Future<void> saveLocation() async {
     if (fullAddressController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter address');
+      ToastMessageHelper.showToastMessage('Please enter address', title: 'Error');
       return;
     }
 
@@ -123,9 +124,9 @@ class ProfileFormsController extends GetxController {
       isSaving.value = true;
       await _profileService.updateProfile(title: fullAddressController.text);
       Get.back();
-      Get.snackbar('Success', 'Location saved successfully');
+      ToastMessageHelper.showToastMessage('Location saved successfully', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to save location');
+      ToastMessageHelper.showToastMessage('Failed to save location', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -134,7 +135,7 @@ class ProfileFormsController extends GetxController {
   /// Save Contact via ProfileService — maps available fields
   Future<void> saveContact() async {
     if (phoneController.text.isEmpty && emailController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter at least one contact');
+      ToastMessageHelper.showToastMessage('Please enter at least one contact', title: 'Error');
       return;
     }
 
@@ -145,9 +146,9 @@ class ProfileFormsController extends GetxController {
         bio: 'Phone: ${phoneController.text}, Email: ${emailController.text}',
       );
       Get.back();
-      Get.snackbar('Success', 'Contact saved successfully');
+      ToastMessageHelper.showToastMessage('Contact saved successfully', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to save contact');
+      ToastMessageHelper.showToastMessage('Failed to save contact', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -156,7 +157,7 @@ class ProfileFormsController extends GetxController {
   /// Save About/Bio via ProfileService
   Future<void> saveAbout() async {
     if (bioController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter bio');
+      ToastMessageHelper.showToastMessage('Please enter bio', title: 'Error');
       return;
     }
 
@@ -164,9 +165,9 @@ class ProfileFormsController extends GetxController {
       isSaving.value = true;
       await _profileService.updateProfile(bio: bioController.text);
       Get.back();
-      Get.snackbar('Success', 'Bio saved successfully');
+      ToastMessageHelper.showToastMessage('Bio saved successfully', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to save bio');
+      ToastMessageHelper.showToastMessage('Failed to save bio', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -175,7 +176,7 @@ class ProfileFormsController extends GetxController {
   /// Save Social Link via ProfileService — maps to bio for now
   Future<void> saveSocialLink() async {
     if (socialLinkController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter social link');
+      ToastMessageHelper.showToastMessage('Please enter social link', title: 'Error');
       return;
     }
 
@@ -183,9 +184,9 @@ class ProfileFormsController extends GetxController {
       isSaving.value = true;
       await _profileService.updateProfile(bio: socialLinkController.text);
       Get.back();
-      Get.snackbar('Success', 'Social link saved successfully');
+      ToastMessageHelper.showToastMessage('Social link saved successfully', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to save social link');
+      ToastMessageHelper.showToastMessage('Failed to save social link', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -194,7 +195,7 @@ class ProfileFormsController extends GetxController {
   /// Save Webpage via ProfileService — maps to bio for now
   Future<void> saveWebpage() async {
     if (webpageController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter webpage link');
+      ToastMessageHelper.showToastMessage('Please enter webpage link', title: 'Error');
       return;
     }
 
@@ -202,9 +203,9 @@ class ProfileFormsController extends GetxController {
       isSaving.value = true;
       await _profileService.updateProfile(bio: webpageController.text);
       Get.back();
-      Get.snackbar('Success', 'Webpage saved successfully');
+      ToastMessageHelper.showToastMessage('Webpage saved successfully', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to save webpage');
+      ToastMessageHelper.showToastMessage('Failed to save webpage', title: 'Error');
     } finally {
       isSaving.value = false;
     }

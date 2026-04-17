@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../core/services/video_conference_service.dart';
 import '../../../resources/domain/services/resource_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class LiveMeetingController extends GetxController {
   final ResourceService _resourceService = Get.find<ResourceService>();
@@ -34,16 +35,7 @@ class LiveMeetingController extends GetxController {
     final hasSelection = pollOptions.any((selected) => selected);
 
     if (!hasSelection) {
-      Get.snackbar(
-        'Error',
-        'Please select at least one option',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
-      );
+      ToastMessageHelper.showToastMessage('Please select at least one option', title: 'Error');
       return;
     }
 
@@ -60,19 +52,9 @@ class LiveMeetingController extends GetxController {
         selectedOptionIndex: selectedIndices.first,
       );
 
-      Get.snackbar(
-        'Success',
-        'Your vote has been submitted',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: const Color(0xff32A69A),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
-        icon: const Icon(Icons.check_circle, color: Colors.white),
-      );
+      ToastMessageHelper.showToastMessage('Your vote has been submitted', title: 'Success');
     } catch (e) {
-      Get.snackbar('Error', 'Failed to submit vote');
+      ToastMessageHelper.showToastMessage('Failed to submit vote', title: 'Error');
     }
   }
 
@@ -83,10 +65,10 @@ class LiveMeetingController extends GetxController {
       final joinUrl = response['data']?['joinUrl'] as String?;
       if (joinUrl != null) {
         // TODO: Open join URL in browser or WebView
-        Get.snackbar('Success', 'Joining live session...');
+        ToastMessageHelper.showToastMessage('Joining live session...', title: 'Success');
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to join session');
+      ToastMessageHelper.showToastMessage('Failed to join session', title: 'Error');
     }
   }
 

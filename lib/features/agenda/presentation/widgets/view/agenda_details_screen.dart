@@ -58,7 +58,7 @@ class AgendaDetailsScreen extends StatelessWidget {
                         children: [
                           // Title
                           CustomText(
-                            text: session['title'],
+                            text: session['title']?.toString() ?? 'Untitled Session',
                             fontsize: 16.sp,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xff252525),
@@ -74,7 +74,7 @@ class AgendaDetailsScreen extends StatelessWidget {
                               SizedBox(width: 6.w),
                               Expanded(
                                 child: CustomText(
-                                  text: session['date'],
+                                  text: session['date']?.toString() ?? 'Date not available',
                                   fontsize: 12.sp,
                                   color: const Color(0xff757575),
                                 ),
@@ -90,7 +90,7 @@ class AgendaDetailsScreen extends StatelessWidget {
                               Assets.icons.location.svg(),
                               SizedBox(width: 6.w),
                               CustomText(
-                                text: session['location'],
+                                text: session['location']?.toString() ?? 'Location TBD',
                                 fontsize: 12.sp,
                                 color: const Color(0xff757575),
                               ),
@@ -178,7 +178,7 @@ class AgendaDetailsScreen extends StatelessWidget {
                       child: CustomText(
                         textAlign: TextAlign.start,
                         maxline: 6,
-                        text: session['overview'],
+                        text: session['overview']?.toString() ?? 'No overview available',
                         fontsize: 14.sp,
                         color: const Color(0xff252525),
 
@@ -199,7 +199,7 @@ class AgendaDetailsScreen extends StatelessWidget {
                         ),
                       ),
                       child: Column(
-                        children: (session['howToAttend'] as List).map((item) {
+                        children: ((session['howToAttend'] as List?) ?? []).map((item) {
                           IconData icon;
                           if (item['icon'] == 'desktop') {
                             icon = Icons.desktop_mac_outlined;
@@ -222,7 +222,7 @@ class AgendaDetailsScreen extends StatelessWidget {
                                 Expanded(
                                   child: CustomText(
                                     textAlign: TextAlign.start,
-                                    text: item['text'],
+                                    text: item['text']?.toString() ?? '',
                                     fontsize: 14.sp,
                                     color: const Color(0xff252525),
                                   ),
@@ -248,12 +248,12 @@ class AgendaDetailsScreen extends StatelessWidget {
                         ),
                       ),
                       child: Column(
-                        children: (session['speakers'] as List).map((speaker) {
+                        children: ((session['speakers'] as List?) ?? []).map((speaker) {
                           return SpeakerCard(
-                            name: speaker['name'],
-                            role: speaker['role'],
-                            company: speaker['company'],
-                            imagePath: speaker['image'],
+                            name: speaker['name']?.toString() ?? 'Unknown',
+                            role: speaker['role']?.toString() ?? '',
+                            company: speaker['company']?.toString() ?? '',
+                            imagePath: speaker['image']?.toString() ?? '',
                             onTap: () => controller.openSpeakerDetails(context),
                           );
                         }).toList(),

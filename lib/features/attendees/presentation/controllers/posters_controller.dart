@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/services/poster_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class PostersController extends GetxController {
   final PosterService _posterService = Get.find<PosterService>();
@@ -41,7 +42,7 @@ class PostersController extends GetxController {
       }
       filteredPosters.value = posters;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load posters');
+      ToastMessageHelper.showToastMessage('Posters information coming soon. Check back later!', title: 'Info');
     } finally {
       isLoading.value = false;
     }

@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
-import '../../../../core/helpers/snackbar_helper.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../sponsors/domain/services/sponsor_service.dart';
 import '../../../sponsors/data/models/sponsor_model.dart';
 import 'package:flutter/material.dart';
@@ -25,8 +25,16 @@ class SponsorsController extends GetxController {
     try {
       final fetched = await _service.getAllSponsors(currentEventId);
       sponsors.assignAll(fetched);
+      
+      // Show message if no sponsors available
+      if (fetched.isEmpty) {
+        ToastMessageHelper.showToastMessage(
+          'Sponsors information coming soon. Check back later!',
+          title: 'Info',
+        );
+      }
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to load sponsors');
+      ToastMessageHelper.showToastMessage('Sponsors information coming soon. Check back later!', title: 'Info');
     } finally {
       isLoading.value = false;
     }

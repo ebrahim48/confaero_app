@@ -7,6 +7,7 @@ import '../../../../core/services/connectivity_service.dart';
 import '../../../attendees/data/event_home_model.dart';
 import '../../data/models/event_model.dart';
 import '../../data/models/my_event_model.dart';
+import '../../data/models/my_events_and_invitations_model.dart';
 
 class EventsService {
   final ApiService _apiService;
@@ -111,6 +112,35 @@ class EventsService {
     }
   }
 
+  // ── GET /attendee/my-events ───────────────────────────────────────────────
+  // Response: { "data": [ { "event": {...}, "status": "REGISTERED"|"INVITED", "invitationRole": "SPEAKER" } ] }
+
+  Future<List<MyEventsAndInvitationsModel>> getMyEventsAndInvitations() async {
+    try {
+      await _checkConnectivity();
+      _logger.i('Fetching my events and invitations');
+
+      final response = await _apiService.get(ApiConstants.getMyEventsAndInvitations);
+      _logger.d('Status: ${response.statusCode}');
+
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        if ((data['success'] as bool? ?? false) && data['data'] is List) {
+          final eventsAndInvitations =
+              (data['data'] as List)
+                  .map((e) => MyEventsAndInvitationsModel.fromJson(e as Map<String, dynamic>))
+                  .toList();
+          _logger.i('Parsed ${eventsAndInvitations.length} events and invitations');
+          return eventsAndInvitations;
+        }
+      }
+      return [];
+    } catch (e) {
+      _logger.e('getMyEventsAndInvitations failed', error: e);
+      rethrow;
+    }
+  }
+
   // ── GET /attendee/events/{id} ─────────────────────────────────────────────
 
   Future<EventModel?> getEventDetails(String eventId) async {
@@ -143,13 +173,14 @@ class EventsService {
   // ── POST /attendee/events/{id}/initiate-registration ─────────────────────
 
   /// POST /attendee/events/{id}/initiate-registration
-  Future<Map<String, dynamic>?> initiateRegistration(String eventId) async {
+  Future<Map<String, dynamic>?> initiateRegistration(String eventId, {double price = 0.0}) async {
     try {
       await _checkConnectivity();
       _logger.i('Initiating registration for event: $eventId');
 
       final response = await _apiService.post(
         '${ApiConstants.initiateRegistration}/$eventId/initiate-registration',
+        data: {'price': price},
       );
       _logger.d('Status: ${response.statusCode}');
 
@@ -231,33 +262,6 @@ class EventsService {
       return null;
     } catch (e) {
       _logger.e('getMyEventDetails failed', error: e);
-      rethrow;
-    }
-  }
-
-  // ── POST /attendee/events/:id/register ──────────────────────────────────
-  Future<Map<String, dynamic>?> registerEvent(String eventId) async {
-    try {
-      await _checkConnectivity();
-      _logger.i('Registering for event: $eventId');
-      final response = await _apiService.post(
-        '${ApiConstants.registerEvent}/$eventId/register',
-      );
-      if (response.data is Map<String, dynamic>) {
-        return response.data as Map<String, dynamic>;
-      }
-      return null;
-    } on DioException catch (e) {
-      String errorMsg = 'Registration failed';
-      try {
-        final rd = e.response?.data;
-        if (rd is Map<String, dynamic>)
-          errorMsg = rd['message'] as String? ?? errorMsg;
-      } catch (_) {}
-      _logger.e('registerEvent failed', error: e);
-      throw Exception(errorMsg);
-    } catch (e) {
-      _logger.e('registerEvent failed', error: e);
       rethrow;
     }
   }

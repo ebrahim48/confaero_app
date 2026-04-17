@@ -1,19 +1,22 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/controllers/session_controller.dart';
-import '../../../../core/helpers/snackbar_helper.dart';
 import '../../../documents/data/models/document_model.dart';
 import '../../../documents/domain/services/document_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class DocumentsController extends GetxController {
   final DocumentService _service = Get.find<DocumentService>();
   final TextEditingController searchController = TextEditingController();
 
-  final RxInt selectedFilter = 0.obs;
+  final RxInt selectedFilter = 0.obs; // 0 = All, 1 = My Documents
 
   final RxList<DocumentModel> allDocuments = <DocumentModel>[].obs;
+  final RxList<DocumentModel> myDocuments = <DocumentModel>[].obs;
   final RxBool isLoading = false.obs;
+  final RxBool isUploading = false.obs;
 
   final Rx<DocumentDetailsModel?> documentDetails =
       Rx<DocumentDetailsModel?>(null);
@@ -34,7 +37,7 @@ class DocumentsController extends GetxController {
       final docs = await _service.getPublicDocuments(currentEventId);
       allDocuments.assignAll(docs);
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to load documents');
+      ToastMessageHelper.showToastMessage('Failed to load documents', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -48,7 +51,7 @@ class DocumentsController extends GetxController {
           await _service.getDocumentDetails(currentEventId, documentId);
       documentDetails.value = details;
     } catch (e) {
-      SnackbarHelper.showError('Error', 'Failed to load document details');
+      ToastMessageHelper.showToastMessage('Failed to load document details', title: 'Error');
     } finally {
       isLoadingDetails.value = false;
     }
@@ -75,7 +78,7 @@ class DocumentsController extends GetxController {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      SnackbarHelper.showError('Error', 'Could not open the document');
+      ToastMessageHelper.showToastMessage('Could not open the document', title: 'Error');
     }
   }
 

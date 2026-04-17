@@ -16,6 +16,13 @@ class AppConstants {
   static const String mechanicType = "mechanicType";
   static const String emailValidator = "emailValidator";
 
+  // ========== DEMO MODE FOR INVESTOR PRESENTATION ==========
+  // Set to true to auto-select default event after login
+  static const bool DEMO_MODE = true;
+  static const String DEMO_EVENT_ID = "697ecdf91d03df1518019a5b";
+  static const String DEMO_EVENT_TITLE = "Confaero Conference 2026";
+  // ==========================================================
+
   static RegExp emailValidate = RegExp(
     r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
   );

@@ -37,15 +37,7 @@ class EventsPostersScreen extends StatelessWidget {
               }
 
               if (controller.filteredPosters.isEmpty) {
-                return Center(
-                  child: Text(
-                    'No posters found',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: const Color(0xFF999999),
-                    ),
-                  ),
-                );
+                return _buildEmptyState(controller.searchController.text.isNotEmpty);
               }
 
               return ListView.builder(
@@ -91,6 +83,44 @@ class _PostersShimmer extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(16.r),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(bool isSearch) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isSearch ? Icons.search_off : Icons.post_add_outlined,
+              size: 80.sp,
+              color: const Color(0xFFAD9D8D),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              isSearch ? 'No Results Found' : 'No Posters Yet',
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF252525),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              isSearch
+                  ? 'Try a different search term or browse all posters.'
+                  : 'Accepted posters for this event will appear here. Tap the + button to submit your poster.',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF757575),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

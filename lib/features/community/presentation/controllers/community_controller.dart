@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../announcements/data/models/announcement_model.dart';
 import '../../../announcements/domain/services/announcement_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class CommunityController extends GetxController {
   final AnnouncementService _service = Get.find<AnnouncementService>();
@@ -31,15 +32,17 @@ class CommunityController extends GetxController {
 
       final data = await _service.getAnnouncements(currentEventId);
       announcements.value = data;
+      
+      // Show message if no announcements available
+      if (data.isEmpty) {
+        ToastMessageHelper.showToastMessage(
+          'Announcements coming soon. Check back later!',
+          title: 'Info',
+        );
+      }
     } catch (e) {
-      errorMessage.value = 'Failed to load announcements';
-      Get.snackbar(
-        'Error',
-        'Failed to load announcements',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      errorMessage.value = 'Announcements coming soon. Check back later!';
+      ToastMessageHelper.showToastMessage('Announcements coming soon. Check back later!', title: 'Info');
     } finally {
       isLoading.value = false;
     }

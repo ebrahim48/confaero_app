@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/sponsor_dashboard_service.dart';
 
 class SponsorDashboardController extends GetxController {
@@ -49,7 +50,7 @@ class SponsorDashboardController extends GetxController {
         }
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load dashboard');
+      ToastMessageHelper.showToastMessage('Failed to load dashboard', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -57,7 +58,7 @@ class SponsorDashboardController extends GetxController {
 
   Future<void> createSponsor() async {
     if (nameController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter sponsor name');
+      ToastMessageHelper.showToastMessage('Please enter sponsor name', title: 'Error');
       return;
     }
     try {
@@ -71,10 +72,10 @@ class SponsorDashboardController extends GetxController {
       });
       _clearForm();
       Get.back();
-      Get.snackbar('Success', 'Sponsor created');
+      ToastMessageHelper.showToastMessage('Sponsor created', title: 'Success');
       loadDashboard();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to create sponsor');
+      ToastMessageHelper.showToastMessage('Failed to create sponsor', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -83,20 +84,20 @@ class SponsorDashboardController extends GetxController {
   Future<void> approveSponsor(String sponsorId) async {
     try {
       await _service.approveSponsor(sponsorId);
-      Get.snackbar('Success', 'Sponsor approved');
+      ToastMessageHelper.showToastMessage('Sponsor approved', title: 'Success');
       loadDashboard();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to approve sponsor');
+      ToastMessageHelper.showToastMessage('Failed to approve sponsor', title: 'Error');
     }
   }
 
   Future<void> rejectSponsor(String sponsorId) async {
     try {
       await _service.rejectSponsor(sponsorId);
-      Get.snackbar('Success', 'Sponsor rejected');
+      ToastMessageHelper.showToastMessage('Sponsor rejected', title: 'Success');
       loadDashboard();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to reject sponsor');
+      ToastMessageHelper.showToastMessage('Failed to reject sponsor', title: 'Error');
     }
   }
 

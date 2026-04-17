@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import '../constants/app_constants.dart';
 import '../helpers/prefs_helper.dart';
+import '../services/socket_service.dart';
 
 /// Global singleton controller that tracks the currently active event.
 ///
@@ -32,6 +33,19 @@ class SessionController extends GetxController {
     final saved = await PrefsHelper.getString(AppConstants.currentEventId);
     if (saved.isNotEmpty) {
       eventIdRx.value = saved;
+      // Auto-connect Socket.IO if user already has an event on startup
+      _connectSocketOnStartup();
+    }
+  }
+
+  /// Connects Socket.IO on app startup when a saved event exists.
+  void _connectSocketOnStartup() {
+    try {
+      final socketService = Get.find<SocketService>();
+      // Use Future.microtask to avoid blocking the init cycle
+      Future.microtask(() => socketService.connect());
+    } catch (_) {
+      // SocketService may not be registered yet during early startup
     }
   }
 
@@ -40,6 +54,14 @@ class SessionController extends GetxController {
     eventIdRx.value = eventId;
     eventTitle.value = title;
     await PrefsHelper.setString(AppConstants.currentEventId, eventId);
+
+    // Connect (or reconnect) Socket.IO with the new event context
+    try {
+      final socketService = Get.find<SocketService>();
+      await socketService.reconnect();
+    } catch (_) {
+      // SocketService may not be registered yet during early startup
+    }
   }
 
   /// Clear the current event (e.g., on logout).
@@ -47,5 +69,11 @@ class SessionController extends GetxController {
     eventIdRx.value = '';
     eventTitle.value = '';
     await PrefsHelper.setString(AppConstants.currentEventId, '');
+
+    // Disconnect socket when leaving event / logging out
+    try {
+      final socketService = Get.find<SocketService>();
+      socketService.disconnect();
+    } catch (_) {}
   }
 }

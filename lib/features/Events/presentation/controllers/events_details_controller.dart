@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../core/config/approutes/app_routes.dart';
+import '../../../../../core/controllers/session_controller.dart';
+import '../../../../../core/helpers/toast_message_helper.dart';
 import '../../../../../core/services/api_service.dart';
 import '../../../../../core/services/connectivity_service.dart';
 import '../../data/models/event_model.dart';
@@ -21,6 +23,9 @@ class EventDetailsController extends GetxController {
 
   final event = Rxn<EventModel>();
   final errorMessage = ''.obs;
+  
+  // Registration status passed from EventsScreen (for "My Events" tab)
+  final RxString registrationStatus = ''.obs;
 
   @override
   void onInit() {
@@ -40,11 +45,17 @@ class EventDetailsController extends GetxController {
     super.onClose();
   }
 
-  Future<void> loadEvent(String eventId) async {
+  Future<void> loadEvent(String eventId, {String status = ''}) async {
     if (eventId.isEmpty) return;
     try {
       isLoading.value = true;
       errorMessage.value = '';
+      
+      // Set registration status if provided (from "My Events" tab)
+      if (status.isNotEmpty) {
+        registrationStatus.value = status;
+      }
+      
       event.value = await _repository.getEventDetails(eventId);
     } catch (e) {
       errorMessage.value = e.toString().replaceAll('Exception: ', '');
@@ -73,27 +84,45 @@ class EventDetailsController extends GetxController {
   }
 
   void registerNow(BuildContext context) async {
-    final eventId = event.value?.id;
+    final currentEvent = event.value;
+    final eventId = currentEvent?.id;
     if (eventId == null || eventId.isEmpty) return;
+
+    // Pre-validate paid events before hitting the API
+    final paymentType = currentEvent?.paymentType?.toUpperCase() ?? '';
+    final price = currentEvent?.price ?? 0.0;
+    final isPaidEvent = paymentType == 'STRIPE' || paymentType == 'PAID';
+
+    if (isPaidEvent && price <= 0) {
+      const msg = 'This event has incomplete pricing setup. Please contact the organizer.';
+      errorMessage.value = msg;
+      ToastMessageHelper.showToastMessage(msg, title: 'Registration Failed');
+      return;
+    }
+
+    if (isPaidEvent && price > 0) {
+      const msg = 'This event requires payment. Online payment integration is coming soon. Please contact the organizer to register.';
+      errorMessage.value = msg;
+      ToastMessageHelper.showToastMessage(msg, title: 'Payment Required');
+      return;
+    }
 
     try {
       isRegistering.value = true;
       errorMessage.value = '';
 
-      final result = await _repository.initiateRegistration(eventId);
+      final result = await _repository.initiateRegistration(eventId, price: price);
 
       if (result != null) {
         final status = result['status'] as String? ?? '';
-        Get.snackbar(
-          'Registration',
+        ToastMessageHelper.showToastMessage(
           status == 'VERIFIED'
               ? 'Successfully registered!'
               : 'Registration submitted. Status: $status',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: const Color(0xff5BB8AE).withOpacity(0.9),
-          colorText: const Color(0xFFFFFFFF),
-          duration: const Duration(seconds: 3),
+          title: 'Success',
         );
+        // Set session and connect socket ONLY after successful registration
+        await SessionController.to.setEvent(eventId, title: currentEvent?.title ?? '');
         await loadEvent(eventId);
         await Future.delayed(const Duration(seconds: 1));
         if (context.mounted) {
@@ -101,20 +130,24 @@ class EventDetailsController extends GetxController {
         }
       }
     } catch (e) {
-      // Cleans "Exception: " prefix and shows the real server message
-      final msg = e.toString()
+      final rawMsg = e.toString()
           .replaceAll('Exception: ', '')
           .replaceAll('Exception:', '')
           .trim();
-      errorMessage.value = msg;
-      Get.snackbar(
-        'Registration Failed',
-        msg,
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: const Color(0xFFE53935).withOpacity(0.9),
-        colorText: const Color(0xFFFFFFFF),
-        duration: const Duration(seconds: 4),
-      );
+
+      String userFriendlyMsg;
+      if (rawMsg.toLowerCase().contains('price')) {
+        userFriendlyMsg = 'This event has incomplete pricing setup. Please contact the organizer.';
+      } else if (rawMsg.contains('Stripe') || rawMsg.toLowerCase().contains('payment')) {
+        userFriendlyMsg = 'Payment integration is being configured. Please try again later.';
+      } else if (rawMsg.toLowerCase().contains('organizer')) {
+        userFriendlyMsg = 'Event organizer setup is incomplete. Please contact support.';
+      } else {
+        userFriendlyMsg = rawMsg;
+      }
+
+      errorMessage.value = userFriendlyMsg;
+      ToastMessageHelper.showToastMessage(userFriendlyMsg, title: 'Error');
     } finally {
       isRegistering.value = false;
     }
@@ -126,8 +159,10 @@ class EventDetailsController extends GetxController {
 
   void joinWithInvitationCode() async {
     if (invitationCodeController.text.trim().isEmpty) {
-      Get.snackbar('Error', 'Please enter an invitation code',
-          snackPosition: SnackPosition.TOP);
+      ToastMessageHelper.showToastMessage(
+        'Please enter an invitation code',
+        title: 'Error',
+      );
       return;
     }
     isLoading.value = true;
@@ -135,11 +170,30 @@ class EventDetailsController extends GetxController {
     isLoading.value = false;
   }
 
-  bool get isAlreadyRegistered =>
-      event.value?.registrationStatus == 'VERIFIED' ||
-          event.value?.registrationStatus == 'PENDING';
+  bool get isAlreadyRegistered {
+    // Check passed registration status first (from "My Events" tab)
+    if (registrationStatus.value.isNotEmpty) {
+      return registrationStatus.value == 'VERIFIED' || 
+             registrationStatus.value == 'PENDING';
+    }
+    // Fallback to event's registration status
+    return event.value?.registrationStatus == 'VERIFIED' ||
+           event.value?.registrationStatus == 'PENDING';
+  }
 
   String get registrationStatusLabel {
+    // Use passed registration status first
+    if (registrationStatus.value.isNotEmpty) {
+      switch (registrationStatus.value) {
+        case 'VERIFIED':
+          return 'Registered';
+        case 'PENDING':
+          return 'Pending';
+        default:
+          return '';
+      }
+    }
+    // Fallback to event's registration status
     switch (event.value?.registrationStatus) {
       case 'VERIFIED':
         return 'Registered';

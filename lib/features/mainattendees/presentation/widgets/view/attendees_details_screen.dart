@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import '../../../../../core/controllers/session_controller.dart';
 import '../../../../../presentations/widgets/custom_button.dart';
 import '../../../../attendees/presentation/widgets/custom_app_bar_widget.dart';
 import '../../controllers/attendees_details_controller.dart';
@@ -9,7 +10,9 @@ import '../attendee_contact_info.dart';
 import '../attendee_profile_header.dart';
 
 class AttendeeDetailsScreen extends StatelessWidget {
-  const AttendeeDetailsScreen({super.key});
+  final String attendeeId;
+  
+  const AttendeeDetailsScreen({super.key, required this.attendeeId});
 
   @override
   Widget build(BuildContext context) {
@@ -17,27 +20,43 @@ class AttendeeDetailsScreen extends StatelessWidget {
       AttendeeDetailsController(),
     );
 
+    // Load real data from API
+    final eventId = SessionController.to.eventId;
+
+    if (attendeeId.isNotEmpty && eventId.isNotEmpty) {
+      controller.loadAttendeeDetails(eventId, attendeeId);
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         children: [
           // App Bar
-          const CustomAppBarWidget(title: 'Mike Sample'),
+          Obx(() => CustomAppBarWidget(
+            title: controller.attendeeDetails['name']?.toString().isNotEmpty == true
+                ? controller.attendeeDetails['name']
+                : 'Attendee',
+          )),
 
           // Content
           Expanded(
-            child: SingleChildScrollView(
-              child: Obx(() {
-                final attendee = controller.attendeeDetails;
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-                return Column(
+              final attendee = controller.attendeeDetails;
+
+              return SingleChildScrollView(
+                child: Column(
                   children: [
                     // Banner Image
                     Container(
                       width: double.infinity,
                       height: 180.h,
                       decoration: BoxDecoration(
-                        image: DecorationImage(
+                        color: Colors.grey.shade200,
+                        image: const DecorationImage(
                           image: AssetImage('assets/images/mikbanner.png'),
                           fit: BoxFit.cover,
                         ),
@@ -54,12 +73,12 @@ class AttendeeDetailsScreen extends StatelessWidget {
                           children: [
                             // Profile Header Widget
                             AttendeeProfileHeader(
-                              imagePath: 'assets/images/sampleprofile.png',
-                              name: attendee['name'],
-                              company: attendee['company'],
-                              role: attendee['role'],
-                              sessions: attendee['sessions'],
-                              isBookmarked: attendee['isBookmarked'],
+                              imagePath: attendee['image'] ?? 'assets/images/sampleprofile.png',
+                              name: attendee['name'] ?? '',
+                              company: attendee['company'] ?? '',
+                              role: attendee['role'] ?? 'Attendee',
+                              sessions: attendee['sessions'] ?? '0 sessions',
+                              isBookmarked: attendee['isBookmarked'] ?? false,
                               onBookmarkTap: () => controller.toggleBookmark(),
                             ),
                             SizedBox(height: 24.h),
@@ -73,9 +92,9 @@ class AttendeeDetailsScreen extends StatelessWidget {
 
                             // Contact Info Widget
                             AttendeeContactInfo(
-                              email: attendee['email'],
-                              phone: attendee['phone'],
-                              location: attendee['location'],
+                              email: attendee['email'] ?? '',
+                              phone: attendee['phone'] ?? '',
+                              location: attendee['location'] ?? '',
                             ),
                             SizedBox(height: 32.h),
 
@@ -88,7 +107,8 @@ class AttendeeDetailsScreen extends StatelessWidget {
                                   title: 'Request to Connect',
                                   onpress:
                                       () => controller.requestToConnect(
-                                        'event_id_placeholder',
+                                        eventId,
+                                        attendee['id'] ?? '',
                                       ),
                                 ),
                             SizedBox(height: 32.h),
@@ -97,9 +117,9 @@ class AttendeeDetailsScreen extends StatelessWidget {
                       ),
                     ),
                   ],
-                );
-              }),
-            ),
+                ),
+              );
+            }),
           ),
         ],
       ),

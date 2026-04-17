@@ -17,21 +17,29 @@ class TimelineWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Time can be in format "08:00" or "08:00 - 10:00" or "08:00-10:30"
+    // We only want to display the start time
+    String displayTime = time;
+    
+    // Remove everything after the first space or dash to get just the start time
+    if (time.contains(' - ')) {
+      displayTime = time.split(' - ')[0];
+    } else if (time.contains('-')) {
+      displayTime = time.split('-')[0].trim();
+    } else if (time.contains(' ')) {
+      displayTime = time.split(' ')[0];
+    }
+
     return SizedBox(
       width: 60.w,
       child: Column(
         children: [
           // Time
           CustomText(
-            text: time.split(' ')[0],
+            text: displayTime,
             fontsize: 12.sp,
             fontWeight: FontWeight.w600,
             color: const Color(0xff252525),
-          ),
-          CustomText(
-            text: time.split(' ')[1],
-            fontsize: 10.sp,
-            color: const Color(0xff757575),
           ),
         ],
       ),

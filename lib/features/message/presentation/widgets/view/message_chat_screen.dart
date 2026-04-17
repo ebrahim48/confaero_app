@@ -11,11 +11,38 @@ import '../chat_bubble_widget.dart';
 import '../../controllers/message_chat_controller.dart';
 
 class MessageChatScreen extends StatelessWidget {
-  const MessageChatScreen({super.key});
+  final Map<String, dynamic>? args;
+  final String? receiverId;
+  final String? receiverName;
+  final String? receiverImage;
+
+  const MessageChatScreen({
+    super.key,
+    this.args,
+    this.receiverId,
+    this.receiverName,
+    this.receiverImage,
+  });
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(MessageChatController());
+    
+    // If receiver details are passed directly (from "Say Hi" button)
+    if (receiverId != null && controller.currentReceiverId.isEmpty) {
+      controller.currentReceiverId = receiverId!;
+      controller.receiverName.value = receiverName ?? 'Attendee';
+      controller.receiverImage.value = receiverImage ?? '';
+    }
+    
+    // If args were passed via GoRouter extra, inject them before onInit reads
+    if (args != null && controller.currentConversationId.isEmpty) {
+      controller.currentConversationId = args!['conversationId'] as String? ?? '';
+      controller.currentReceiverId = args!['receiverId'] as String? ?? '';
+      if (controller.currentConversationId.isNotEmpty) {
+        controller.loadMessages();
+      }
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -32,31 +59,42 @@ class MessageChatScreen extends StatelessWidget {
                     onTap: () {
                       context.pushNamed(AppRoutes.attendeeDetailsScreen);
                     },
-                    child: CircleAvatar(
-                      radius: 20.r,
-                      backgroundImage:
-                      const NetworkImage("https://i.pravatar.cc/150?img=3"),
-                    ),
+                    child: Obx(() {
+                      final imageUrl = controller.receiverImage.value;
+                      
+                      return CircleAvatar(
+                        radius: 20.r,
+                        backgroundImage: imageUrl.isNotEmpty
+                            ? NetworkImage(imageUrl)
+                            : const AssetImage('assets/images/sampleprofile.png')
+                                as ImageProvider,
+                        child: imageUrl.isEmpty
+                            ? Icon(Icons.person, size: 24.sp, color: Colors.grey)
+                            : null,
+                      );
+                    }),
                   ),
                   SizedBox(width: 10.w),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CustomText(
-                        text: 'Wade Warren',
-                        fontsize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textColor252525,
-                      ),
-                      SizedBox(height: 2.h),
-                      CustomText(
-                        text: 'Active 1h ago',
-                        fontsize: 12.sp,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textColor7E7F7E,
-                      ),
-                    ],
-                  ),
+                  Obx(() {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CustomText(
+                          text: controller.receiverName.value,
+                          fontsize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textColor252525,
+                        ),
+                        SizedBox(height: 2.h),
+                        CustomText(
+                          text: 'Active 1h ago',
+                          fontsize: 12.sp,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textColor7E7F7E,
+                        ),
+                      ],
+                    );
+                  }),
                   const Spacer(),
                   const Icon(Icons.more_vert)
                 ],
@@ -149,10 +187,13 @@ class MessageChatScreen extends StatelessWidget {
                               },
                             ),
                           ),
-                          SvgPicture.asset(
-                            "assets/icons/share2.svg",
-                            width: 19.w,
-                            height: 19.h,
+                          GestureDetector(
+                            onTap: () => controller.pickAndSendAttachment(),
+                            child: SvgPicture.asset(
+                              "assets/icons/share2.svg",
+                              width: 19.w,
+                              height: 19.h,
+                            ),
                           ),
                         ],
                       ),

@@ -88,7 +88,8 @@ class EventSpekarDetailsScreen extends StatelessWidget {
                                   title: 'Request to Connect',
                                   onpress:
                                       () => controller.requestToConnect(
-                                        'event_id_placeholder',
+                                        controller.currentEventId,
+                                        Get.arguments?['speakerId'] ?? Get.arguments?['id'] ?? '',
                                       ),
                                 ),
                             SizedBox(height: 32.h),

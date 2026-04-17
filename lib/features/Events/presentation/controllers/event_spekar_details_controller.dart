@@ -3,8 +3,10 @@ import 'dart:ui';
 
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/controllers/session_controller.dart';
 import '../../../agenda/domain/services/agenda_service.dart';
 import '../../../connection/domain/services/connection_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class EventSpekarDetailsController extends GetxController {
   final AgendaService _agendaService = Get.find<AgendaService>();
@@ -15,8 +17,8 @@ class EventSpekarDetailsController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isRequesting = false.obs;
 
-  // Event ID
-  final String currentEventId = 'default_event_id';
+  // Event ID from global session state
+  String get currentEventId => SessionController.to.eventId;
 
   @override
   void onInit() {
@@ -44,11 +46,7 @@ class EventSpekarDetailsController extends GetxController {
         attendeeDetails.value = data;
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load speaker details',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Failed to load speaker details', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -72,25 +70,13 @@ class EventSpekarDetailsController extends GetxController {
   }
 
   // Request to Connect
-  Future<void> requestToConnect(String eventId) async {
+  Future<void> requestToConnect(String eventId, String receiverId) async {
     isRequesting.value = true;
     try {
-      await _connectionService.sendRequest(eventId);
-      Get.snackbar(
-        'Success',
-        'Connection request sent!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xff32A69A),
-        colorText: Colors.white,
-      );
+      await _connectionService.sendRequest(eventId, receiverId: receiverId);
+      ToastMessageHelper.showToastMessage('Connection request sent!', title: 'Success');
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to send request: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastMessageHelper.showToastMessage('Failed to send request: $e', title: 'Error');
     } finally {
       isRequesting.value = false;
     }

@@ -1,5 +1,10 @@
 import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:confaero_app/core/constants/app_constants.dart';
+
+
+import 'package:confaero_app/core/controllers/role_controller.dart';
+import 'package:confaero_app/core/controllers/session_controller.dart';
+
 import 'package:confaero_app/core/helpers/prefs_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -14,12 +19,14 @@ class SidebarMenuItem {
   final String label;
   final String? route;
   final VoidCallback? onTap;
+  final IconData? fallbackIcon;
 
   SidebarMenuItem({
     required this.icon,
     required this.label,
     this.route,
     this.onTap,
+    this.fallbackIcon,
   });
 }
 
@@ -137,8 +144,24 @@ class SidebarController extends GetxController {
 
   // Logout
   Future<void> logout(BuildContext context) async {
+
     await PrefsHelper.remove(AppConstants.bearerToken);
     await PrefsHelper.setBool(AppConstants.isLogged, false);
+
+    // Clear role from RoleController
+    await Get.find<RoleController>().clearRole();
+
+    // Clear tokens and user data from prefs
+    await PrefsHelper.remove(AppConstants.bearerToken);
+    await PrefsHelper.remove(AppConstants.refreshToken);
+    await PrefsHelper.remove(AppConstants.userRole);
+    await PrefsHelper.setBool(AppConstants.isLogged, false);
+
+    // Clear session event
+    Get.find<SessionController>().clearEvent();
+
+    // Navigate to sign in screen
+
     if (context.mounted) {
       context.pushNamed(AppRoutes.signInScreen);
     }

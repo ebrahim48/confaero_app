@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/services/socket_service.dart';
 import '../../../connection/domain/services/connection_service.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 // Notification Model
 class NotificationItem {
@@ -22,6 +25,8 @@ class NotificationItem {
 }
 
 class NotificationsController extends GetxController {
+  final SocketService _socketService = Get.find<SocketService>();
+
   // Search controller
   final searchController = TextEditingController();
 
@@ -34,14 +39,36 @@ class NotificationsController extends GetxController {
   // Filtered notifications
   final filteredNotifications = <NotificationItem>[].obs;
 
+  // Socket subscription
+  StreamSubscription<Map<String, dynamic>>? _notificationSubscription;
+
   @override
   void onInit() {
     super.onInit();
     loadNotifications();
+
+    // Listen for real-time notifications via Socket.IO
+    _notificationSubscription = _socketService.onNewNotification.listen(_handleSocketNotification);
+  }
+
+  /// Handle a real-time notification from Socket.IO.
+  void _handleSocketNotification(Map<String, dynamic> data) {
+    final notification = NotificationItem(
+      id: data['_id']?.toString() ?? data['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      title: data['title']?.toString() ?? 'New Notification',
+      message: data['message']?.toString() ?? data['body']?.toString() ?? '',
+      time: 'Just now',
+      avatarUrl: data['avatarUrl']?.toString(),
+    );
+
+    // Add to the top of the list
+    notifications.insert(0, notification);
+    filteredNotifications.insert(0, notification);
   }
 
   @override
   void onClose() {
+    _notificationSubscription?.cancel();
     searchController.dispose();
     super.onClose();
   }
@@ -71,11 +98,7 @@ class NotificationsController extends GetxController {
 
       filteredNotifications.value = notifications;
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Could not load connection requests',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Could not load connection requests', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -84,21 +107,11 @@ class NotificationsController extends GetxController {
   Future<void> acceptConnection(String requestId) async {
     try {
       await _connectionService.acceptRequest(requestId);
-      Get.snackbar(
-        'Success',
-        'Connection request accepted!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xff32A69A),
-        colorText: Colors.white,
-      );
+      ToastMessageHelper.showToastMessage('Connection request accepted!', title: 'Success');
       // Refresh the list after accepting
       loadNotifications();
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to accept request: $e',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastMessageHelper.showToastMessage('Failed to accept request: $e', title: 'Error');
     }
   }
 
@@ -136,12 +149,7 @@ class NotificationsController extends GetxController {
     notifications.removeWhere((n) => n.id == id);
     filteredNotifications.removeWhere((n) => n.id == id);
 
-    Get.snackbar(
-      'Deleted',
-      'Notification removed',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 1),
-    );
+    ToastMessageHelper.showToastMessage('Notification removed', title: 'Deleted');
   }
 
   // Refresh notifications

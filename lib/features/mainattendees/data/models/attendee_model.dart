@@ -10,6 +10,7 @@ class AttendeeModel {
   final String? phone;
   final String? location;
   bool isBookmarked;
+  bool isOnline;
 
   AttendeeModel({
     required this.id,
@@ -23,6 +24,7 @@ class AttendeeModel {
     this.phone,
     this.location,
     this.isBookmarked = false,
+    this.isOnline = false,
   });
 
   factory AttendeeModel.fromJson(Map<String, dynamic> json) {
@@ -42,6 +44,7 @@ class AttendeeModel {
       phone: json['phone']?.toString(),
       location: json['location']?.toString(),
       isBookmarked: json['isBookmarked'] as bool? ?? false,
+      isOnline: json['isOnline'] as bool? ?? false,
     );
   }
 }

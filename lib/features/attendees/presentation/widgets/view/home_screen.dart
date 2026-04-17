@@ -12,8 +12,8 @@ import '../../../../../presentations/widgets/custom_text.dart';
 import '../../controllers/home_controller.dart';
 import '../../widgets/about_event_card_widget.dart';
 import '../category_item_widgets.dart';
-import '../sidebar_drawer.dart';
 import '../sponsor_banner_widgets.dart';
+import 'package:confaero_app/core/config/approutes/app_routes.dart';
 
 class HomeScreen extends StatefulWidget {
   final String eventId;
@@ -50,8 +50,11 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       key: _scaffoldKey,
       drawer: const SidebarDrawer(),
+
+
       body: SingleChildScrollView(
         child: Column(
           children: [

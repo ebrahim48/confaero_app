@@ -23,12 +23,13 @@ class ConnectionService {
     }
   }
 
-  Future<Map<String, dynamic>> sendRequest(String eventId) async {
+  Future<Map<String, dynamic>> sendRequest(String eventId, {required String receiverId}) async {
     await _checkConnectivity();
-    _logger.i('Sending connection request for event: $eventId');
+    _logger.i('Sending connection request for event: $eventId to: $receiverId');
 
     final response = await _apiService.post(
       '${ApiConstants.sendConnectionRequest}/$eventId',
+      data: {'receiverId': receiverId},
     );
     return response.data as Map<String, dynamic>;
   }
