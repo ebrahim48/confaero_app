@@ -10,8 +10,10 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/helpers/prefs_helper.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../controllers/home_controller.dart';
+import '../../controllers/sidebar_controller.dart';
 import '../../widgets/about_event_card_widget.dart';
 import '../category_item_widgets.dart';
+import '../sidebar_drawer.dart';
 import '../sponsor_banner_widgets.dart';
 import 'package:confaero_app/core/config/approutes/app_routes.dart';
 
@@ -27,6 +29,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late final HomeController controller;
+  late final SidebarController _sidebarController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String _displayName = 'Hello!';
 
@@ -35,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen>
     super.initState();
     final eventId = widget.eventId.isNotEmpty ? widget.eventId : '';
     controller = Get.put(HomeController(eventId: eventId));
+    _sidebarController = Get.put(SidebarController());
     _loadUserName();
   }
 
@@ -79,10 +83,23 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       ),
                       child: ClipOval(
-                        child: Image.asset(
-                          'assets/images/profile.png',
-                          fit: BoxFit.cover,
-                        ),
+                        child: Obx(() {
+                          final url = _sidebarController.userAvatar.value;
+                          if (_sidebarController.isNetworkAvatar.value) {
+                            return Image.network(
+                              url,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Image.asset(
+                                'assets/images/profile.png',
+                                fit: BoxFit.cover,
+                              ),
+                            );
+                          }
+                          return Image.asset(
+                            url,
+                            fit: BoxFit.cover,
+                          );
+                        }),
                       ),
                     ),
                     Expanded(
