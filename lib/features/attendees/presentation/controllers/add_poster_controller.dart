@@ -115,7 +115,7 @@ class AddPosterController extends GetxController {
           'url': url,
           'type': type,
           'name': file.name,
-          'size': file.size,
+          'size': '${(file.size / 1024).toStringAsFixed(1)} KB',
           'icon': type == 'pdf' ? Icons.picture_as_pdf : Icons.image,
         });
       } else {
