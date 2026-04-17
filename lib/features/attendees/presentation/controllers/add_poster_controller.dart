@@ -28,6 +28,10 @@ class AddPosterController extends GetxController {
   final RxList<Map<String, dynamic>> attachments = <Map<String, dynamic>>[].obs;
   final RxBool isAttachmentUploading = false.obs;
 
+  final RxString titleError = ''.obs;
+  final RxString abstractError = ''.obs;
+  final RxString submitError = ''.obs;
+
   String get currentEventId => SessionController.to.eventId;
 
   @override
@@ -62,6 +66,22 @@ class AddPosterController extends GetxController {
   }
 
   void removePresenter(Map<String, String> p) => presenters.remove(p);
+
+  void _resetForm() {
+    titleController.clear();
+    abstractController.clear();
+    tagController.clear();
+    presentersController.clear();
+    presenterRoleController.clear();
+    videoLinkController.clear();
+    tags.clear();
+    presenters.clear();
+    attachments.clear();
+    bannerUrl.value = '';
+    titleError.value = '';
+    abstractError.value = '';
+    submitError.value = '';
+  }
 
   void removeAttachment(Map<String, dynamic> attachment) =>
       attachments.remove(attachment);
@@ -128,13 +148,17 @@ class AddPosterController extends GetxController {
     }
   }
 
-  Future<void> submitForm() async {
+  Future<void> submitForm({VoidCallback? onSuccess}) async {
+    titleError.value = '';
+    abstractError.value = '';
+    submitError.value = '';
+
     if (titleController.text.trim().isEmpty) {
-      ToastMessageHelper.showToastMessage('Please enter a title', title: 'Error');
+      titleError.value = 'Please enter a title';
       return;
     }
     if (abstractController.text.trim().isEmpty) {
-      ToastMessageHelper.showToastMessage('Please enter an abstract', title: 'Error');
+      abstractError.value = 'Please enter an abstract';
       return;
     }
 
@@ -163,16 +187,14 @@ class AddPosterController extends GetxController {
 
       await _posterService.createPoster(currentEventId, body);
 
-      ToastMessageHelper.showToastMessage('Poster submitted successfully!', title: 'Success');
-
-      // Refresh poster list if controller is active
       if (Get.isRegistered<PostersController>()) {
         Get.find<PostersController>().loadPosters();
       }
 
-      Get.back();
+      _resetForm();
+      onSuccess?.call();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to submit poster', title: 'Error');
+      submitError.value = 'Failed to submit poster. Please try again.';
     } finally {
       isSubmitting.value = false;
     }
