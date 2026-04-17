@@ -7,7 +7,15 @@
       "Read(//c/Users/ebu/flutter/bin/**)",
       "Read(//c/development/flutter/bin/**)",
       "Read(//c/Users/ebu/**)",
-      "Bash(/c/Users/ebu/fvm/versions/3.29.0/bin/flutter analyze *)"
+      "Bash(/c/Users/ebu/fvm/versions/3.29.0/bin/flutter analyze *)",
+      "Bash(git rebase *)",
+      "Bash(git pull *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(awk -F: '{print NR\": \"$2}')",
+      "Bash(dart analyze *)",
+      "Bash(powershell *)"
     ]
   }
 }
