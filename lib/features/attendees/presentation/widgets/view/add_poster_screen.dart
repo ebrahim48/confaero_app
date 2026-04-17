@@ -79,6 +79,7 @@ class AddPosterScreen extends StatelessWidget {
                   CustomTextField(
                     controller: controller.titleController,
                     hintText: '',
+                    maxLength: 25,
                   ),
                   const CharacterLimitText(limit: 25),
                   SizedBox(height: 16.h),
@@ -160,7 +161,7 @@ class AddPosterScreen extends StatelessWidget {
                       children: controller.attachments.map((attachment) {
                         return AttachmentItem(
                           fileName: attachment['name'],
-                          fileSize: attachment['size'],
+                          fileSize: '${((attachment['size'] as int) / 1024).toStringAsFixed(1)} KB',
                           fileIcon: attachment['icon'],
                           onDelete: () =>
                               controller.removeAttachment(attachment),
