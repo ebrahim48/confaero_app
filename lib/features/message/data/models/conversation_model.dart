@@ -1,41 +1,41 @@
-import 'message_model.dart';
-
 class ConversationModel {
   final String id;
   final String eventId;
-  final String participantName;
-  final String participantAvatar;
-  final String participantId;
-  final MessageModel? lastMessage;
+  final String lastMessageText;
+  final DateTime? lastMessageAt;
   final int unreadCount;
+  final List<String> participants;
+  final String participantsKey;
+  // Resolved externally once we know the current user's ID
+  String participantId;
+  String participantName;
+  String participantAvatar;
 
   ConversationModel({
     required this.id,
     required this.eventId,
-    required this.participantName,
-    required this.participantAvatar,
-    required this.participantId,
-    this.lastMessage,
-    this.unreadCount = 0,
+    required this.lastMessageText,
+    this.lastMessageAt,
+    required this.unreadCount,
+    required this.participants,
+    required this.participantsKey,
+    this.participantId = '',
+    this.participantName = 'User',
+    this.participantAvatar = '',
   });
 
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
-    // Note: Parsing strategy depends on exact API structure, typically user's profile is nested.
-    final participant = json['participant'] as Map<String, dynamic>? ?? {};
-
+    final rawParticipants = json['participants'] as List? ?? [];
     return ConversationModel(
       id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
       eventId: json['eventId']?.toString() ?? '',
-      participantName: participant['name']?.toString() ?? 'User',
-      participantAvatar: participant['avatar']?.toString() ?? '',
-      participantId: participant['_id']?.toString() ?? '',
-      lastMessage:
-          json['lastMessage'] != null
-              ? MessageModel.fromJson(
-                json['lastMessage'] as Map<String, dynamic>,
-              )
-              : null,
+      lastMessageText: json['lastMessage']?.toString() ?? '',
+      lastMessageAt: json['lastMessageAt'] != null
+          ? DateTime.tryParse(json['lastMessageAt'].toString())
+          : null,
       unreadCount: json['unreadCount'] as int? ?? 0,
+      participants: rawParticipants.map((e) => e.toString()).toList(),
+      participantsKey: json['participantsKey']?.toString() ?? '',
     );
   }
 }

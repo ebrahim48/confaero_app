@@ -490,13 +490,13 @@ class AppRoutes {
         path: messageChatScreen,
         name: messageChatScreen,
         builder: (context, state) {
-          // extra is passed from MessageScreen as { conversationId, receiverId }
-          if (state.extra != null) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              Get.arguments ?? state.extra;
-            });
-          }
-          return MessageChatScreen(args: state.extra as Map<String, dynamic>?);
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return MessageChatScreen(
+            conversationId: extra['conversationId'] as String?,
+            receiverId: extra['receiverId'] as String?,
+            receiverName: extra['receiverName'] as String?,
+            receiverImage: extra['receiverImage'] as String?,
+          );
         },
       ),
       GoRoute(
