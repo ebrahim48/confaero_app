@@ -1,7 +1,7 @@
-import 'package:confaero_app/presentations/widgets/custom_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../presentations/widgets/custom_text.dart';
 import '../../domain/models/message_model.dart';
 
 class MessageItemWidget extends StatelessWidget {
@@ -21,15 +21,20 @@ class MessageItemWidget extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: Color(0xFFE0E0E0), width: 1),
-          ),
+          border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1)),
         ),
         child: Row(
           children: [
+            // Avatar
             CircleAvatar(
               radius: 24.r,
-              backgroundImage: NetworkImage(message.avatarUrl),
+              backgroundColor: const Color(0xffD7EAE8),
+              backgroundImage: message.avatarUrl.isNotEmpty
+                  ? NetworkImage(message.avatarUrl) as ImageProvider
+                  : null,
+              child: message.avatarUrl.isEmpty
+                  ? Icon(Icons.person, size: 24.sp, color: const Color(0xff32A69A))
+                  : null,
             ),
             SizedBox(width: 12.w),
 
@@ -38,19 +43,23 @@ class MessageItemWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CustomText(
-                    maxline: 6,
-                    text:
-                    message.name,
-                    fontsize: 16.sp,
+                    text: message.name.isNotEmpty ? message.name : 'User',
+                    fontsize: 15.sp,
                     fontWeight: FontWeight.w600,
+                    color: const Color(0xff252525),
+                    textAlign: TextAlign.start,
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: 3.h),
                   CustomText(
-                    text:
-                    message.message,
-                    maxline: 6,
+                    text: message.message,
+                    fontsize: 13.sp,
+                    color: message.hasUnread
+                        ? const Color(0xff252525)
+                        : const Color(0xff9E9E9E),
+                    fontWeight: message.hasUnread ? FontWeight.w500 : FontWeight.w400,
+                    maxline: 1,
                     textOverflow: TextOverflow.ellipsis,
-               fontsize: 14,
+                    textAlign: TextAlign.start,
                   ),
                 ],
               ),
@@ -59,10 +68,13 @@ class MessageItemWidget extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                    CustomText(text:
-                      message.time,
-                  fontsize: 12,
-                  fontWeight: FontWeight.w600,
+                CustomText(
+                  text: message.time,
+                  fontsize: 11.sp,
+                  color: message.hasUnread
+                      ? const Color(0xff32A69A)
+                      : const Color(0xff9E9E9E),
+                  fontWeight: message.hasUnread ? FontWeight.w600 : FontWeight.w400,
                 ),
                 if (message.hasUnread) ...[
                   SizedBox(height: 4.h),
@@ -70,13 +82,13 @@ class MessageItemWidget extends StatelessWidget {
                     width: 8.w,
                     height: 8.h,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF4CAF50),
+                      color: Color(0xff32A69A),
                       shape: BoxShape.circle,
                     ),
                   ),
-                ]
+                ],
               ],
-            )
+            ),
           ],
         ),
       ),
