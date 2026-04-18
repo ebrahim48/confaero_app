@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../controllers/job_openings_controller.dart';
@@ -185,7 +186,7 @@ class JobOpeningsScreen extends StatelessWidget {
           Expanded(
             child: Obx(
                   () => controller.isLoading.value
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const _JobListShimmer()
                   : RefreshIndicator(
                 onRefresh: controller.refreshJobs,
                 child: controller.jobs.isEmpty
@@ -216,6 +217,64 @@ class JobOpeningsScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _JobListShimmer extends StatelessWidget {
+  const _JobListShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(horizontal: 24.w),
+        itemCount: 6,
+        itemBuilder: (_, __) => Container(
+          margin: EdgeInsets.only(bottom: 12.h),
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(width: 40.w, height: 40.h, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r))),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(height: 14.h, width: 140.w, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r))),
+                        SizedBox(height: 6.h),
+                        Container(height: 11.h, width: 100.w, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r))),
+                      ],
+                    ),
+                  ),
+                  Container(height: 14.h, width: 60.w, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r))),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              Container(height: 11.h, width: double.infinity, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r))),
+              SizedBox(height: 6.h),
+              Container(height: 11.h, width: 180.w, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r))),
+              SizedBox(height: 12.h),
+              Row(
+                children: [
+                  Container(height: 24.h, width: 70.w, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12.r))),
+                  SizedBox(width: 8.w),
+                  Container(height: 24.h, width: 70.w, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12.r))),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
