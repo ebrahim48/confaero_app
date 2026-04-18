@@ -203,7 +203,7 @@ class SocketService extends GetxService {
   void disconnect() {
     _logger.i('Disconnecting socket');
     emitUserStatus(status: 'offline');
-    _socket?.off(); // remove all listeners first
+    _socket?.clearListeners();
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;
