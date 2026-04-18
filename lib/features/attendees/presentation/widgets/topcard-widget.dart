@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 import '../controllers/job_details_controller.dart';
@@ -68,8 +69,10 @@ class JobDetailsWidgets extends StatelessWidget {
                 topLeft: Radius.circular(4.r),
                 topRight: Radius.circular(4.r),
               ),
-              image: const DecorationImage(
-                image: AssetImage('assets/images/jobopenings.jpg'),
+              image: DecorationImage(
+                image: job.mapImage.startsWith('http')
+                    ? NetworkImage(job.mapImage) as ImageProvider
+                    : const AssetImage('assets/images/jobopenings.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -244,27 +247,40 @@ class JobDetailsWidgets extends StatelessWidget {
           fontWeight: FontWeight.w400,
           color: AppColors.textColor7E7F7E,
         ),
-        SizedBox(height: 12.h),
-
-        // Map Image
-        Container(
-          height: 151.h,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8.r),
-            image: DecorationImage(
-              image: AssetImage(job.mapImage),
-              fit: BoxFit.cover,
+        if (job.locationUrl.isNotEmpty) ...[
+          SizedBox(height: 12.h),
+          GestureDetector(
+            onTap: () async {
+              final uri = Uri.tryParse(job.locationUrl);
+              if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
+            },
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              decoration: BoxDecoration(
+                color: const Color(0xffF0FAF9),
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(color: const Color(0xff32A69A).withOpacity(0.4)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.map_outlined, size: 20.sp, color: const Color(0xff32A69A)),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: CustomText(
+                      textAlign: TextAlign.start,
+                      text: 'View on Map',
+                      fontsize: 13.sp,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xff32A69A),
+                    ),
+                  ),
+                  Icon(Icons.open_in_new, size: 16.sp, color: const Color(0xff32A69A)),
+                ],
+              ),
             ),
           ),
-          child: Center(
-            child: Icon(
-              Icons.location_on,
-              size: 40.sp,
-              color: Colors.red,
-            ),
-          ),
-        ),
+        ],
       ],
     );
   }

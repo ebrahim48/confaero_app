@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/services/job_service.dart';
 import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
@@ -26,6 +26,8 @@ class JobDetails {
 
   // Facilities
   final List<String> facilities;
+  final String applyLink;
+  final String locationUrl;
 
   JobDetails({
     required this.id,
@@ -45,40 +47,37 @@ class JobDetails {
     required this.jobTypeInfo,
     required this.specialization,
     required this.facilities,
+    required this.applyLink,
+    required this.locationUrl,
   });
 
   factory JobDetails.fromJson(Map<String, dynamic> json) {
+    List<String> _parseList(dynamic val) {
+      if (val is List) return val.map((e) => e.toString()).toList();
+      if (val is String && val.isNotEmpty) return [val];
+      return [];
+    }
+
     return JobDetails(
       id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
-      companyName:
-          json['companyName']?.toString() ?? json['company']?.toString() ?? '',
-      position: json['position']?.toString() ?? json['title']?.toString() ?? '',
-      jobType: json['jobType']?.toString() ?? 'Full Time',
+      companyName: json['company']?.toString() ?? json['companyName']?.toString() ?? '',
+      position: json['title']?.toString() ?? json['position']?.toString() ?? '',
+      jobType: json['type']?.toString() ?? json['jobType']?.toString() ?? 'Full Time',
       location: json['location']?.toString() ?? '',
-      lastDate:
-          json['lastDate']?.toString() ?? json['deadline']?.toString() ?? '',
+      lastDate: json['jobExpire']?.toString() ?? json['lastDate']?.toString() ?? json['deadline']?.toString() ?? '',
       salary: json['salary']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
-      requirements:
-          (json['requirements'] as List?)?.map((e) => e.toString()).toList() ??
-          [],
-      locationAddress:
-          json['locationAddress']?.toString() ??
-          json['address']?.toString() ??
-          '',
-      mapImage: json['mapImage']?.toString() ?? 'assets/images/demomap.png',
-      positionInfo:
-          json['positionInfo']?.toString() ??
-          json['position']?.toString() ??
-          '',
+      requirements: _parseList(json['requirements']),
+      locationAddress: json['locationUrl']?.toString() ?? json['locationAddress']?.toString() ?? json['address']?.toString() ?? '',
+      mapImage: json['bannerImage']?.toString() ?? json['mapImage']?.toString() ?? '',
+      positionInfo: json['position']?.toString() ?? json['positionInfo']?.toString() ?? '',
       qualification: json['qualification']?.toString() ?? '',
       experience: json['experience']?.toString() ?? '',
-      jobTypeInfo:
-          json['jobTypeInfo']?.toString() ?? json['jobType']?.toString() ?? '',
+      jobTypeInfo: json['type']?.toString() ?? json['jobType']?.toString() ?? '',
       specialization: json['specialization']?.toString() ?? '',
-      facilities:
-          (json['facilities'] as List?)?.map((e) => e.toString()).toList() ??
-          [],
+      facilities: _parseList(json['benefits'] ?? json['facilities']),
+      applyLink: json['applyLink']?.toString() ?? '',
+      locationUrl: json['locationUrl']?.toString() ?? '',
     );
   }
 }
@@ -112,8 +111,16 @@ class JobDetailsController extends GetxController {
     }
   }
 
-  // Apply for job
-  void applyForJob() {
-    ToastMessageHelper.showToastMessage('Your application has been submitted', title: 'Success');
+  // Apply for job — opens applyLink in browser
+  Future<void> applyForJob() async {
+    final link = jobDetails.value?.applyLink ?? '';
+    if (link.isEmpty) {
+      ToastMessageHelper.showToastMessage('No apply link available', title: 'Info');
+      return;
+    }
+    final uri = Uri.tryParse(link);
+    if (uri == null || !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ToastMessageHelper.showToastMessage('Could not open apply link', title: 'Error');
+    }
   }
 }

@@ -7,14 +7,26 @@ import '../../../../../presentations/widgets/custom_button.dart';
 import '../../controllers/job_details_controller.dart';
 import '../topcard-widget.dart';
 
-class JobDetailsScreen extends StatelessWidget {
+class JobDetailsScreen extends StatefulWidget {
   final String jobId;
   const JobDetailsScreen({super.key, this.jobId = ''});
 
   @override
+  State<JobDetailsScreen> createState() => _JobDetailsScreenState();
+}
+
+class _JobDetailsScreenState extends State<JobDetailsScreen> {
+  late final JobDetailsController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(JobDetailsController());
+    if (widget.jobId.isNotEmpty) controller.loadJobDetails(widget.jobId);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final controller = Get.put(JobDetailsController());
-    if (jobId.isNotEmpty) controller.loadJobDetails(jobId);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
