@@ -161,18 +161,26 @@ class SocketService extends GetxService {
       return;
     }
 
-    _logger.i('Connecting to socket server…');
+    _logger.i('Connecting to socket server: ${ApiConstants.socketServerUrl}');
 
     try {
+      // Dispose any stale socket first
+      _socket?.dispose();
+      _socket = null;
+
       _socket = io.io(
         ApiConstants.socketServerUrl,
         io.OptionBuilder()
-            .setTransports(['websocket'])
+            // Allow polling → websocket upgrade (default Socket.IO handshake)
+            .setTransports(['polling', 'websocket'])
             .disableAutoConnect()
-            .setExtraHeaders({
-              'token': token,
-              'eventid': eventId,
-            })
+            .enableReconnection()
+            .setReconnectionAttempts(5)
+            .setReconnectionDelay(2000)
+            // Send credentials both in headers AND query so the server can
+            // read them regardless of transport layer
+            .setExtraHeaders({'token': token, 'eventid': eventId})
+            .setQuery({'token': token, 'eventid': eventId})
             .build(),
       );
 
@@ -180,23 +188,22 @@ class SocketService extends GetxService {
       _registerEventListeners();
 
       _socket!.connect();
-      
-      // Set timeout for connection
-      Future.delayed(const Duration(seconds: 5), () {
+
+      Future.delayed(const Duration(seconds: 8), () {
         if (!isConnected.value) {
-          _logger.w('Socket connection timeout - continuing without real-time features');
+          _logger.w('Socket still not connected after 8s — check server/network');
         }
       });
     } catch (e) {
-      _logger.w('Socket connection failed: $e. Continuing without real-time features.');
+      _logger.e('Socket connection failed: $e');
     }
   }
 
   /// Disconnect and clean up.
   void disconnect() {
     _logger.i('Disconnecting socket');
-    // Announce user is going offline before disconnecting
     emitUserStatus(status: 'offline');
+    _socket?.off(); // remove all listeners first
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;
@@ -215,31 +222,37 @@ class SocketService extends GetxService {
 
   void _registerCoreListeners() {
     _socket!.onConnect((_) {
-      _logger.i('Socket connected ✓');
+      _logger.i('✅ Socket connected to ${ApiConstants.socketServerUrl}');
       isConnected.value = true;
-      // Announce user is online
       emitUserStatus(status: 'online');
     });
 
-    _socket!.onDisconnect((_) {
-      _logger.w('Socket disconnected');
+    _socket!.onDisconnect((reason) {
+      _logger.w('❌ Socket disconnected: $reason');
       isConnected.value = false;
     });
 
     _socket!.onConnectError((error) {
-      _logger.e('Socket connection error: $error');
+      _logger.e('🔴 Socket connect error: $error');
       isConnected.value = false;
     });
 
     _socket!.onError((error) {
-      _logger.e('Socket error: $error');
+      _logger.e('🔴 Socket error: $error');
     });
 
     _socket!.onReconnect((_) {
-      _logger.i('Socket reconnected');
+      _logger.i('🔄 Socket reconnected');
       isConnected.value = true;
-      // Re-announce user is online after reconnect
       emitUserStatus(status: 'online');
+    });
+
+    _socket!.onReconnectError((error) {
+      _logger.e('🔴 Socket reconnect error: $error');
+    });
+
+    _socket!.onReconnectFailed((_) {
+      _logger.e('🔴 Socket reconnect failed after all attempts');
     });
   }
 

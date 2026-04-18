@@ -94,8 +94,9 @@ class DependencyInjection {
     Get.lazyPut<CacheService>(() => CacheService(), fenix: true);
     Get.lazyPut<ConnectivityService>(() => ConnectivityService(), fenix: true);
 
-    // Socket.IO Service (real-time communication)
-    Get.lazyPut<SocketService>(() => SocketService(), fenix: true);
+    // Socket.IO Service — permanent so GetX never deletes the instance
+    // and the socket connection is never lost between screen navigations
+    Get.put<SocketService>(SocketService(), permanent: true);
 
     // Auth Repository
     Get.lazyPut<AuthRepository>(
