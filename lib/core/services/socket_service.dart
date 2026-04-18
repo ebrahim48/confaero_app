@@ -161,26 +161,30 @@ class SocketService extends GetxService {
       return;
     }
 
-    _logger.i('Connecting to socket server: ${ApiConstants.socketServerUrl}');
+    _logger.i('Connecting → ${ApiConstants.socketServerUrl}  eventId=$eventId');
 
     try {
-      // Dispose any stale socket first
+      _socket?.clearListeners();
       _socket?.dispose();
       _socket = null;
 
+      // On Android, setExtraHeaders is not reliable for polling XHR requests.
+      // Use query params (always sent) + Socket.IO auth (sent in handshake payload)
+      // so the server can read credentials via any of the three mechanisms.
       _socket = io.io(
         ApiConstants.socketServerUrl,
         io.OptionBuilder()
-            // Allow polling → websocket upgrade (default Socket.IO handshake)
             .setTransports(['polling', 'websocket'])
             .disableAutoConnect()
             .enableReconnection()
-            .setReconnectionAttempts(5)
-            .setReconnectionDelay(2000)
-            // Send credentials both in headers AND query so the server can
-            // read them regardless of transport layer
-            .setExtraHeaders({'token': token, 'eventid': eventId})
+            .setReconnectionAttempts(10)
+            .setReconnectionDelay(3000)
+            // Socket.IO v4 auth — arrives in handshake payload (most reliable)
+            .setAuth({'token': token, 'eventid': eventId})
+            // Query params — attached to every HTTP polling request URL
             .setQuery({'token': token, 'eventid': eventId})
+            // HTTP headers — may be stripped on Android XHR but included for completeness
+            .setExtraHeaders({'token': token, 'eventid': eventId})
             .build(),
       );
 
@@ -189,13 +193,15 @@ class SocketService extends GetxService {
 
       _socket!.connect();
 
-      Future.delayed(const Duration(seconds: 8), () {
+      Future.delayed(const Duration(seconds: 10), () {
         if (!isConnected.value) {
-          _logger.w('Socket still not connected after 8s — check server/network');
+          _logger.w('Socket still not connected after 10s');
+          _logger.w('Check: server running? correct URL? token valid? eventId set?');
+          _logger.w('URL: ${ApiConstants.socketServerUrl}  eventId: $eventId');
         }
       });
     } catch (e) {
-      _logger.e('Socket connection failed: $e');
+      _logger.e('Socket connect() threw: $e');
     }
   }
 
