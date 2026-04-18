@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
@@ -22,10 +20,8 @@ class SocketEvents {
   static const String activeCount = 'active-count';
   static const String error = 'error';
 
-  // ───────── General Messaging (Outgoing) ─────────
+  // ───────── Client → Server ─────────
   static const String sendMessage = 'send-message';
-
-  // ───────── Event Live Session (Outgoing) ─────────
   static const String joinSession = 'event-live:join-session';
   static const String sendLiveMessage = 'event-live:send-message';
   static const String createPoll = 'event-live:create-poll';
@@ -33,8 +29,9 @@ class SocketEvents {
   static const String endSession = 'event-live:session-ended';
   static const String muteAllAttendees = 'event-live:mute-all-attendees';
   static const String unmuteAllAttendees = 'event-live:unmute-all-attendees';
+  static const String userStatusUpdate = 'user:status';
 
-  // ───────── Event Live Session (Incoming) ─────────
+  // ───────── Server → Client ─────────
   static const String liveMessageNew = 'event-live:message-new';
   static const String pollCreated = 'event-live:poll-created';
   static const String pollUpdated = 'event-live:poll-updated';
@@ -42,16 +39,6 @@ class SocketEvents {
   static const String forceMute = 'event-live:force-mute';
   static const String allowUnmute = 'event-live:allow-unmute';
   static const String viewerCount = 'event-live:viewer-count';
-
-  // ───────── Legacy/Typing Events ─────────
-  static const String typing = 'typing:start';
-  static const String stopTyping = 'typing:stop';
-  static const String seenMessage = 'message:seen';
-  static const String joinConversation = 'conversation:join';
-  static const String leaveConversation = 'conversation:leave';
-  static const String sendMessageEvent = 'message:send';
-  static const String sendNotification = 'notification:send';
-  static const String userStatusUpdate = 'user:status';
 }
 
 /// Centralized Socket.IO service.
@@ -162,9 +149,6 @@ class SocketService extends GetxService {
       return;
     }
 
-    // Probe the socket.io endpoint first so we know exactly what the server returns
-    await _probeEndpoint(token, eventId);
-
     _logger.i('Connecting → ${ApiConstants.socketServerUrl}  eventId=$eventId');
 
     try {
@@ -172,6 +156,8 @@ class SocketService extends GetxService {
       _socket?.dispose();
       _socket = null;
 
+      // Backend requires exactly: token + eventId (capital I)
+      // Send via all three mechanisms — server reads from whichever arrives
       _socket = io.io(
         ApiConstants.socketServerUrl,
         io.OptionBuilder()
@@ -180,9 +166,9 @@ class SocketService extends GetxService {
             .enableReconnection()
             .setReconnectionAttempts(10)
             .setReconnectionDelay(3000)
-            .setAuth({'token': token, 'eventid': eventId})
-            .setQuery({'token': token, 'eventid': eventId})
-            .setExtraHeaders({'token': token, 'eventid': eventId})
+            .setAuth({'token': token, 'eventId': eventId})
+            .setQuery({'token': token, 'eventId': eventId})
+            .setExtraHeaders({'token': token, 'eventId': eventId})
             .build(),
       );
 
@@ -192,37 +178,6 @@ class SocketService extends GetxService {
       _socket!.connect();
     } catch (e) {
       _logger.e('Socket connect() threw: $e');
-    }
-  }
-
-  /// Makes a raw HTTP GET to the Socket.IO polling endpoint and logs the result.
-  /// This tells us exactly what the server returns — crucial for diagnosing timeouts.
-  Future<void> _probeEndpoint(String token, String eventId) async {
-    try {
-      final url = '${ApiConstants.socketServerUrl}/socket.io/'
-          '?EIO=4&transport=polling&token=$token&eventid=$eventId';
-      _logger.i('🔍 Probing socket endpoint: ${ApiConstants.socketServerUrl}/socket.io/');
-
-      final client = HttpClient();
-      client.connectionTimeout = const Duration(seconds: 8);
-      final request = await client.getUrl(Uri.parse(url));
-      request.headers.set('token', token);
-      request.headers.set('eventid', eventId);
-      final response = await request.close();
-      final body = await response.transform(const Utf8Decoder()).join();
-
-      _logger.i('🔍 Probe status: ${response.statusCode}');
-      _logger.i('🔍 Probe body (first 200 chars): ${body.length > 200 ? body.substring(0, 200) : body}');
-
-      if (response.statusCode == 200 && body.startsWith('0')) {
-        _logger.i('✅ Server IS a valid Socket.IO endpoint — connection should work');
-      } else {
-        _logger.w('⚠️ Server returned status ${response.statusCode} — not a Socket.IO response');
-        _logger.w('⚠️ Tell the backend team to check nginx proxy for /socket.io/ path');
-      }
-      client.close();
-    } catch (e) {
-      _logger.e('🔍 Probe failed: $e — server unreachable or SSL error');
     }
   }
 
@@ -458,80 +413,29 @@ class SocketService extends GetxService {
 
   // ───────── Emit (outgoing) methods ─────────
 
-  /// Emit a message to a conversation via Socket.IO.
-  ///
-  /// Returns `true` if the message was sent successfully, `false` otherwise.
-  Future<bool> emitMessage({
-    required String conversationId,
+  /// Send a direct message via Socket.IO `send-message` event.
+  /// Backend payload: { receiverId, text, attachments? }
+  void emitSendMessage({
     required String receiverId,
-    required String content,
-    String? eventId,
-  }) async {
+    required String text,
+    List<String>? attachments,
+  }) {
     if (_socket == null || !_socket!.connected) {
       _logger.w('Cannot emit message: socket not connected');
-      return false;
+      return;
     }
-
-    try {
-      final payload = {
-        'conversationId': conversationId,
-        'receiverId': receiverId,
-        'content': content,
-        if (eventId != null) 'eventId': eventId,
-      };
-
-      _logger.d('Emitting message: $payload');
-      _socket!.emit(SocketEvents.sendMessageEvent, payload);
-      _messageSentController.add(payload);
-      return true;
-    } catch (e) {
-      _logger.e('Failed to emit message: $e');
-      return false;
-    }
-  }
-
-  /// Emit typing start event.
-  void emitTyping({required String conversationId, required String receiverId}) {
-    _socket?.emit(SocketEvents.typing, {
-      'conversationId': conversationId,
+    final payload = <String, dynamic>{
       'receiverId': receiverId,
-    });
-  }
-
-  /// Emit typing stop event.
-  void emitStopTyping({required String conversationId, required String receiverId}) {
-    _socket?.emit(SocketEvents.stopTyping, {
-      'conversationId': conversationId,
-      'receiverId': receiverId,
-    });
-  }
-
-  /// Emit message seen event.
-  void emitMessageSeen({required String messageId}) {
-    _socket?.emit(SocketEvents.seenMessage, {
-      'messageId': messageId,
-    });
-  }
-
-  /// Emit join conversation event.
-  void emitJoinConversation({required String conversationId}) {
-    _socket?.emit(SocketEvents.joinConversation, {
-      'conversationId': conversationId,
-    });
-  }
-
-  /// Emit leave conversation event.
-  void emitLeaveConversation({required String conversationId}) {
-    _socket?.emit(SocketEvents.leaveConversation, {
-      'conversationId': conversationId,
-    });
+      'text': text,
+      if (attachments != null && attachments.isNotEmpty) 'attachments': attachments,
+    };
+    _logger.d('send-message → $payload');
+    _socket!.emit(SocketEvents.sendMessage, payload);
   }
 
   /// Emit user status update.
   void emitUserStatus({required String status}) {
-    _socket?.emit(SocketEvents.userStatusUpdate, {
-      'status': status,
-    });
+    _socket?.emit(SocketEvents.userStatusUpdate, {'status': status});
   }
 
   /// Generic emit method for custom events.
