@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../../../../presentations/widgets/custom_button.dart';
@@ -67,10 +68,8 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
           // Content
           Expanded(
             child: Obx(
-                  () => controller.isLoading.value
-                  ? const Center(child: CircularProgressIndicator())
-                  : controller.jobDetails.value == null
-                  ? const Center(child: CircularProgressIndicator())
+                  () => controller.isLoading.value || controller.jobDetails.value == null
+                  ? _JobDetailShimmer()
                   : SingleChildScrollView(
                 child: Padding(
                   padding: EdgeInsets.all(15.w),
@@ -102,4 +101,66 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       ),
     );
   }
+}
+
+class _JobDetailShimmer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(15.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Banner
+            Container(height: 163.h, width: double.infinity, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r))),
+            SizedBox(height: 12.h),
+            _box(120.w, 16.h),
+            SizedBox(height: 8.h),
+            _box(double.infinity, 12.h),
+            SizedBox(height: 24.h),
+            // Description
+            _box(100.w, 16.h),
+            SizedBox(height: 8.h),
+            _box(double.infinity, 12.h),
+            SizedBox(height: 6.h),
+            _box(double.infinity, 12.h),
+            SizedBox(height: 6.h),
+            _box(200.w, 12.h),
+            SizedBox(height: 24.h),
+            // Requirements
+            _box(120.w, 16.h),
+            SizedBox(height: 8.h),
+            _box(double.infinity, 12.h),
+            SizedBox(height: 6.h),
+            _box(180.w, 12.h),
+            SizedBox(height: 24.h),
+            // Info
+            _box(100.w, 16.h),
+            SizedBox(height: 12.h),
+            ...List.generate(4, (_) => Padding(
+              padding: EdgeInsets.only(bottom: 16.h),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                _box(80.w, 14.h),
+                SizedBox(height: 4.h),
+                _box(160.w, 12.h),
+              ]),
+            )),
+            SizedBox(height: 8.h),
+            // Button
+            _box(double.infinity, 48.h, radius: 8),
+            SizedBox(height: 24.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _box(double w, double h, {double radius = 4}) => Container(
+        width: w,
+        height: h,
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(radius)),
+      );
 }

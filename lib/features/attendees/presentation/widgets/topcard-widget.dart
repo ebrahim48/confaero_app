@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../presentations/widgets/custom_text.dart';
@@ -95,31 +96,38 @@ class JobDetailsWidgets extends StatelessWidget {
 
                 Row(
                   children: [
-                    CustomText(
-                      text: job.position,
-                      fontsize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textColor252525,
+                    Flexible(
+                      child: CustomText(
+                        text: job.position,
+                        fontsize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textColor252525,
+                        textAlign: TextAlign.start,
+                        maxline: 1,
+                      ),
                     ),
-                    SizedBox(width: 12.w),
-                    Icon(
-                      Icons.work_outline,
-                      size: 14.sp,
-                      color: AppColors.textColor252525,
+                    SizedBox(width: 8.w),
+                    Icon(Icons.work_outline, size: 13.sp, color: AppColors.textColor252525),
+                    SizedBox(width: 3.w),
+                    Flexible(
+                      child: CustomText(
+                        text: job.jobType,
+                        fontsize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textColor252525,
+                        maxline: 1,
+                      ),
                     ),
-                    SizedBox(width: 4.w),
-                    CustomText(
-                      text: job.jobType,
-                      fontsize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textColor252525,
-                    ),
-                    const Spacer(),
-                    CustomText(
-                      text: job.salary,
-                      fontsize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textColor252525,
+                    SizedBox(width: 8.w),
+                    Flexible(
+                      child: CustomText(
+                        text: job.salary,
+                        fontsize: 13.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textColor252525,
+                        textAlign: TextAlign.end,
+                        maxline: 1,
+                      ),
                     ),
                   ],
                 ),
@@ -128,11 +136,7 @@ class JobDetailsWidgets extends StatelessWidget {
                 // Location & Last Date
                 Row(
                   children: [
-                    Icon(
-                      Icons.location_on_outlined,
-                      size: 14.sp,
-                      color: AppColors.textColor252525,
-                    ),
+                    Icon(Icons.location_on_outlined, size: 14.sp, color: AppColors.textColor252525),
                     SizedBox(width: 4.w),
                     Expanded(
                       child: CustomText(
@@ -141,11 +145,12 @@ class JobDetailsWidgets extends StatelessWidget {
                         fontsize: 11.sp,
                         fontWeight: FontWeight.w400,
                         color: AppColors.textColor252525,
+                        maxline: 1,
                       ),
                     ),
                     SizedBox(width: 8.w),
                     CustomText(
-                      text: 'Last Date : ${job.lastDate}',
+                      text: 'Deadline: ${_formatDate(job.lastDate)}',
                       fontsize: 11.sp,
                       fontWeight: FontWeight.w400,
                       color: AppColors.textColor252525,
@@ -369,5 +374,15 @@ class JobDetailsWidgets extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+String _formatDate(String raw) {
+  if (raw.isEmpty) return '—';
+  try {
+    final dt = DateTime.parse(raw).toLocal();
+    return DateFormat('MMM d, yyyy').format(dt);
+  } catch (_) {
+    return raw;
   }
 }
