@@ -204,9 +204,10 @@ class JobOpeningsScreen extends StatelessWidget {
                     return JobCardWidget(
                       job: job,
                       onTap: () {
-                        context.pushNamed(AppRoutes.jobDetailsScreen);
-                        // Navigate to job details
-                        print('Job tapped: ${job.id}');
+                        context.pushNamed(
+                          AppRoutes.jobDetailsScreen,
+                          extra: job.id,
+                        );
                       },
                     );
                   },

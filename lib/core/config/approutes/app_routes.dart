@@ -332,7 +332,8 @@ class AppRoutes {
       GoRoute(
         path: jobDetailsScreen,
         name: jobDetailsScreen,
-        builder: (context, state) => JobDetailsScreen(),
+        builder: (context, state) =>
+            JobDetailsScreen(jobId: state.extra as String? ?? ''),
       ),
 
       GoRoute(
