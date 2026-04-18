@@ -25,14 +25,20 @@ class AttendeeService {
   /// Get all attendees for an event
   /// API: GET /eventAttendee/events/:eventId/attendees
   /// Response: { success, message, data: { total, bookmarked, attendees: [] } }
-  Future<AttendeesResponse> getEventAttendees(String eventId, {bool bookmarkedOnly = false}) async {
+  Future<AttendeesResponse> getEventAttendees(
+    String eventId, {
+    bool bookmarkedOnly = false,
+    String? filter, // e.g. 'ATTENDEE' or 'SPEAKER'
+  }) async {
     await _checkConnectivity();
-    _logger.i('Fetching attendees for event: $eventId');
+    _logger.i('Fetching attendees for event: $eventId filter=$filter');
 
     String endpoint = '${ApiConstants.getEventAttendees}/$eventId/attendees';
-    if (bookmarkedOnly) {
-      endpoint += '?bookmarked=true';
-    }
+    final params = <String>[];
+    if (bookmarkedOnly) params.add('bookmarked=true');
+    if (filter != null && filter.isNotEmpty) params.add('filter=$filter');
+    if (params.isNotEmpty) endpoint += '?${params.join('&')}';
+
 
     final response = await _apiService.get(endpoint);
 
@@ -58,19 +64,18 @@ class AttendeeService {
     return AttendeesResponse(total: 0, bookmarkedCount: 0, attendees: []);
   }
 
-  /// Get attendee details
+  /// Get attendee details — accountId is the account id (not eventAttendee id)
+  /// API: GET /eventAttendee/events/:eventId/attendees/:accountId
   Future<AttendeeModel?> getAttendeeDetails(
     String eventId,
-    String attendeeId,
+    String accountId,
   ) async {
     await _checkConnectivity();
-    _logger.i(
-      'Fetching attendee details for event: $eventId, attendee: $attendeeId',
-    );
+    _logger.i('Fetching attendee details for event: $eventId, account: $accountId');
 
     try {
       final response = await _apiService.get(
-        '${ApiConstants.getAttendeeDetails}/$eventId/attendees/$attendeeId',
+        '${ApiConstants.getAttendeeDetails}/$eventId/attendees/$accountId',
       );
 
       _logger.i('Attendee details response: ${response.data}');

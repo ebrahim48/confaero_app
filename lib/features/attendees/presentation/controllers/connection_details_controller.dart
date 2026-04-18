@@ -1,0 +1,71 @@
+import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../../connection/data/models/connection_model.dart';
+import '../../../connection/domain/services/connection_service.dart';
+import '../../../message/presentation/widgets/view/message_chat_screen.dart';
+import 'package:confaero_app/core/helpers/toast_message_helper.dart';
+
+class ConnectionDetailsController extends GetxController {
+  final ConnectionService _connectionService = Get.find<ConnectionService>();
+
+  final isLoading = false.obs;
+  final isBookmarking = false.obs;
+  final Rxn<ConnectionModel> connection = Rxn<ConnectionModel>();
+
+  Future<void> loadDetails(String connectionId) async {
+    try {
+      isLoading.value = true;
+      final model = await _connectionService.getConnectionDetails(connectionId);
+      connection.value = model;
+    } catch (_) {
+      ToastMessageHelper.showToastMessage('Failed to load connection details', title: 'Error');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> toggleBookmark() async {
+    final c = connection.value;
+    if (c == null) return;
+    isBookmarking.value = true;
+    final prev = c.isBookmarked;
+    c.isBookmarked = !prev;
+    connection.refresh();
+    try {
+      await _connectionService.bookmarkConnection(c.id);
+      ToastMessageHelper.showToastMessage(
+        c.isBookmarked ? 'Added to bookmarks' : 'Removed from bookmarks',
+        title: 'Bookmark',
+      );
+    } catch (_) {
+      c.isBookmarked = prev;
+      connection.refresh();
+      ToastMessageHelper.showToastMessage('Could not update bookmark', title: 'Error');
+    } finally {
+      isBookmarking.value = false;
+    }
+  }
+
+  void sayHi() {
+    final c = connection.value;
+    if (c == null) return;
+    Get.to(
+      () => MessageChatScreen(
+        receiverId: c.accountId.isNotEmpty ? c.accountId : c.id,
+        receiverName: c.name,
+        receiverImage: c.avatarUrl,
+      ),
+      preventDuplicates: false,
+    );
+  }
+
+  Future<void> sendMail() async {
+    final email = connection.value?.email ?? '';
+    if (email.isEmpty) {
+      ToastMessageHelper.showToastMessage('Email not available', title: 'Info');
+      return;
+    }
+    await launchUrl(Uri.parse('mailto:$email'));
+  }
+}
