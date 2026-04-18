@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/services/job_service.dart';
 import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
@@ -26,6 +26,8 @@ class JobDetails {
 
   // Facilities
   final List<String> facilities;
+  final String applyLink;
+  final String locationUrl;
 
   JobDetails({
     required this.id,
@@ -45,6 +47,8 @@ class JobDetails {
     required this.jobTypeInfo,
     required this.specialization,
     required this.facilities,
+    required this.applyLink,
+    required this.locationUrl,
   });
 
   factory JobDetails.fromJson(Map<String, dynamic> json) {
@@ -72,6 +76,8 @@ class JobDetails {
       jobTypeInfo: json['type']?.toString() ?? json['jobType']?.toString() ?? '',
       specialization: json['specialization']?.toString() ?? '',
       facilities: _parseList(json['benefits'] ?? json['facilities']),
+      applyLink: json['applyLink']?.toString() ?? '',
+      locationUrl: json['locationUrl']?.toString() ?? '',
     );
   }
 }
@@ -105,8 +111,16 @@ class JobDetailsController extends GetxController {
     }
   }
 
-  // Apply for job
-  void applyForJob() {
-    ToastMessageHelper.showToastMessage('Your application has been submitted', title: 'Success');
+  // Apply for job — opens applyLink in browser
+  Future<void> applyForJob() async {
+    final link = jobDetails.value?.applyLink ?? '';
+    if (link.isEmpty) {
+      ToastMessageHelper.showToastMessage('No apply link available', title: 'Info');
+      return;
+    }
+    final uri = Uri.tryParse(link);
+    if (uri == null || !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ToastMessageHelper.showToastMessage('Could not open apply link', title: 'Error');
+    }
   }
 }
