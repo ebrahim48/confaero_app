@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'package:get/get.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
@@ -147,7 +149,6 @@ class SocketService extends GetxService {
   /// Reads the JWT token and current event ID from preferences/session,
   /// then opens the connection with those as extra headers.
   Future<void> connect() async {
-    // Avoid double-connect
     if (_socket != null && _socket!.connected) {
       _logger.d('Already connected — skipping');
       return;
@@ -161,6 +162,9 @@ class SocketService extends GetxService {
       return;
     }
 
+    // Probe the socket.io endpoint first so we know exactly what the server returns
+    await _probeEndpoint(token, eventId);
+
     _logger.i('Connecting → ${ApiConstants.socketServerUrl}  eventId=$eventId');
 
     try {
@@ -168,9 +172,6 @@ class SocketService extends GetxService {
       _socket?.dispose();
       _socket = null;
 
-      // On Android, setExtraHeaders is not reliable for polling XHR requests.
-      // Use query params (always sent) + Socket.IO auth (sent in handshake payload)
-      // so the server can read credentials via any of the three mechanisms.
       _socket = io.io(
         ApiConstants.socketServerUrl,
         io.OptionBuilder()
@@ -179,11 +180,8 @@ class SocketService extends GetxService {
             .enableReconnection()
             .setReconnectionAttempts(10)
             .setReconnectionDelay(3000)
-            // Socket.IO v4 auth — arrives in handshake payload (most reliable)
             .setAuth({'token': token, 'eventid': eventId})
-            // Query params — attached to every HTTP polling request URL
             .setQuery({'token': token, 'eventid': eventId})
-            // HTTP headers — may be stripped on Android XHR but included for completeness
             .setExtraHeaders({'token': token, 'eventid': eventId})
             .build(),
       );
@@ -192,16 +190,39 @@ class SocketService extends GetxService {
       _registerEventListeners();
 
       _socket!.connect();
-
-      Future.delayed(const Duration(seconds: 10), () {
-        if (!isConnected.value) {
-          _logger.w('Socket still not connected after 10s');
-          _logger.w('Check: server running? correct URL? token valid? eventId set?');
-          _logger.w('URL: ${ApiConstants.socketServerUrl}  eventId: $eventId');
-        }
-      });
     } catch (e) {
       _logger.e('Socket connect() threw: $e');
+    }
+  }
+
+  /// Makes a raw HTTP GET to the Socket.IO polling endpoint and logs the result.
+  /// This tells us exactly what the server returns — crucial for diagnosing timeouts.
+  Future<void> _probeEndpoint(String token, String eventId) async {
+    try {
+      final url = '${ApiConstants.socketServerUrl}/socket.io/'
+          '?EIO=4&transport=polling&token=$token&eventid=$eventId';
+      _logger.i('🔍 Probing socket endpoint: ${ApiConstants.socketServerUrl}/socket.io/');
+
+      final client = HttpClient();
+      client.connectionTimeout = const Duration(seconds: 8);
+      final request = await client.getUrl(Uri.parse(url));
+      request.headers.set('token', token);
+      request.headers.set('eventid', eventId);
+      final response = await request.close();
+      final body = await response.transform(const Utf8Decoder()).join();
+
+      _logger.i('🔍 Probe status: ${response.statusCode}');
+      _logger.i('🔍 Probe body (first 200 chars): ${body.length > 200 ? body.substring(0, 200) : body}');
+
+      if (response.statusCode == 200 && body.startsWith('0')) {
+        _logger.i('✅ Server IS a valid Socket.IO endpoint — connection should work');
+      } else {
+        _logger.w('⚠️ Server returned status ${response.statusCode} — not a Socket.IO response');
+        _logger.w('⚠️ Tell the backend team to check nginx proxy for /socket.io/ path');
+      }
+      client.close();
+    } catch (e) {
+      _logger.e('🔍 Probe failed: $e — server unreachable or SSL error');
     }
   }
 
