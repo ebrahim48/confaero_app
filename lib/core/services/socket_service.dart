@@ -291,34 +291,7 @@ class SocketService extends GetxService {
       }
     });
 
-    // 6. Typing indicator
-    _socket!.on(SocketEvents.typing, (data) {
-      _logger.d('typing:start → $data');
-      final parsed = _toMap(data);
-      if (parsed != null) {
-        _messageController.add({...parsed, 'isTyping': true});
-      }
-    });
-
-    // 7. Stop typing indicator
-    _socket!.on(SocketEvents.stopTyping, (data) {
-      _logger.d('typing:stop → $data');
-      final parsed = _toMap(data);
-      if (parsed != null) {
-        _messageController.add({...parsed, 'isTyping': false});
-      }
-    });
-
-    // 8. Message seen/acknowledged
-    _socket!.on(SocketEvents.seenMessage, (data) {
-      _logger.d('message:seen → $data');
-      final parsed = _toMap(data);
-      if (parsed != null) {
-        _messageController.add({...parsed, 'isSeen': true});
-      }
-    });
-
-    // 9. Socket error
+    // 6. Socket error
     _socket!.on(SocketEvents.error, (data) {
       _logger.e('Socket error event → $data');
       final parsed = _toMap(data);
