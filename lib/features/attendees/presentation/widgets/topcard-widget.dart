@@ -68,8 +68,10 @@ class JobDetailsWidgets extends StatelessWidget {
                 topLeft: Radius.circular(4.r),
                 topRight: Radius.circular(4.r),
               ),
-              image: const DecorationImage(
-                image: AssetImage('assets/images/jobopenings.jpg'),
+              image: DecorationImage(
+                image: job.mapImage.startsWith('http')
+                    ? NetworkImage(job.mapImage) as ImageProvider
+                    : const AssetImage('assets/images/jobopenings.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
