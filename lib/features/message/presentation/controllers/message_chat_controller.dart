@@ -76,11 +76,9 @@ class MessageChatController extends GetxController {
     currentConversationId = conversationId;
     _currentUserId = await PrefsHelper.getString(AppConstants.userId);
 
-    // Track online status of receiver
     isReceiverOnline.value = _socketService.isUserOnline(receiverId);
 
     if (conversationId.isNotEmpty) {
-      _socketService.emitJoinConversation(conversationId: conversationId);
       await loadMessages();
     }
   }
@@ -127,10 +125,8 @@ class MessageChatController extends GetxController {
         msgConvId.isNotEmpty &&
         msgConvId != currentConversationId) return;
 
-    // Once we get the first message, we know the conversationId
     if (currentConversationId.isEmpty && msgConvId.isNotEmpty) {
       currentConversationId = msgConvId;
-      _socketService.emitJoinConversation(conversationId: msgConvId);
     }
 
     final senderId = data['senderId']?.toString() ?? '';
@@ -189,8 +185,13 @@ class MessageChatController extends GetxController {
       final convId = data?['conversationId']?.toString() ?? '';
       if (convId.isNotEmpty && currentConversationId.isEmpty) {
         currentConversationId = convId;
-        _socketService.emitJoinConversation(conversationId: convId);
       }
+
+      // Notify via socket so receiver gets real-time update
+      _socketService.emitSendMessage(
+        receiverId: currentReceiverId,
+        text: text,
+      );
     } catch (_) {
       messages.remove(optimistic);
       messages.refresh();
@@ -262,9 +263,6 @@ class MessageChatController extends GetxController {
 
   @override
   void onClose() {
-    if (currentConversationId.isNotEmpty) {
-      _socketService.emitLeaveConversation(conversationId: currentConversationId);
-    }
     _messageSubscription?.cancel();
     messageController.dispose();
     scrollController.dispose();

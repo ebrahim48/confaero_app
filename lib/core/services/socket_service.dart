@@ -20,10 +20,8 @@ class SocketEvents {
   static const String activeCount = 'active-count';
   static const String error = 'error';
 
-  // ───────── General Messaging (Outgoing) ─────────
+  // ───────── Client → Server ─────────
   static const String sendMessage = 'send-message';
-
-  // ───────── Event Live Session (Outgoing) ─────────
   static const String joinSession = 'event-live:join-session';
   static const String sendLiveMessage = 'event-live:send-message';
   static const String createPoll = 'event-live:create-poll';
@@ -31,8 +29,9 @@ class SocketEvents {
   static const String endSession = 'event-live:session-ended';
   static const String muteAllAttendees = 'event-live:mute-all-attendees';
   static const String unmuteAllAttendees = 'event-live:unmute-all-attendees';
+  static const String userStatusUpdate = 'user:status';
 
-  // ───────── Event Live Session (Incoming) ─────────
+  // ───────── Server → Client ─────────
   static const String liveMessageNew = 'event-live:message-new';
   static const String pollCreated = 'event-live:poll-created';
   static const String pollUpdated = 'event-live:poll-updated';
@@ -40,16 +39,6 @@ class SocketEvents {
   static const String forceMute = 'event-live:force-mute';
   static const String allowUnmute = 'event-live:allow-unmute';
   static const String viewerCount = 'event-live:viewer-count';
-
-  // ───────── Legacy/Typing Events ─────────
-  static const String typing = 'typing:start';
-  static const String stopTyping = 'typing:stop';
-  static const String seenMessage = 'message:seen';
-  static const String joinConversation = 'conversation:join';
-  static const String leaveConversation = 'conversation:leave';
-  static const String sendMessageEvent = 'message:send';
-  static const String sendNotification = 'notification:send';
-  static const String userStatusUpdate = 'user:status';
 }
 
 /// Centralized Socket.IO service.
@@ -147,7 +136,6 @@ class SocketService extends GetxService {
   /// Reads the JWT token and current event ID from preferences/session,
   /// then opens the connection with those as extra headers.
   Future<void> connect() async {
-    // Avoid double-connect
     if (_socket != null && _socket!.connected) {
       _logger.d('Already connected — skipping');
       return;
@@ -161,18 +149,26 @@ class SocketService extends GetxService {
       return;
     }
 
-    _logger.i('Connecting to socket server…');
+    _logger.i('Connecting → ${ApiConstants.socketServerUrl}  eventId=$eventId');
 
     try {
+      _socket?.clearListeners();
+      _socket?.dispose();
+      _socket = null;
+
+      // Backend requires exactly: token + eventId (capital I)
+      // Send via all three mechanisms — server reads from whichever arrives
       _socket = io.io(
         ApiConstants.socketServerUrl,
         io.OptionBuilder()
-            .setTransports(['websocket'])
+            .setTransports(['polling', 'websocket'])
             .disableAutoConnect()
-            .setExtraHeaders({
-              'token': token,
-              'eventid': eventId,
-            })
+            .enableReconnection()
+            .setReconnectionAttempts(10)
+            .setReconnectionDelay(3000)
+            .setAuth({'token': token, 'eventId': eventId})
+            .setQuery({'token': token, 'eventId': eventId})
+            .setExtraHeaders({'token': token, 'eventId': eventId})
             .build(),
       );
 
@@ -180,23 +176,16 @@ class SocketService extends GetxService {
       _registerEventListeners();
 
       _socket!.connect();
-      
-      // Set timeout for connection
-      Future.delayed(const Duration(seconds: 5), () {
-        if (!isConnected.value) {
-          _logger.w('Socket connection timeout - continuing without real-time features');
-        }
-      });
     } catch (e) {
-      _logger.w('Socket connection failed: $e. Continuing without real-time features.');
+      _logger.e('Socket connect() threw: $e');
     }
   }
 
   /// Disconnect and clean up.
   void disconnect() {
     _logger.i('Disconnecting socket');
-    // Announce user is going offline before disconnecting
     emitUserStatus(status: 'offline');
+    _socket?.clearListeners();
     _socket?.disconnect();
     _socket?.dispose();
     _socket = null;
@@ -215,31 +204,37 @@ class SocketService extends GetxService {
 
   void _registerCoreListeners() {
     _socket!.onConnect((_) {
-      _logger.i('Socket connected ✓');
+      _logger.i('✅ Socket connected to ${ApiConstants.socketServerUrl}');
       isConnected.value = true;
-      // Announce user is online
       emitUserStatus(status: 'online');
     });
 
-    _socket!.onDisconnect((_) {
-      _logger.w('Socket disconnected');
+    _socket!.onDisconnect((reason) {
+      _logger.w('❌ Socket disconnected: $reason');
       isConnected.value = false;
     });
 
     _socket!.onConnectError((error) {
-      _logger.e('Socket connection error: $error');
+      _logger.e('🔴 Socket connect error: $error');
       isConnected.value = false;
     });
 
     _socket!.onError((error) {
-      _logger.e('Socket error: $error');
+      _logger.e('🔴 Socket error: $error');
     });
 
     _socket!.onReconnect((_) {
-      _logger.i('Socket reconnected');
+      _logger.i('🔄 Socket reconnected');
       isConnected.value = true;
-      // Re-announce user is online after reconnect
       emitUserStatus(status: 'online');
+    });
+
+    _socket!.onReconnectError((error) {
+      _logger.e('🔴 Socket reconnect error: $error');
+    });
+
+    _socket!.onReconnectFailed((_) {
+      _logger.e('🔴 Socket reconnect failed after all attempts');
     });
   }
 
@@ -296,34 +291,7 @@ class SocketService extends GetxService {
       }
     });
 
-    // 6. Typing indicator
-    _socket!.on(SocketEvents.typing, (data) {
-      _logger.d('typing:start → $data');
-      final parsed = _toMap(data);
-      if (parsed != null) {
-        _messageController.add({...parsed, 'isTyping': true});
-      }
-    });
-
-    // 7. Stop typing indicator
-    _socket!.on(SocketEvents.stopTyping, (data) {
-      _logger.d('typing:stop → $data');
-      final parsed = _toMap(data);
-      if (parsed != null) {
-        _messageController.add({...parsed, 'isTyping': false});
-      }
-    });
-
-    // 8. Message seen/acknowledged
-    _socket!.on(SocketEvents.seenMessage, (data) {
-      _logger.d('message:seen → $data');
-      final parsed = _toMap(data);
-      if (parsed != null) {
-        _messageController.add({...parsed, 'isSeen': true});
-      }
-    });
-
-    // 9. Socket error
+    // 6. Socket error
     _socket!.on(SocketEvents.error, (data) {
       _logger.e('Socket error event → $data');
       final parsed = _toMap(data);
@@ -418,80 +386,29 @@ class SocketService extends GetxService {
 
   // ───────── Emit (outgoing) methods ─────────
 
-  /// Emit a message to a conversation via Socket.IO.
-  ///
-  /// Returns `true` if the message was sent successfully, `false` otherwise.
-  Future<bool> emitMessage({
-    required String conversationId,
+  /// Send a direct message via Socket.IO `send-message` event.
+  /// Backend payload: { receiverId, text, attachments? }
+  void emitSendMessage({
     required String receiverId,
-    required String content,
-    String? eventId,
-  }) async {
+    required String text,
+    List<String>? attachments,
+  }) {
     if (_socket == null || !_socket!.connected) {
       _logger.w('Cannot emit message: socket not connected');
-      return false;
+      return;
     }
-
-    try {
-      final payload = {
-        'conversationId': conversationId,
-        'receiverId': receiverId,
-        'content': content,
-        if (eventId != null) 'eventId': eventId,
-      };
-
-      _logger.d('Emitting message: $payload');
-      _socket!.emit(SocketEvents.sendMessageEvent, payload);
-      _messageSentController.add(payload);
-      return true;
-    } catch (e) {
-      _logger.e('Failed to emit message: $e');
-      return false;
-    }
-  }
-
-  /// Emit typing start event.
-  void emitTyping({required String conversationId, required String receiverId}) {
-    _socket?.emit(SocketEvents.typing, {
-      'conversationId': conversationId,
+    final payload = <String, dynamic>{
       'receiverId': receiverId,
-    });
-  }
-
-  /// Emit typing stop event.
-  void emitStopTyping({required String conversationId, required String receiverId}) {
-    _socket?.emit(SocketEvents.stopTyping, {
-      'conversationId': conversationId,
-      'receiverId': receiverId,
-    });
-  }
-
-  /// Emit message seen event.
-  void emitMessageSeen({required String messageId}) {
-    _socket?.emit(SocketEvents.seenMessage, {
-      'messageId': messageId,
-    });
-  }
-
-  /// Emit join conversation event.
-  void emitJoinConversation({required String conversationId}) {
-    _socket?.emit(SocketEvents.joinConversation, {
-      'conversationId': conversationId,
-    });
-  }
-
-  /// Emit leave conversation event.
-  void emitLeaveConversation({required String conversationId}) {
-    _socket?.emit(SocketEvents.leaveConversation, {
-      'conversationId': conversationId,
-    });
+      'text': text,
+      if (attachments != null && attachments.isNotEmpty) 'attachments': attachments,
+    };
+    _logger.d('send-message → $payload');
+    _socket!.emit(SocketEvents.sendMessage, payload);
   }
 
   /// Emit user status update.
   void emitUserStatus({required String status}) {
-    _socket?.emit(SocketEvents.userStatusUpdate, {
-      'status': status,
-    });
+    _socket?.emit(SocketEvents.userStatusUpdate, {'status': status});
   }
 
   /// Generic emit method for custom events.
