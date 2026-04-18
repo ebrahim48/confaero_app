@@ -8,12 +8,13 @@ import '../../controllers/job_details_controller.dart';
 import '../topcard-widget.dart';
 
 class JobDetailsScreen extends StatelessWidget {
-  const JobDetailsScreen({super.key});
+  final String jobId;
+  const JobDetailsScreen({super.key, this.jobId = ''});
 
   @override
   Widget build(BuildContext context) {
-
     final controller = Get.put(JobDetailsController());
+    if (jobId.isNotEmpty) controller.loadJobDetails(jobId);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -55,6 +56,8 @@ class JobDetailsScreen extends StatelessWidget {
           Expanded(
             child: Obx(
                   () => controller.isLoading.value
+                  ? const Center(child: CircularProgressIndicator())
+                  : controller.jobDetails.value == null
                   ? const Center(child: CircularProgressIndicator())
                   : SingleChildScrollView(
                 child: Padding(

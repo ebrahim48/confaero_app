@@ -95,11 +95,6 @@ class JobDetailsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Get job ID from route arguments
-    final args = Get.arguments;
-    if (args != null && args is Map<String, dynamic> && args['jobId'] != null) {
-      loadJobDetails(args['jobId'] as String);
-    }
   }
 
   // Load job details from API

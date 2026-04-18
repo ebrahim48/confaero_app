@@ -14,7 +14,8 @@ class JobDetailsWidgets extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final job = controller.jobDetails.value!;
+    final job = controller.jobDetails.value;
+    if (job == null) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
