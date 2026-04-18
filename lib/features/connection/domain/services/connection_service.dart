@@ -63,28 +63,22 @@ class ConnectionService {
     return [];
   }
 
-  Future<List<ConnectionModel>> getMyConnections() async {
+  /// GET /connection?filter=ATTENDEE|SPEAKER
+  /// Response: { data: { total, bookmarked, connections: [] } }
+  Future<Map<String, dynamic>> getMyConnections({String? filter}) async {
     await _checkConnectivity();
-    _logger.i('Fetching my connections');
+    String endpoint = ApiConstants.getMyConnections;
+    if (filter != null && filter.isNotEmpty) endpoint += '?filter=$filter';
+    _logger.i('Fetching connections: $endpoint');
 
-    final response = await _apiService.get(ApiConstants.getMyConnections);
-
+    final response = await _apiService.get(endpoint);
     if (response.data is Map<String, dynamic>) {
-      final data = response.data as Map<String, dynamic>;
-      if ((data['success'] as bool? ?? false) && data['data'] is List) {
-        // Handling nested 'connection' object if present
-        return (data['data'] as List).map((e) {
-          final item = e as Map<String, dynamic>;
-          if (item.containsKey('connection')) {
-            return ConnectionModel.fromJson(
-              item['connection'] as Map<String, dynamic>,
-            );
-          }
-          return ConnectionModel.fromJson(item);
-        }).toList();
+      final body = response.data as Map<String, dynamic>;
+      if ((body['success'] as bool? ?? false) && body['data'] is Map) {
+        return body['data'] as Map<String, dynamic>;
       }
     }
-    return [];
+    return {'total': 0, 'bookmarked': 0, 'connections': []};
   }
 
   Future<ConnectionModel?> getConnectionDetails(String id) async {

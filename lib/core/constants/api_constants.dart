@@ -42,17 +42,16 @@ class ApiConstants {
   static const String acceptConnectionRequest =
       '/connection/requests'; // append /:id/accept
   static const String getPendingRequests = '/connection/requests';
+
+
   static const String getMyConnections = '/connection';
   static const String getConnectionDetails = '/connection'; // append /:id
-  static const String bookmarkConnection =
-      '/connection'; // append /:id/bookmark
+  static const String bookmarkConnection = '/connection'; // append /:id/bookmark
 
   //--------------------------Attendees---------------------------
-  static const String getEventAttendees = '/eventAttendee/events';
-  static const String getAttendeeDetails =
-      '/eventAttendee/events'; // append /:id
-  static const String bookmarkAttendee =
-      '/eventAttendee/events'; // append /:eid/attendees/:aid/bookmark
+  static const String getEventAttendees = '/eventAttendee/events'; // eventId
+  static const String getAttendeeDetails = '/eventAttendee/events'; // append /:id
+  static const String bookmarkAttendee = '/eventAttendee/events'; // append /:eid/attendees/:aid/bookmark
 
   //--------------------------Messaging---------------------------
   static const String sendMessage = '/message/send'; // append /:eventId

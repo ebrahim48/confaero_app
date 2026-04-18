@@ -148,7 +148,7 @@ class ConnectionCardWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: CustomText(
-                  text: '${connection.eventsCount} Events',
+                  text: '${connection.sessionsCount} Sessions',
                   fontsize: 12.sp,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textColor7E7F7E,

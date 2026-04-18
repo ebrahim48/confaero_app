@@ -1,5 +1,5 @@
-// lib/features/attendees/controllers/attendee_details_controller.dart
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../connection/domain/services/connection_service.dart';
 import '../../../message/presentation/widgets/view/message_chat_screen.dart';
@@ -8,169 +8,114 @@ import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class AttendeeDetailsController extends GetxController {
   final AttendeeService _attendeeService = Get.find<AttendeeService>();
+  final ConnectionService _connectionService = Get.find<ConnectionService>();
 
   final RxBool isLoading = false.obs;
-  
-  // Store the attendee ID from route parameter
-  String currentAttendeeId = '';
+  final RxBool isRequesting = false.obs;
 
-  // Attendee details
-  final RxMap<String, dynamic> attendeeDetails =
-      <String, dynamic>{
-        'name': '',
-        'company': '',
-        'role': 'Attendee',
-        'sessions': '0 sessions',
-        'image': 'assets/images/sampleprofile.png',
-        'email': '',
-        'phone': '',
-        'location': '',
-        'isBookmarked': false,
-      }.obs;
+  final RxMap<String, dynamic> attendeeDetails = <String, dynamic>{
+    'id': '',
+    'accountId': '',
+    'name': '',
+    'company': '',
+    'role': 'Attendee',
+    'sessions': '0 sessions',
+    'image': '',
+    'email': '',
+    'phone': '',
+    'location': '',
+    'isBookmarked': false,
+  }.obs;
 
-  /// Call this from the screen, passing eventId and attendeeId from route args
-  Future<void> loadAttendeeDetails(String eventId, String attendeeId) async {
-    // Store the attendee ID for later use (critical for "Say Hi" functionality)
-    currentAttendeeId = attendeeId;
-    
+  Future<void> loadAttendeeDetails(String eventId, String accountId) async {
     isLoading.value = true;
     try {
-      final details = await _attendeeService.getAttendeeDetails(
-        eventId,
-        attendeeId,
-      );
+      final details = await _attendeeService.getAttendeeDetails(eventId, accountId);
       if (details != null) {
         attendeeDetails.assignAll({
           'id': details.id,
+          'accountId': details.accountId.isNotEmpty ? details.accountId : accountId,
           'name': details.name,
           'company': details.company,
           'role': details.role,
           'sessions': '${details.sessionsCount} sessions',
-          'image':
-              details.avatarUrl.isNotEmpty
-                  ? details.avatarUrl
-                  : 'assets/images/sampleprofile.png',
+          'image': details.avatarUrl.isNotEmpty ? details.avatarUrl : '',
           'email': details.email ?? '',
           'phone': details.phone ?? '',
           'location': details.location ?? '',
           'isBookmarked': details.isBookmarked,
-          'canMessage': details.role != 'ATTENDEE' ? false : true,
-          'canEmail': details.email?.isNotEmpty ?? false,
         });
-      } else {
-        ToastMessageHelper.showToastMessage(
-          'Unable to load attendee details',
-          title: 'Error',
-        );
       }
     } catch (e) {
-      print('Error loading attendee details: $e');
-      final errorStr = e.toString();
-
-      // Don't show error for 404 or 500 - backend routes might not exist yet
-      // or user might not be part of the event (backend validation issue)
-      if (errorStr.contains('404') || errorStr.contains('500') || errorStr.contains('ServerException')) {
-        // Silently fail - show empty/default data instead
-        // "Say Hi" will still work because we have currentAttendeeId
-        print('Backend route not available or access denied, using default data');
-      } else {
-        ToastMessageHelper.showToastMessage(
-          'Failed to load attendee details',
-          title: 'Error',
-        );
+      final err = e.toString();
+      if (!err.contains('404') && !err.contains('500')) {
+        ToastMessageHelper.showToastMessage('Failed to load attendee details', title: 'Error');
       }
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Toggle bookmark
   Future<void> toggleBookmark() async {
-    final attendeeId = attendeeDetails['id']?.toString() ?? '';
-    if (attendeeId.isEmpty) {
-      ToastMessageHelper.showToastMessage(
-        'Unable to bookmark: Attendee ID not available',
-        title: 'Error',
-      );
-      return;
-    }
+    final accountId = attendeeDetails['accountId']?.toString() ?? '';
+    final id = attendeeDetails['id']?.toString() ?? '';
+    final bookmarkId = accountId.isNotEmpty ? accountId : id;
+    if (bookmarkId.isEmpty) return;
 
-    final wasBookmarked = attendeeDetails['isBookmarked'] ?? false;
+    final prev = attendeeDetails['isBookmarked'] as bool? ?? false;
+    attendeeDetails['isBookmarked'] = !prev;
+    attendeeDetails.refresh();
 
     try {
-      final newStatus = await _attendeeService.bookmarkAttendee(
-        SessionController.to.eventId,
-        attendeeId,
-      );
-
-      attendeeDetails['isBookmarked'] = newStatus;
-      attendeeDetails.refresh();
-
+      await _attendeeService.bookmarkAttendee(SessionController.to.eventId, bookmarkId);
       ToastMessageHelper.showToastMessage(
-        newStatus ? 'Added to bookmarks' : 'Removed from bookmarks',
+        (!prev) ? 'Added to bookmarks' : 'Removed from bookmarks',
         title: 'Bookmark',
       );
-    } catch (e) {
-      attendeeDetails['isBookmarked'] = wasBookmarked;
+    } catch (_) {
+      attendeeDetails['isBookmarked'] = prev;
       attendeeDetails.refresh();
-      ToastMessageHelper.showToastMessage(
-        'Failed to update bookmark: $e',
-        title: 'Error',
-      );
+      ToastMessageHelper.showToastMessage('Could not update bookmark', title: 'Error');
     }
   }
 
-  // Say Hi - Start a conversation
   void sayHi() {
-    // Try to get ID from controller state first, then fallback to stored ID
-    final attendeeId = attendeeDetails['id']?.toString() ?? currentAttendeeId;
-    final attendeeName = attendeeDetails['name']?.toString() ?? 'Attendee';
-    final attendeeImage = attendeeDetails['image']?.toString() ?? '';
-
-    if (attendeeId.isEmpty) {
-      ToastMessageHelper.showToastMessage(
-        'Unable to message: Attendee ID not available',
-        title: 'Error',
-      );
+    final accountId = attendeeDetails['accountId']?.toString() ?? '';
+    final id = attendeeDetails['id']?.toString() ?? '';
+    final receiverId = accountId.isNotEmpty ? accountId : id;
+    if (receiverId.isEmpty) {
+      ToastMessageHelper.showToastMessage('Unable to message: ID not available', title: 'Error');
       return;
     }
-
-    // Navigate using Get.to with preventDuplicates to avoid context issues
     Get.to(
       () => MessageChatScreen(
-        receiverId: attendeeId,
-        receiverName: attendeeName,
-        receiverImage: attendeeImage,
+        receiverId: receiverId,
+        receiverName: attendeeDetails['name']?.toString() ?? 'Attendee',
+        receiverImage: attendeeDetails['image']?.toString() ?? '',
       ),
       preventDuplicates: false,
     );
   }
 
-  // Send Mail
-  void sendMail() {
-    print('Send Mail to ${attendeeDetails['email']}');
-  }
-
-  final ConnectionService _connectionService = Get.find<ConnectionService>();
-  final RxBool isRequesting = false.obs;
-
-  // Request to Connect
-  Future<void> requestToConnect(String eventId, String receiverId) async {
-    if (receiverId.isEmpty) {
-      ToastMessageHelper.showToastMessage(
-        'Unable to send request: Attendee ID not available',
-        title: 'Error',
-      );
+  Future<void> sendMail() async {
+    final email = attendeeDetails['email']?.toString() ?? '';
+    if (email.isEmpty) {
+      ToastMessageHelper.showToastMessage('Email not available', title: 'Info');
       return;
     }
+    await launchUrl(Uri.parse('mailto:$email'));
+  }
 
+  Future<void> requestToConnect(String eventId, String receiverId) async {
+    if (receiverId.isEmpty) {
+      ToastMessageHelper.showToastMessage('Unable to send request: ID not available', title: 'Error');
+      return;
+    }
     isRequesting.value = true;
     try {
       await _connectionService.sendRequest(eventId, receiverId: receiverId);
       ToastMessageHelper.showToastMessage('Connection request sent!', title: 'Success');
     } catch (e) {
-      print('Error sending connection request: $e');
-      // Don't show error for 404 - backend route might not exist yet
       if (!e.toString().contains('404')) {
         ToastMessageHelper.showToastMessage('Failed to send request', title: 'Error');
       } else {
