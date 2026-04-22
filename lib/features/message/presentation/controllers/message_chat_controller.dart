@@ -7,7 +7,9 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../../core/helpers/prefs_helper.dart';
 import '../../../../core/services/socket_service.dart';
+import '../../data/models/message_model.dart' as msgModel;
 import '../../domain/services/message_service.dart';
+import 'message_controller.dart';
 import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 import 'package:confaero_app/features/auth/data/repositories/auth_repository.dart';
 
@@ -19,6 +21,7 @@ class ChatMessage {
   final bool showTime;
   final String? attachmentUrl;
   final String? attachmentName;
+  final String? mimeType;
 
   ChatMessage({
     required this.text,
@@ -28,6 +31,7 @@ class ChatMessage {
     this.showTime = true,
     this.attachmentUrl,
     this.attachmentName,
+    this.mimeType,
   });
 }
 
@@ -68,13 +72,21 @@ class MessageChatController extends GetxController {
         _socketService.onNewMessage.listen(_handleSocketMessage);
 
     _userOnlineSubscription = _socketService.onUserOnline.listen((data) {
-      final userId = data['userId']?.toString() ?? '';
-      if (userId == currentReceiverId) isReceiverOnline.value = true;
+      final userId = data['userId']?.toString() ??
+          data['_id']?.toString() ??
+          data['id']?.toString() ?? '';
+      if (userId.isNotEmpty && userId == currentReceiverId) {
+        isReceiverOnline.value = true;
+      }
     });
 
     _userOfflineSubscription = _socketService.onUserOffline.listen((data) {
-      final userId = data['userId']?.toString() ?? '';
-      if (userId == currentReceiverId) isReceiverOnline.value = false;
+      final userId = data['userId']?.toString() ??
+          data['_id']?.toString() ??
+          data['id']?.toString() ?? '';
+      if (userId.isNotEmpty && userId == currentReceiverId) {
+        isReceiverOnline.value = false;
+      }
     });
   }
 
@@ -84,6 +96,7 @@ class MessageChatController extends GetxController {
     String receiverNameVal = 'User',
     String receiverImageVal = '',
     String conversationId = '',
+    DateTime? receiverLastSeen,
   }) async {
     currentReceiverId = receiverId;
     receiverName.value = receiverNameVal;
@@ -94,12 +107,22 @@ class MessageChatController extends GetxController {
       await _resolveCurrentUserId();
     }
 
-    isReceiverOnline.value = _socketService.isUserOnline(receiverId);
+    // Determine initial online status: socket set OR lastSeen within 5 minutes
+    final socketOnline = _socketService.isUserOnline(receiverId);
+    final recentlyActive = receiverLastSeen != null &&
+        DateTime.now().difference(receiverLastSeen).inMinutes < 5;
+    isReceiverOnline.value = socketOnline || recentlyActive;
 
     // Broadcast own presence when entering chat
     _socketService.emitUserStatus(status: 'online');
 
+    // Tell MessageController this conversation is open so refreshes don't restore the badge
     if (conversationId.isNotEmpty) {
+      try {
+        final mc = Get.find<MessageController>();
+        mc.currentOpenConversationId = conversationId;
+        mc.clearUnreadForConversation(conversationId);
+      } catch (_) {}
       await loadMessages();
     }
 
@@ -146,6 +169,7 @@ class MessageChatController extends GetxController {
       final updated = data.map((m) {
         final isMe = _currentUserId.isNotEmpty ? m.senderId == _currentUserId : m.isMe;
         final att = m.attachments.isNotEmpty ? m.attachments.first : null;
+        final mime = att?['mimeType']?.toString() ?? '';
         final displayText = m.text.isNotEmpty
             ? m.text
             : (att != null ? '📎 ${att['name'] ?? 'Attachment'}' : '');
@@ -157,6 +181,7 @@ class MessageChatController extends GetxController {
           showTime: true,
           attachmentUrl: att?['url']?.toString(),
           attachmentName: att?['name']?.toString(),
+          mimeType: mime,
         );
       }).toList();
 
@@ -188,6 +213,7 @@ class MessageChatController extends GetxController {
             ? m.senderId == _currentUserId
             : m.isMe;
         final att = m.attachments.isNotEmpty ? m.attachments.first : null;
+        final mime = att?['mimeType']?.toString() ?? '';
         final displayText = m.text.isNotEmpty
             ? m.text
             : (att != null ? '📎 ${att['name'] ?? 'Attachment'}' : '');
@@ -199,16 +225,46 @@ class MessageChatController extends GetxController {
           showTime: true,
           attachmentUrl: att?['url']?.toString(),
           attachmentName: att?['name']?.toString(),
+          mimeType: mime,
         );
       }).toList();
 
       WidgetsBinding.instance.addPostFrameCallback((_) => scrollToBottom());
+
+      // Mark unread messages as seen (fire-and-forget, don't block UI)
+      unawaited(_markUnreadMessagesAsSeen(data));
     } catch (_) {
       ToastMessageHelper.showToastMessage('Failed to load messages', title: 'Error');
     } finally {
       isLoading.value = false;
       _isFetchingMessages = false;
     }
+  }
+
+  Future<void> _markUnreadMessagesAsSeen(List<msgModel.MessageModel> msgs) async {
+    if (_currentUserId.isEmpty) return;
+
+    // Only mark messages sent by the receiver that we haven't read yet
+    final unread = msgs
+        .where((m) =>
+            m.senderId != _currentUserId &&
+            !m.readBy.contains(_currentUserId))
+        .toList();
+
+    if (unread.isEmpty) return;
+
+    for (final msg in unread) {
+      try {
+        await _messageService.markMessageSeen(msg.id, currentEventId);
+      } catch (_) {
+        // fail silently per message
+      }
+    }
+
+    // Refresh conversation list so unreadCount badge stays cleared from server
+    try {
+      await Get.find<MessageController>().loadConversations();
+    } catch (_) {}
   }
 
   void _handleSocketMessage(Map<String, dynamic> data) {
@@ -249,6 +305,18 @@ class MessageChatController extends GetxController {
     ));
 
     Future.delayed(const Duration(milliseconds: 100), scrollToBottom);
+
+    // Mark this incoming message as seen immediately
+    final msgId = data['_id']?.toString() ?? data['id']?.toString() ?? '';
+    if (msgId.isNotEmpty) {
+      unawaited(
+        _messageService.markMessageSeen(msgId, currentEventId).then((_) async {
+          try {
+            await Get.find<MessageController>().loadConversations();
+          } catch (_) {}
+        }).catchError((_) {}),
+      );
+    }
   }
 
   Future<void> sendMessage() async {
@@ -303,30 +371,40 @@ class MessageChatController extends GetxController {
   }
 
   Future<void> pickAndSendAttachment() async {
+    final result = await FilePicker.platform.pickFiles();
+    if (result == null || result.files.single.path == null) return;
+
+    final file = File(result.files.single.path!);
+    final fileName = result.files.single.name;
+
+    final optimistic = ChatMessage(
+      text: '📎 $fileName',
+      isMe: true,
+      time: _formatTime(DateTime.now()),
+      date: _formatDate(DateTime.now()),
+      showTime: true,
+    );
+    messages.add(optimistic);
+    WidgetsBinding.instance.addPostFrameCallback((_) => scrollToBottom());
+
     try {
-      final result = await FilePicker.platform.pickFiles();
-      if (result == null || result.files.single.path == null) return;
-
-      final file = File(result.files.single.path!);
-      final fileName = result.files.single.name;
-
-      final optimistic = ChatMessage(
-        text: '📎 $fileName',
-        isMe: true,
-        time: _formatTime(DateTime.now()),
-        date: _formatDate(DateTime.now()),
-        showTime: true,
-      );
-      messages.add(optimistic);
-      WidgetsBinding.instance.addPostFrameCallback((_) => scrollToBottom());
-
-      await _messageService.sendMessage(
+      final response = await _messageService.sendMessage(
         currentEventId,
         receiverId: currentReceiverId,
         content: fileName,
         attachmentFile: file,
       );
+      // Replace optimistic with real message that has the attachment URL
+      final msgData = response['data'] as Map<String, dynamic>?;
+      final convId = msgData?['conversationId']?.toString() ?? '';
+      if (convId.isNotEmpty && currentConversationId.isEmpty) {
+        currentConversationId = convId;
+      }
+      messages.remove(optimistic);
+      await loadMessages();
     } catch (_) {
+      messages.remove(optimistic);
+      messages.refresh();
       ToastMessageHelper.showToastMessage('Failed to send attachment', title: 'Error');
     }
   }
@@ -368,6 +446,13 @@ class MessageChatController extends GetxController {
     _messageSubscription?.cancel();
     _userOnlineSubscription?.cancel();
     _userOfflineSubscription?.cancel();
+    // Allow the conversation list to show the real unread count again
+    try {
+      final mc = Get.find<MessageController>();
+      if (mc.currentOpenConversationId == currentConversationId) {
+        mc.currentOpenConversationId = '';
+      }
+    } catch (_) {}
     messageController.dispose();
     scrollController.dispose();
     super.onClose();

@@ -91,6 +91,7 @@ class MessageScreen extends StatelessWidget {
                                       receiverId: msg.participantId,
                                       receiverName: msg.name,
                                       receiverImage: msg.avatarUrl,
+                                      receiverLastSeen: msg.lastSeen,
                                     ),
                                   ),
                                 );

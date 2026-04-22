@@ -237,7 +237,7 @@ class SpeakerSidebarDrawer extends StatelessWidget {
         Navigator.of(context).pop();
         Future.delayed(const Duration(milliseconds: 200), () {
           if (item.route != null) {
-            context.go(item.route!);
+            context.push(item.route!);
           }
         });
       },

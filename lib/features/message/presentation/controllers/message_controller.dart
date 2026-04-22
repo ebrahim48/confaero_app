@@ -19,6 +19,10 @@ class MessageController extends GetxController {
   final RxList<MessageModel> messages = <MessageModel>[].obs;
   final RxList<MessageModel> filteredMessages = <MessageModel>[].obs;
 
+  /// Set this to the conversationId that is currently open so
+  /// loadConversations() doesn't restore the unread badge for it.
+  String currentOpenConversationId = '';
+
   StreamSubscription<Map<String, dynamic>>? _messageSubscription;
 
   String get currentEventId => SessionController.to.eventId;
@@ -46,6 +50,7 @@ class MessageController extends GetxController {
       final conversations = await _messageService.getConversations(currentEventId);
 
       messages.value = conversations.map((conv) {
+        final isCurrentlyOpen = conv.id == currentOpenConversationId;
         return MessageModel(
           id: conv.id,
           participantId: conv.participantId,
@@ -53,8 +58,9 @@ class MessageController extends GetxController {
           message: conv.lastMessageText,
           time: conv.lastMessageAt != null ? _formatTime(conv.lastMessageAt!) : '',
           avatarUrl: conv.participantAvatar,
-          hasUnread: conv.unreadCount > 0,
-          unreadCount: conv.unreadCount,
+          hasUnread: isCurrentlyOpen ? false : conv.unreadCount > 0,
+          unreadCount: isCurrentlyOpen ? 0 : conv.unreadCount,
+          lastSeen: conv.participantLastSeen,
         );
       }).toList();
 
@@ -68,6 +74,26 @@ class MessageController extends GetxController {
   }
 
   Future<void> refreshConversations() async => loadConversations();
+
+  /// Immediately clears the unread badge for a conversation in the UI
+  /// before the backend confirms (optimistic update).
+  void clearUnreadForConversation(String conversationId) {
+    final idx = messages.indexWhere((m) => m.id == conversationId);
+    if (idx == -1) return;
+    final m = messages[idx];
+    messages[idx] = MessageModel(
+      id: m.id,
+      participantId: m.participantId,
+      name: m.name,
+      message: m.message,
+      time: m.time,
+      avatarUrl: m.avatarUrl,
+      hasUnread: false,
+      unreadCount: 0,
+      lastSeen: m.lastSeen,
+    );
+    filteredMessages.value = List.from(messages);
+  }
 
   String _formatTime(DateTime dt) {
     final now = DateTime.now();

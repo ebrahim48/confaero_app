@@ -135,17 +135,19 @@ class SocketService extends GetxService {
 
 
   Future<void> connect() async {
+    if (_socket != null && _socket!.connected) return;
+
     final token = await PrefsHelper.getString(AppConstants.bearerToken);
     final eventId = SessionController.to.eventId;
+
+    _socket?.clearListeners();
+    _socket?.dispose();
 
     _socket = io.io(
       ApiConstants.socketServerUrl,
       io.OptionBuilder()
           .setTransports(['websocket'])
-          .setAuth({
-        'token': token,
-        'eventId': eventId,
-      })
+          .setAuth({'token': token, 'eventId': eventId})
           .enableReconnection()
           .setReconnectionAttempts(5)
           .setReconnectionDelay(2000)
@@ -153,11 +155,85 @@ class SocketService extends GetxService {
     );
 
     _socket!.onConnect((_) {
-      print('✅ Connected');
+      _logger.i('✅ Socket connected');
+      isConnected.value = true;
+      emitUserStatus(status: 'online');
+    });
+
+    _socket!.onDisconnect((_) {
+      _logger.w('Socket disconnected');
+      isConnected.value = false;
     });
 
     _socket!.onConnectError((e) {
-      print('❌ Connect Error: $e');
+      _logger.e('❌ Connect Error: $e');
+      isConnected.value = false;
+    });
+
+    // ── Presence ──
+    _socket!.on(SocketEvents.userOnline, (data) {
+      final parsed = _toMap(data);
+      if (parsed == null) return;
+      final userId = parsed['userId']?.toString() ??
+          parsed['_id']?.toString() ??
+          parsed['id']?.toString() ?? '';
+      if (userId.isNotEmpty) onlineUserIds.add(userId);
+      _userOnlineController.add(parsed);
+    });
+
+    _socket!.on(SocketEvents.userOffline, (data) {
+      final parsed = _toMap(data);
+      if (parsed == null) return;
+      final userId = parsed['userId']?.toString() ??
+          parsed['_id']?.toString() ??
+          parsed['id']?.toString() ?? '';
+      if (userId.isNotEmpty) onlineUserIds.remove(userId);
+      _userOfflineController.add(parsed);
+    });
+
+    // ── Messaging ──
+    _socket!.on(SocketEvents.messageNew, (data) {
+      final parsed = _toMap(data);
+      if (parsed != null) _messageController.add(parsed);
+    });
+
+    _socket!.on(SocketEvents.notificationNew, (data) {
+      final parsed = _toMap(data);
+      if (parsed != null) _notificationController.add(parsed);
+    });
+
+    // ── Live session ──
+    _socket!.on(SocketEvents.liveMessageNew, (data) {
+      final parsed = _toMap(data);
+      if (parsed != null) _liveMessageController.add(parsed);
+    });
+
+    _socket!.on(SocketEvents.pollCreated, (data) {
+      final parsed = _toMap(data);
+      if (parsed != null) _pollCreatedController.add(parsed);
+    });
+
+    _socket!.on(SocketEvents.pollUpdated, (data) {
+      final parsed = _toMap(data);
+      if (parsed != null) _pollUpdatedController.add(parsed);
+    });
+
+    _socket!.on(SocketEvents.sessionEnded, (data) {
+      isSessionActive.value = false;
+      final parsed = _toMap(data);
+      if (parsed != null) _sessionEndedController.add(parsed);
+    });
+
+    _socket!.on(SocketEvents.forceMute, (data) {
+      isMutedBySpeaker.value = true;
+      final parsed = _toMap(data);
+      if (parsed != null) _forceMuteController.add(parsed);
+    });
+
+    _socket!.on(SocketEvents.allowUnmute, (data) {
+      isMutedBySpeaker.value = false;
+      final parsed = _toMap(data);
+      if (parsed != null) _allowUnmuteController.add(parsed);
     });
   }
 
