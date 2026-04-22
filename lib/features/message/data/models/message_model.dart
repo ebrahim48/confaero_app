@@ -38,7 +38,7 @@ class MessageModel {
           json['isSeen'] as bool? ??
           false,
       createdAt: json['createdAt'] != null
-          ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
+          ? (DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()).toLocal()
           : DateTime.now(),
       isMe: currentUserId != null && sender == currentUserId,
     );

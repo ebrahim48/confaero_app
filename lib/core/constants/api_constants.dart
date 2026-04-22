@@ -1,7 +1,7 @@
 class ApiConstants {
 
   static const String baseUrl = 'https://reazul8078.suplify.life/api/v1';
-  static const String imageUrl = "https://reaz8080.syedbipul.me";
+  static const String imageUrl = "https://reazul8078.suplify.life";
   static const String socketServerUrl = 'https://reazul8078.suplify.life';
 
 
@@ -55,11 +55,10 @@ class ApiConstants {
 
   //--------------------------Messaging---------------------------
   static const String sendMessage = '/message/send'; // append /:eventId
-  static const String getConversations =
-      '/message/conversations'; // append /:eventId
+  static const String getConversations = '/message/conversations'; // append /:eventId
   static const String getMessages = '/message'; // append /:convId/:eventId
-  static const String markMessageSeen =
-      '/message/seen'; // append /:msgId/:eventId
+  static const String markMessageSeen = '/message/seen'; // append /:msgId/:eventId
+
   static const String uploadChatAttachment = '/upload/chat-attachment';
 
   //--------------------------Agenda/Sessions-----------------------

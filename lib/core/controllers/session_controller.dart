@@ -51,14 +51,17 @@ class SessionController extends GetxController {
 
   /// Call this whenever the user enters an event (from EventsController).
   Future<void> setEvent(String eventId, {String title = ''}) async {
+    final eventChanged = eventIdRx.value != eventId;
     eventIdRx.value = eventId;
     eventTitle.value = title;
     await PrefsHelper.setString(AppConstants.currentEventId, eventId);
 
-    // Connect (or reconnect) Socket.IO with the new event context
     try {
       final socketService = Get.find<SocketService>();
-      await socketService.reconnect();
+      if (eventChanged || !socketService.isConnected.value) {
+        // Only reconnect when the event actually changes or socket is down
+        await socketService.reconnect();
+      }
     } catch (_) {
       // SocketService may not be registered yet during early startup
     }

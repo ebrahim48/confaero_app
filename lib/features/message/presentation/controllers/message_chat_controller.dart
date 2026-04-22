@@ -9,6 +9,7 @@ import '../../../../core/helpers/prefs_helper.dart';
 import '../../../../core/services/socket_service.dart';
 import '../../domain/services/message_service.dart';
 import 'package:confaero_app/core/helpers/toast_message_helper.dart';
+import 'package:confaero_app/features/auth/data/repositories/auth_repository.dart';
 
 class ChatMessage {
   final String text;
@@ -43,6 +44,10 @@ class MessageChatController extends GetxController {
   final messages = <ChatMessage>[].obs;
 
   StreamSubscription<Map<String, dynamic>>? _messageSubscription;
+  StreamSubscription<Map<String, dynamic>>? _userOnlineSubscription;
+  StreamSubscription<Map<String, dynamic>>? _userOfflineSubscription;
+  Timer? _pollTimer;
+  bool _isFetchingMessages = false;
 
   String get currentEventId => SessionController.to.eventId;
   String currentReceiverId = '';
@@ -61,6 +66,16 @@ class MessageChatController extends GetxController {
     });
     _messageSubscription =
         _socketService.onNewMessage.listen(_handleSocketMessage);
+
+    _userOnlineSubscription = _socketService.onUserOnline.listen((data) {
+      final userId = data['userId']?.toString() ?? '';
+      if (userId == currentReceiverId) isReceiverOnline.value = true;
+    });
+
+    _userOfflineSubscription = _socketService.onUserOffline.listen((data) {
+      final userId = data['userId']?.toString() ?? '';
+      if (userId == currentReceiverId) isReceiverOnline.value = false;
+    });
   }
 
   /// Called by the screen in initState with all required params.
@@ -75,18 +90,95 @@ class MessageChatController extends GetxController {
     receiverImage.value = receiverImageVal;
     currentConversationId = conversationId;
     _currentUserId = await PrefsHelper.getString(AppConstants.userId);
+    if (_currentUserId.isEmpty) {
+      await _resolveCurrentUserId();
+    }
 
     isReceiverOnline.value = _socketService.isUserOnline(receiverId);
+
+    // Broadcast own presence when entering chat
+    _socketService.emitUserStatus(status: 'online');
 
     if (conversationId.isNotEmpty) {
       await loadMessages();
     }
+
+    _startPollingIfNeeded();
+  }
+
+  Future<void> _resolveCurrentUserId() async {
+    try {
+      final authRepo = Get.find<AuthRepository>();
+      final res = await authRepo.getMe();
+      if (res['success'] == true && res['data'] != null) {
+        final data = res['data'] as Map<String, dynamic>;
+        final id = data['_id']?.toString() ?? data['id']?.toString() ?? '';
+        if (id.isNotEmpty) {
+          _currentUserId = id;
+          await PrefsHelper.setString(AppConstants.userId, id);
+        }
+      }
+    } catch (_) {}
+  }
+
+  void _startPollingIfNeeded() {
+    _pollTimer?.cancel();
+    // Poll every 15s only when socket is not connected
+    _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (!_socketService.isConnected.value && currentConversationId.isNotEmpty) {
+        _pollNewMessages();
+      }
+    });
+  }
+
+  Future<void> _pollNewMessages() async {
+    // Guard: skip if already fetching, sending, or no conversation
+    if (_isFetchingMessages || isSending.value || currentConversationId.isEmpty) return;
+    _isFetchingMessages = true;
+    try {
+      final data = await _messageService.getMessages(
+        currentConversationId,
+        currentEventId,
+      );
+      // Only update if server has more messages than currently shown
+      if (data.length <= messages.length) return;
+
+      final updated = data.map((m) {
+        final isMe = _currentUserId.isNotEmpty ? m.senderId == _currentUserId : m.isMe;
+        final att = m.attachments.isNotEmpty ? m.attachments.first : null;
+        final displayText = m.text.isNotEmpty
+            ? m.text
+            : (att != null ? '📎 ${att['name'] ?? 'Attachment'}' : '');
+        return ChatMessage(
+          text: displayText,
+          isMe: isMe,
+          time: _formatTime(m.createdAt),
+          date: _formatDate(m.createdAt),
+          showTime: true,
+          attachmentUrl: att?['url']?.toString(),
+          attachmentName: att?['name']?.toString(),
+        );
+      }).toList();
+
+      messages.value = updated;
+      WidgetsBinding.instance.addPostFrameCallback((_) => scrollToBottom());
+    } catch (_) {
+      // Fail silently
+    } finally {
+      _isFetchingMessages = false;
+    }
   }
 
   Future<void> loadMessages() async {
-    if (currentConversationId.isEmpty) return;
+    if (currentConversationId.isEmpty || _isFetchingMessages) return;
+    _isFetchingMessages = true;
     isLoading.value = true;
     try {
+      // Ensure userId is resolved before mapping isMe
+      if (_currentUserId.isEmpty) {
+        await _resolveCurrentUserId();
+      }
+
       final data = await _messageService.getMessages(
         currentConversationId,
         currentEventId,
@@ -96,8 +188,11 @@ class MessageChatController extends GetxController {
             ? m.senderId == _currentUserId
             : m.isMe;
         final att = m.attachments.isNotEmpty ? m.attachments.first : null;
+        final displayText = m.text.isNotEmpty
+            ? m.text
+            : (att != null ? '📎 ${att['name'] ?? 'Attachment'}' : '');
         return ChatMessage(
-          text: att != null ? '📎 ${att['name'] ?? 'Attachment'}' : m.text,
+          text: displayText,
           isMe: isMe,
           time: _formatTime(m.createdAt),
           date: _formatDate(m.createdAt),
@@ -112,6 +207,7 @@ class MessageChatController extends GetxController {
       ToastMessageHelper.showToastMessage('Failed to load messages', title: 'Error');
     } finally {
       isLoading.value = false;
+      _isFetchingMessages = false;
     }
   }
 
@@ -187,11 +283,16 @@ class MessageChatController extends GetxController {
         currentConversationId = convId;
       }
 
-      // Notify via socket so receiver gets real-time update
-      _socketService.emitSendMessage(
-        receiverId: currentReceiverId,
-        text: text,
-      );
+      // Extract our userId from send response — most reliable source
+      if (_currentUserId.isEmpty) {
+        final senderId = data?['senderId']?.toString() ?? '';
+        if (senderId.isNotEmpty) {
+          _currentUserId = senderId;
+          await PrefsHelper.setString(AppConstants.userId, senderId);
+        }
+      }
+
+      // Backend broadcasts message:new via socket after saving — no need to emit separately
     } catch (_) {
       messages.remove(optimistic);
       messages.refresh();
@@ -263,7 +364,10 @@ class MessageChatController extends GetxController {
 
   @override
   void onClose() {
+    _pollTimer?.cancel();
     _messageSubscription?.cancel();
+    _userOnlineSubscription?.cancel();
+    _userOfflineSubscription?.cancel();
     messageController.dispose();
     scrollController.dispose();
     super.onClose();

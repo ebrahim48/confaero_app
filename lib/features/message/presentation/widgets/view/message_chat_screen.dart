@@ -122,7 +122,9 @@ class _MessageChatScreenState extends State<MessageChatScreen> {
                             CustomText(
                               text: controller.isReceiverOnline.value ? 'Online' : 'Offline',
                               fontsize: 11.sp,
-                              color: AppColors.textColor7E7F7E,
+                              color: controller.isReceiverOnline.value
+                                  ? const Color(0xff4CAF50)
+                                  : Colors.grey,
                             ),
                           ],
                         ),
@@ -217,7 +219,7 @@ class _MessageChatScreenState extends State<MessageChatScreen> {
                                 isDense: true,
                                 contentPadding: EdgeInsets.symmetric(vertical: 8.h),
                               ),
-                              style: TextStyle(fontSize: 14.sp),
+                              style: TextStyle(fontSize: 14.sp, color: Colors.black),
                             ),
                           ),
                           GestureDetector(

@@ -55,11 +55,11 @@ class _AttendeesScreenState extends State<AttendeesScreen>
               bottom: false,
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Icon(Icons.arrow_back, size: 24.sp, color: AppColors.textColor424242),
-                  ),
-                  SizedBox(width: 16.w),
+                  // GestureDetector(
+                  //   onTap: () => Navigator.of(context).pop(),
+                  //   child: Icon(Icons.arrow_back, size: 24.sp, color: AppColors.textColor424242),
+                  // ),
+                  // SizedBox(width: 16.w),
                   Expanded(
                     child: CustomText(
                       text: 'Event Attendees',

@@ -27,6 +27,7 @@ class EventsScreen extends StatefulWidget {
 
 class _EventsScreenState extends State<EventsScreen>
     with SingleTickerProviderStateMixin {
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   late final EventsController controller;
 
   @override
@@ -38,7 +39,7 @@ class _EventsScreenState extends State<EventsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: controller.scaffoldKey,
+      key: scaffoldKey,
       drawer: Obx(() {
         final role = RoleController.to.activeRole.value.toUpperCase();
         if (role == 'SPEAKER') {
@@ -92,7 +93,7 @@ class _EventsScreenState extends State<EventsScreen>
                       ),
                       SizedBox(width: 16.w),
                       GestureDetector(
-                        onTap: controller.openDrawer,
+                        onTap: () => scaffoldKey.currentState?.openDrawer(),
                         child: SvgPicture.asset(
                           'assets/icons/menusidebar.svg',
                           width: 24.w,

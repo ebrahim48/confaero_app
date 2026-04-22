@@ -46,23 +46,15 @@ class MessageController extends GetxController {
       final conversations = await _messageService.getConversations(currentEventId);
 
       messages.value = conversations.map((conv) {
-        // Find the other participant's ID by excluding the current user
-        final participantId = conv.participants.firstWhere(
-          (id) => id != _currentUserId,
-          orElse: () => conv.participants.isNotEmpty ? conv.participants.first : '',
-        );
-
-        // Look up cached name/avatar (set when a chat is opened via Say Hi)
-        final cached = participantCache[participantId];
-
         return MessageModel(
           id: conv.id,
-          participantId: participantId,
-          name: cached?['name'] ?? 'User',
+          participantId: conv.participantId,
+          name: conv.participantName,
           message: conv.lastMessageText,
           time: conv.lastMessageAt != null ? _formatTime(conv.lastMessageAt!) : '',
-          avatarUrl: cached?['avatar'] ?? '',
+          avatarUrl: conv.participantAvatar,
           hasUnread: conv.unreadCount > 0,
+          unreadCount: conv.unreadCount,
         );
       }).toList();
 

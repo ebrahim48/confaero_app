@@ -79,11 +79,18 @@ class MessageItemWidget extends StatelessWidget {
                 if (message.hasUnread) ...[
                   SizedBox(height: 4.h),
                   Container(
-                    width: 8.w,
-                    height: 8.h,
+                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                     decoration: const BoxDecoration(
                       color: Color(0xff32A69A),
                       shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      message.unreadCount > 99 ? '99+' : '${message.unreadCount}',
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],

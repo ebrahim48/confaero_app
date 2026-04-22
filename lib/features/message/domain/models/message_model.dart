@@ -7,6 +7,7 @@ class MessageModel {
   final String time;
   final String avatarUrl;
   bool hasUnread;
+  final int unreadCount;
 
   MessageModel({
     required this.id,
@@ -16,5 +17,6 @@ class MessageModel {
     required this.time,
     required this.avatarUrl,
     this.hasUnread = false,
+    this.unreadCount = 0,
   });
 }
