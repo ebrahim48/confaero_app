@@ -177,7 +177,7 @@ class SpeakerHomeController extends GetxController {
   Future<void> startLiveSession() async {
     isProcessing.value = true;
     try {
-      final response = await _videoService.startSession(eventId);
+      final response = await _videoService.startSession(eventId, 1);
 
       if (response['success'] == true) {
         isLive.value = true;
@@ -208,7 +208,7 @@ class SpeakerHomeController extends GetxController {
   Future<void> stopLiveSession() async {
     isProcessing.value = true;
     try {
-      final response = await _videoService.endSession(eventId);
+      final response = await _videoService.endSession(eventId, 1);
 
       if (response['success'] == true) {
         isLive.value = false;
@@ -244,7 +244,7 @@ class SpeakerHomeController extends GetxController {
   Future<void> joinLiveSession() async {
     isProcessing.value = true;
     try {
-      final response = await _videoService.joinSession(eventId);
+      final response = await _videoService.joinSession(eventId, 1);
 
       if (response['success'] == true) {
         // Navigate to live session screen

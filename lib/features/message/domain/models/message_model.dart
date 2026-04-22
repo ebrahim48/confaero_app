@@ -8,6 +8,7 @@ class MessageModel {
   final String avatarUrl;
   bool hasUnread;
   final int unreadCount;
+  final DateTime? lastSeen;
 
   MessageModel({
     required this.id,
@@ -18,5 +19,6 @@ class MessageModel {
     required this.avatarUrl,
     this.hasUnread = false,
     this.unreadCount = 0,
+    this.lastSeen,
   });
 }

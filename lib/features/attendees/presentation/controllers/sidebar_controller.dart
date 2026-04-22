@@ -137,7 +137,7 @@ class SidebarController extends GetxController {
       if (item.onTap != null) {
         item.onTap!();
       } else if (item.route != null) {
-        context.go(item.route!);
+        context.push(item.route!);
       }
     });
   }

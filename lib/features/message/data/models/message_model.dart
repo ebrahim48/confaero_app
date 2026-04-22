@@ -5,6 +5,7 @@ class MessageModel {
   final String text;
   final List<Map<String, dynamic>> attachments;
   final bool isSeen;
+  final List<String> readBy;
   final DateTime createdAt;
   final bool isMe;
 
@@ -15,6 +16,7 @@ class MessageModel {
     required this.text,
     this.attachments = const [],
     required this.isSeen,
+    this.readBy = const [],
     required this.createdAt,
     this.isMe = false,
   });
@@ -34,6 +36,10 @@ class MessageModel {
           .whereType<Map>()
           .map((a) => Map<String, dynamic>.from(a))
           .toList(),
+      readBy: (json['readBy'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       isSeen: (json['readBy'] as List?)?.isNotEmpty ??
           json['isSeen'] as bool? ??
           false,

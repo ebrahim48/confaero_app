@@ -10,6 +10,7 @@ class ConversationModel {
   String participantId;
   String participantName;
   String participantAvatar;
+  DateTime? participantLastSeen;
 
   ConversationModel({
     required this.id,
@@ -22,6 +23,7 @@ class ConversationModel {
     this.participantId = '',
     this.participantName = 'User',
     this.participantAvatar = '',
+    this.participantLastSeen,
   });
 
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,9 @@ class ConversationModel {
       participantId: profile?['accountId']?.toString() ?? '',
       participantName: profile?['name']?.toString() ?? 'User',
       participantAvatar: profile?['avatar']?.toString() ?? '',
+      participantLastSeen: profile?['lastSeen'] != null
+          ? DateTime.tryParse(profile!['lastSeen'].toString())?.toLocal()
+          : null,
     );
   }
 }

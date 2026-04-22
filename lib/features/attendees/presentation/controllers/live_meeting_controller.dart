@@ -61,7 +61,7 @@ class LiveMeetingController extends GetxController {
   /// Join live session via VideoConferenceService
   Future<void> joinSession() async {
     try {
-      final response = await _videoService.joinSession(currentEventId);
+      final response = await _videoService.joinSession(currentEventId, 1);
       final joinUrl = response['data']?['joinUrl'] as String?;
       if (joinUrl != null) {
         // TODO: Open join URL in browser or WebView

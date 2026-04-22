@@ -15,7 +15,9 @@
       "Bash(git push *)",
       "Bash(awk -F: '{print NR\": \"$2}')",
       "Bash(dart analyze *)",
-      "Bash(powershell *)"
+      "Bash(powershell *)",
+      "Bash(/c/Users/ebu/fvm/versions/stable/bin/flutter analyze *)",
+      "Bash(/c/Users/ebu/fvm/versions/stable/bin/dart analyze *)"
     ]
   }
 }

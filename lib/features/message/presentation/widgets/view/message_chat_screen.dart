@@ -15,6 +15,7 @@ class MessageChatScreen extends StatefulWidget {
   final String? receiverName;
   final String? receiverImage;
   final String? conversationId;
+  final DateTime? receiverLastSeen;
   // Legacy: accept map from GoRouter extra
   final Map<String, dynamic>? args;
 
@@ -24,6 +25,7 @@ class MessageChatScreen extends StatefulWidget {
     this.receiverName,
     this.receiverImage,
     this.conversationId,
+    this.receiverLastSeen,
     this.args,
   });
 
@@ -61,6 +63,7 @@ class _MessageChatScreenState extends State<MessageChatScreen> {
       receiverNameVal: receiverName,
       receiverImageVal: receiverImage,
       conversationId: conversationId,
+      receiverLastSeen: widget.receiverLastSeen,
     );
   }
 
@@ -178,6 +181,9 @@ class _MessageChatScreenState extends State<MessageChatScreen> {
                           message: msg.text,
                           isMe: msg.isMe,
                           time: msg.time,
+                          attachmentUrl: msg.attachmentUrl,
+                          attachmentName: msg.attachmentName,
+                          mimeType: msg.mimeType,
                         ),
                         SizedBox(height: 6.h),
                       ],
@@ -248,7 +254,9 @@ class _MessageChatScreenState extends State<MessageChatScreen> {
                         child: controller.isSending.value
                             ? Padding(
                                 padding: EdgeInsets.all(14.w),
-                                child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                child: const CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2),
                               )
                             : const Icon(Icons.send, color: Colors.white, size: 20),
                       ),
