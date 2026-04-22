@@ -1,10 +1,7 @@
 import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:confaero_app/core/constants/app_constants.dart';
-
-
 import 'package:confaero_app/core/controllers/role_controller.dart';
 import 'package:confaero_app/core/controllers/session_controller.dart';
-
 import 'package:confaero_app/core/helpers/prefs_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -107,6 +104,11 @@ class SidebarController extends GetxController {
         final userData = userResponse['data'] as Map<String, dynamic>;
         userName.value = userData['name'] as String? ?? '';
         userEmail.value = userData['email'] as String? ?? '';
+        // Save userId so chat screens can determine sent/received correctly
+        final userId = userData['_id']?.toString() ?? userData['id']?.toString() ?? '';
+        if (userId.isNotEmpty) {
+          await PrefsHelper.setString(AppConstants.userId, userId);
+        }
       }
 
       // Try to load profile image
@@ -135,11 +137,7 @@ class SidebarController extends GetxController {
       if (item.onTap != null) {
         item.onTap!();
       } else if (item.route != null) {
-        if (item.route == AppRoutes.contactQrScreen) {
-          context.pushNamed(AppRoutes.contactQrScreen);
-        } else {
-          context.push(item.route!);
-        }
+        context.go(item.route!);
       }
     });
   }

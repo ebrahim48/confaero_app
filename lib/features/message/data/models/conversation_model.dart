@@ -26,6 +26,7 @@ class ConversationModel {
 
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
     final rawParticipants = json['participants'] as List? ?? [];
+    final profile = json['participantProfile'] as Map<String, dynamic>?;
     return ConversationModel(
       id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
       eventId: json['eventId']?.toString() ?? '',
@@ -36,6 +37,9 @@ class ConversationModel {
       unreadCount: json['unreadCount'] as int? ?? 0,
       participants: rawParticipants.map((e) => e.toString()).toList(),
       participantsKey: json['participantsKey']?.toString() ?? '',
+      participantId: profile?['accountId']?.toString() ?? '',
+      participantName: profile?['name']?.toString() ?? 'User',
+      participantAvatar: profile?['avatar']?.toString() ?? '',
     );
   }
 }

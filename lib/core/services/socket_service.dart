@@ -131,55 +131,36 @@ class SocketService extends GetxService {
 
   // ───────── Lifecycle ─────────
 
-  /// Connect to the Socket.IO server.
-  ///
-  /// Reads the JWT token and current event ID from preferences/session,
-  /// then opens the connection with those as extra headers.
-  Future<void> connect() async {
-    if (_socket != null && _socket!.connected) {
-      _logger.d('Already connected — skipping');
-      return;
-    }
 
+
+
+  Future<void> connect() async {
     final token = await PrefsHelper.getString(AppConstants.bearerToken);
     final eventId = SessionController.to.eventId;
 
-    if (token.isEmpty) {
-      _logger.w('No auth token — cannot connect to socket');
-      return;
-    }
+    _socket = io.io(
+      ApiConstants.socketServerUrl,
+      io.OptionBuilder()
+          .setTransports(['websocket'])
+          .setAuth({
+        'token': token,
+        'eventId': eventId,
+      })
+          .enableReconnection()
+          .setReconnectionAttempts(5)
+          .setReconnectionDelay(2000)
+          .build(),
+    );
 
-    _logger.i('Connecting → ${ApiConstants.socketServerUrl}  eventId=$eventId');
+    _socket!.onConnect((_) {
+      print('✅ Connected');
+    });
 
-    try {
-      _socket?.clearListeners();
-      _socket?.dispose();
-      _socket = null;
-
-      // Backend requires exactly: token + eventId (capital I)
-      // Send via all three mechanisms — server reads from whichever arrives
-      _socket = io.io(
-        ApiConstants.socketServerUrl,
-        io.OptionBuilder()
-            .setTransports(['polling', 'websocket'])
-            .disableAutoConnect()
-            .enableReconnection()
-            .setReconnectionAttempts(10)
-            .setReconnectionDelay(3000)
-            .setAuth({'token': token, 'eventId': eventId})
-            .setQuery({'token': token, 'eventId': eventId})
-            .setExtraHeaders({'token': token, 'eventId': eventId})
-            .build(),
-      );
-
-      _registerCoreListeners();
-      _registerEventListeners();
-
-      _socket!.connect();
-    } catch (e) {
-      _logger.e('Socket connect() threw: $e');
-    }
+    _socket!.onConnectError((e) {
+      print('❌ Connect Error: $e');
+    });
   }
+
 
   /// Disconnect and clean up.
   void disconnect() {
@@ -197,6 +178,7 @@ class SocketService extends GetxService {
   /// Reconnect with fresh credentials (e.g. after role switch or event change).
   Future<void> reconnect() async {
     disconnect();
+    await Future.delayed(const Duration(milliseconds: 500));
     await connect();
   }
 

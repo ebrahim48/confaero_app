@@ -14,7 +14,7 @@ class SidebarDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<SidebarController>();
+    final controller = Get.put(SidebarController());
 
     return Drawer(
       backgroundColor: Colors.white,

@@ -18,7 +18,6 @@ class EventsController extends GetxController {
   late final InvitationService _invitationService;
 
   final searchController = TextEditingController();
-  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Tab configuration based on role
   // 0 = My Events, 1 = Explore Events, 2 = Invited Events, 3 = All Events
@@ -316,10 +315,6 @@ class EventsController extends GetxController {
   }
 
   // ── Navigation ────────────────────────────────────────────────────────────
-
-  void openDrawer() {
-    scaffoldKey.currentState?.openDrawer();
-  }
 
   void openEventDetails(BuildContext context, String eventId, {String title = '', String registrationStatus = ''}) {
     // Only set the session (and connect socket) if the user is already registered.
