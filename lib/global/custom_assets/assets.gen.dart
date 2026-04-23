@@ -96,9 +96,9 @@ class $AssetsIconsGen {
   SvgGenImage get eventposters =>
       const SvgGenImage('assets/icons/eventposters.svg');
 
-  /// File path: assets/icons/exhibitors.svg
+  /// File path: assets/icons/exhibitors_sponsors_booth.svg
   SvgGenImage get exhibitors =>
-      const SvgGenImage('assets/icons/exhibitors.svg');
+      const SvgGenImage('assets/icons/exhibitors_sponsors_booth.svg');
 
   /// File path: assets/icons/exploreevents.svg
   SvgGenImage get exploreevents =>

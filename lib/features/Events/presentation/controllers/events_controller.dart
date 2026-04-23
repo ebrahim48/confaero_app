@@ -42,7 +42,7 @@ class EventsController extends GetxController {
   final isInvitedLoading = false.obs;
   final invitedError = ''.obs;
 
-  // All Events tab (for exhibitors, sponsors, etc.)
+  // All Events tab (for exhibitors_sponsors_booth, sponsors, etc.)
   final allEvents = <EventModel>[].obs;
   final isAllEventsLoading = false.obs;
   final allEventsError = ''.obs;

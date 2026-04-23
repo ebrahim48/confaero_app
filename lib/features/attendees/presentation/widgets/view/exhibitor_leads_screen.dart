@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/exhibitor_leads_controller.dart';
 
-/// Screen for exhibitors to manage scanned QR leads.
+/// Screen for exhibitors_sponsors_booth to manage scanned QR leads.
 class ExhibitorLeadsScreen extends StatelessWidget {
   final String boothId;
 

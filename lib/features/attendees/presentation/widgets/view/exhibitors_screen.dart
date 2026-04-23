@@ -32,7 +32,7 @@ class ExhibitorScreen extends StatelessWidget {
               ),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: 'Search exhibitors, booth....',
+                  hintText: 'Search exhibitors_sponsors_booth, booth....',
                   hintStyle: TextStyle(
                     fontSize: 14.sp,
                     color: Colors.grey.shade500,
@@ -52,7 +52,7 @@ class ExhibitorScreen extends StatelessWidget {
                 return _buildShimmer();
               }
               if (controller.booths.isEmpty) {
-                return const Center(child: Text('No exhibitors found'));
+                return const Center(child: Text('No exhibitors_sponsors_booth found'));
               }
               return ListView.builder(
                 padding: EdgeInsets.symmetric(horizontal: 24.w),
