@@ -60,7 +60,7 @@ class CheckInOutController extends GetxController {
   }
 
   void checkInVirtual(BuildContext context) async {
-    context.pushNamed(AppRoutes.liveMeetingScreen);
+    context.pushNamed(AppRoutes.liveSessionScreen);
   }
 
   // Handle QR scanning and send to API

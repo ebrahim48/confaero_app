@@ -1,8 +1,12 @@
 class ApiConstants {
 
-  static const String baseUrl = 'https://reazul8078.suplify.life/api/v1';
-  static const String imageUrl = "https://reazul8078.suplify.life";
-  static const String socketServerUrl = 'https://reazul8078.suplify.life';
+  static const String baseUrl = 'http://10.10.11.30:8080/api/v1';
+  static const String imageUrl = "http://10.10.11.30:8080";
+  static const String socketServerUrl = 'http://10.10.11.30:8080';
+
+  // static const String baseUrl = 'https://reazul8078.suplify.life/api/v1';
+  // static const String imageUrl = "https://reazul8078.suplify.life";
+  // static const String socketServerUrl = 'https://reazul8078.suplify.life';
 
 
   static Map<String, String> headers = {'Content-Type': 'application/json'};
@@ -26,7 +30,7 @@ class ApiConstants {
 
   //--------------------------Events----------------------------
   static const String getAllUpcomingEvents = '/attendee/events';
-  static const String getExploreEvents = '/superAdmin/events';
+  static const String getExploreEvents = '/attendee/events';
 
   static const String getMyAllEvents = '/attendee/my-events';
   static const String getMyEventsAndInvitations = '/attendee/my-events';

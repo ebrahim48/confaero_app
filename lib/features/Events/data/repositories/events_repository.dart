@@ -91,6 +91,18 @@ class EventsRepository {
   }
 
 
+  // ── PATCH /attendee/event/{eventId}/join ─────────────────────────────────
+
+  Future<bool> joinEvent(String eventId) async {
+    try {
+      _logger.d('joinEvent: $eventId');
+      return await _eventsService.joinEvent(eventId);
+    } catch (e) {
+      _logger.e('joinEvent failed', error: e);
+      throw Exception('Failed to join event: $e');
+    }
+  }
+
   Future<EventHomeModel?> getEventHome(String eventId) async {
     try {
       _logger.d('getEventHome: $eventId');

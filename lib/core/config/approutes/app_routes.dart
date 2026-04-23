@@ -98,8 +98,7 @@ class AppRoutes {
   static const String mainNavigationScreen = "/mainNavigationScreen";
   static const String floorMapScreen = "/floorMapScreen";
   static const String floorMapDetailsScreen = "/floorMapDetailsScreen";
-  static const String eventCheckInCheckOutScreen =
-      "/eventCheckInCheckOutScreen";
+  static const String eventCheckInCheckOutScreen = "/eventCheckInCheckOutScreen";
   static const String contactUsScreen = "/contactUsScreen";
   static const String contactQrScreen = "/contactQrScreen";
   static const String qrScannerScreen = "/qrScannerScreen";

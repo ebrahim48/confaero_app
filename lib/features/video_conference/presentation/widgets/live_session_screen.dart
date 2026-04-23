@@ -1,17 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 import '../controllers/video_conference_controller.dart';
 
-class LiveSessionScreen extends StatelessWidget {
+class LiveSessionScreen extends StatefulWidget {
   const LiveSessionScreen({super.key});
 
   @override
+  State<LiveSessionScreen> createState() => _LiveSessionScreenState();
+}
+
+class _LiveSessionScreenState extends State<LiveSessionScreen> {
+  late final VideoConferenceController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(VideoConferenceController());
+    controller.loadSessions();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final controller = Get.put(VideoConferenceController());
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -34,11 +48,16 @@ class LiveSessionScreen extends StatelessWidget {
                           size: 24.sp, color: AppColors.textColor424242),
                     ),
                   SizedBox(width: 16.w),
-                  CustomText(
-                    text: 'Live Sessions',
-                    fontsize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textColor424242,
+                  Expanded(
+                    child: Text(
+                      'Live Sessions',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textColor424242,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -106,7 +125,7 @@ class _SessionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final sessionIndex = (session['sessionIndex'] as num?)?.toInt() ?? 0;
     final title = session['title']?.toString() ?? 'Session $sessionIndex';
-    final date = session['date']?.toString() ?? '';
+    final date = _formatDate(session['date']?.toString() ?? '');
     final time = session['time']?.toString() ?? '';
     final liveStatus = session['liveStatus']?.toString() ?? '';
     final startedAt = session['startedAt']?.toString() ?? '';
@@ -140,12 +159,16 @@ class _SessionCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: CustomText(
-                    text: title,
-                    fontsize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textColor424242,
+                Flexible(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textColor424242,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
                   ),
                 ),
                 SizedBox(width: 8.w),
@@ -162,10 +185,15 @@ class _SessionCard extends StatelessWidget {
                   Icon(Icons.calendar_today_outlined,
                       size: 14.sp, color: AppColors.textColor7E7F7E),
                   SizedBox(width: 4.w),
-                  CustomText(
-                    text: date,
-                    fontsize: 12.sp,
-                    color: AppColors.textColor7E7F7E,
+                  Flexible(
+                    child: Text(
+                      date,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AppColors.textColor7E7F7E,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   SizedBox(width: 12.w),
                 ],
@@ -173,10 +201,15 @@ class _SessionCard extends StatelessWidget {
                   Icon(Icons.access_time_outlined,
                       size: 14.sp, color: AppColors.textColor7E7F7E),
                   SizedBox(width: 4.w),
-                  CustomText(
-                    text: time,
-                    fontsize: 12.sp,
-                    color: AppColors.textColor7E7F7E,
+                  Flexible(
+                    child: Text(
+                      time,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AppColors.textColor7E7F7E,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ],
@@ -190,30 +223,54 @@ class _SessionCard extends StatelessWidget {
                   Icon(Icons.fiber_manual_record,
                       size: 10.sp, color: Colors.red),
                   SizedBox(width: 4.w),
-                  CustomText(
-                    text: 'Started at ${_formatStartedAt(startedAt)}',
-                    fontsize: 11.sp,
-                    color: Colors.red,
+                  Flexible(
+                    child: Text(
+                      'Started at ${_formatStartedAt(startedAt)}',
+                      style: TextStyle(fontSize: 11.sp, color: Colors.red),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
             ],
 
-            if (!isEnded) ...[
-              SizedBox(height: 14.h),
-              Divider(color: const Color(0xffF0F0F0), height: 1),
-              SizedBox(height: 12.h),
-              Obx(() => _ActionButtons(
+            Obx(() {
+              final isThisLoading =
+                  controller.loadingIndex.value == sessionIndex;
+              final isSpeaker = controller.userRole.value == 'SPEAKER';
+              final hideButtons = isEnded && !isSpeaker;
+              if (hideButtons) return const SizedBox.shrink();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: 14.h),
+                  const Divider(color: Color(0xffF0F0F0), height: 1),
+                  SizedBox(height: 12.h),
+                  _ActionButtons(
                     sessionIndex: sessionIndex,
                     isLive: isLive,
+                    isEnded: isEnded,
+                    isThisLoading: isThisLoading,
+                    isSpeaker: isSpeaker,
                     controller: controller,
-                    context: context,
-                  )),
-            ],
+                  ),
+                ],
+              );
+            }),
           ],
         ),
       ),
     );
+  }
+
+  String _formatDate(String raw) {
+    if (raw.isEmpty) return '';
+    try {
+      return DateFormat('MMM dd, yyyy').format(DateTime.parse(raw).toLocal());
+    } catch (_) {
+      return raw;
+    }
   }
 
   String _formatStartedAt(String raw) {
@@ -286,20 +343,22 @@ class _StatusBadge extends StatelessWidget {
 class _ActionButtons extends StatelessWidget {
   final int sessionIndex;
   final bool isLive;
+  final bool isEnded;
+  final bool isThisLoading;
+  final bool isSpeaker;
   final VideoConferenceController controller;
-  final BuildContext context;
 
   const _ActionButtons({
     required this.sessionIndex,
     required this.isLive,
+    required this.isEnded,
+    required this.isThisLoading,
+    required this.isSpeaker,
     required this.controller,
-    required this.context,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isThisLoading = controller.loadingIndex.value == sessionIndex;
-
     if (isThisLoading) {
       return const Center(
         child: SizedBox(
@@ -311,10 +370,9 @@ class _ActionButtons extends StatelessWidget {
       );
     }
 
-    final isSpeaker = controller.isSpeaker;
-
     if (isLive) {
       return Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           _Btn(
             label: 'Join',
@@ -335,7 +393,7 @@ class _ActionButtons extends StatelessWidget {
       );
     }
 
-    // Not live yet
+    // ENDED or not started yet → speaker can restart/start
     if (isSpeaker) {
       return _Btn(
         label: 'Start',
@@ -345,7 +403,6 @@ class _ActionButtons extends StatelessWidget {
       );
     }
 
-    // Attendee + not LIVE → nothing to do
     return const SizedBox.shrink();
   }
 }
@@ -365,24 +422,29 @@ class _Btn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: 16.sp, color: Colors.white),
-      label: Text(
-        label,
-        style: TextStyle(
-          fontSize: 13.sp,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-        ),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-        shape: RoundedRectangleBorder(
+        decoration: BoxDecoration(
+          color: color,
           borderRadius: BorderRadius.circular(8.r),
         ),
-        elevation: 0,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16.sp, color: Colors.white),
+            SizedBox(width: 6.w),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
