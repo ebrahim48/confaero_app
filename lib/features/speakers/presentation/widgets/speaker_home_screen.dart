@@ -4,9 +4,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/controllers/session_controller.dart';
 import '../../../../presentations/widgets/custom_text.dart';
-import '../../../attendees/presentation/widgets/custom_app_bar_widget.dart';
 import '../controllers/speaker_home_controller.dart';
 
 /// Speaker Home Screen
@@ -27,7 +25,9 @@ class SpeakerHomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: Obx(() {
-        if (controller.isLoading.value && controller.invitations.isEmpty) {
+        if (controller.isLoading.value &&
+            controller.invitations.isEmpty &&
+            controller.liveSessions.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -38,11 +38,10 @@ class SpeakerHomeScreen extends StatelessWidget {
               child: _buildHeader(controller, scaffoldKey),
             ),
 
-            // Live Session Controls (if active or has sessions)
-            if (controller.acceptedSessions.isNotEmpty)
-              SliverToBoxAdapter(
-                child: _buildLiveControls(controller),
-              ),
+            // Live Sessions card
+            SliverToBoxAdapter(
+              child: _buildLiveSessionsCard(controller, context),
+            ),
 
             // Pending Invitations
             if (controller.invitations.isNotEmpty)
@@ -185,199 +184,120 @@ class SpeakerHomeScreen extends StatelessWidget {
     );
   }
 
-  /// Live session controls
-  Widget _buildLiveControls(SpeakerHomeController controller) {
-    return Container(
-      margin: EdgeInsets.all(24.w),
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CustomText(
-            text: 'Live Session Controls',
-            fontsize: 18.sp,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textColor252525,
-          ),
-          SizedBox(height: 16.h),
-          Obx(() => controller.isLive.value
-              ? _buildLiveActiveControls(controller)
-              : _buildGoLiveButton(controller)),
-        ],
-      ),
-    );
-  }
+  /// Live sessions card — navigates to LiveSessionScreen (same as check-in virtual)
+  Widget _buildLiveSessionsCard(
+      SpeakerHomeController controller, BuildContext context) {
+    return Obx(() {
+      final sessions = controller.liveSessions;
+      final liveCount = controller.liveCount;
 
-  /// Go Live button
-  Widget _buildGoLiveButton(SpeakerHomeController controller) {
-    return GestureDetector(
-      onTap: controller.isProcessing.value
-          ? null
-          : () => controller.startLiveSession(),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: 16.h),
+      return Container(
+        margin: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 0),
+        padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: AppColors.primaryColor32A69A,
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (controller.isProcessing.value)
-              SizedBox(
-                width: 20.w,
-                height: 20.h,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            else ...[
-              Icon(Icons.videocam, color: Colors.white, size: 24.w),
-              SizedBox(width: 8.w),
-              CustomText(
-                text: 'Go Live',
-                fontsize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ],
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  /// Live active controls (Stop Live, Camera toggle)
-  Widget _buildLiveActiveControls(SpeakerHomeController controller) {
-    return Column(
-      children: [
-        // Status indicator
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          decoration: BoxDecoration(
-            color: Colors.red.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(20.r),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 8.w,
-                height: 8.h,
-                decoration: const BoxDecoration(
-                  color: Colors.red,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              SizedBox(width: 8.w),
-              CustomText(
-                text: 'LIVE',
-                fontsize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.red,
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 16.h),
-        // Control buttons
-        Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Obx(() => GestureDetector(
-                    onTap: controller.toggleCamera,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 12.h),
-                      decoration: BoxDecoration(
-                        color: controller.isCameraOn.value
-                            ? AppColors.primaryColor32A69A
-                            : AppColors.textColorF6F6F6,
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            controller.isCameraOn.value
-                                ? Icons.videocam
-                                : Icons.videocam_off,
-                            color: controller.isCameraOn.value
-                                ? Colors.white
-                                : AppColors.textColor707070,
-                            size: 20.w,
-                          ),
-                          SizedBox(width: 8.w),
-                          CustomText(
-                            text: controller.isCameraOn.value
-                                ? 'Camera On'
-                                : 'Camera Off',
-                            fontsize: 14.sp,
-                            fontWeight: FontWeight.w500,
-                            color: controller.isCameraOn.value
-                                ? Colors.white
-                                : AppColors.textColor707070,
-                          ),
-                        ],
-                      ),
-                    ),
-                  )),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: GestureDetector(
-                onTap: controller.isProcessing.value
-                    ? null
-                    : () => controller.stopLiveSession(),
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 12.h),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(12.r),
+            Row(
+              children: [
+                Expanded(
+                  child: CustomText(
+                    text: 'Live Sessions',
+                    fontsize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textColor252525,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (controller.isProcessing.value)
-                        SizedBox(
-                          width: 18.w,
-                          height: 18.h,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+                ),
+                if (liveCount > 0)
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.fiber_manual_record,
+                            size: 8.sp, color: Colors.red),
+                        SizedBox(width: 4.w),
+                        Text(
+                          '$liveCount LIVE',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.red,
                           ),
-                        )
-                      else ...[
-                        Icon(Icons.stop, color: Colors.white, size: 20.w),
-                        SizedBox(width: 8.w),
-                        CustomText(
-                          text: 'Stop',
-                          fontsize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
                         ),
                       ],
-                    ],
+                    ),
                   ),
+              ],
+            ),
+            SizedBox(height: 12.h),
+
+            // Session count info
+            if (sessions.isEmpty)
+              Padding(
+                padding: EdgeInsets.only(bottom: 12.h),
+                child: CustomText(
+                  text: 'No sessions available',
+                  fontsize: 13.sp,
+                  color: AppColors.textColor7E7F7E,
+                ),
+              )
+            else
+              Padding(
+                padding: EdgeInsets.only(bottom: 12.h),
+                child: CustomText(
+                  text: '${sessions.length} session${sessions.length == 1 ? '' : 's'}'
+                      '${liveCount > 0 ? ' • $liveCount live now' : ''}',
+                  fontsize: 13.sp,
+                  color: AppColors.textColor7E7F7E,
+                ),
+              ),
+
+            // Manage Sessions button
+            GestureDetector(
+              onTap: () => controller.goToLiveSessions(context),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryColor32A69A,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.videocam_outlined,
+                        color: Colors.white, size: 20.w),
+                    SizedBox(width: 8.w),
+                    CustomText(
+                      text: 'Manage Live Sessions',
+                      fontsize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ],
                 ),
               ),
             ),
           ],
         ),
-      ],
-    );
+      );
+    });
   }
 
   /// Invitations section

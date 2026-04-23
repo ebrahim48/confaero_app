@@ -38,6 +38,12 @@ import '../../../features/attendees/presentation/widgets/view/my_profile_screen.
 import '../../../features/attendees/presentation/widgets/view/pdf_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/photos_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/poll_screen.dart';
+import '../../../features/exhibitors_sponsors_booth/presentations/widgets/view/add_member_screen.dart';
+import '../../../features/exhibitors_sponsors_booth/presentations/widgets/view/booth_profile_screen.dart';
+import '../../../features/exhibitors_sponsors_booth/presentations/widgets/view/booth_staf_screen.dart';
+import '../../../features/exhibitors_sponsors_booth/presentations/widgets/view/exhibitors_booth_sponsors_screen.dart';
+import '../../../features/exhibitors_sponsors_booth/presentations/widgets/view/performence_screen.dart';
+import '../../../features/lead/presentation/widgets/view/lead_management_screen.dart';
 import '../../../features/resources/data/models/resource_model.dart';
 import '../../../features/attendees/presentation/widgets/view/qr_scanner_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/quick_notes_screen.dart';
@@ -98,8 +104,7 @@ class AppRoutes {
   static const String mainNavigationScreen = "/mainNavigationScreen";
   static const String floorMapScreen = "/floorMapScreen";
   static const String floorMapDetailsScreen = "/floorMapDetailsScreen";
-  static const String eventCheckInCheckOutScreen =
-      "/eventCheckInCheckOutScreen";
+  static const String eventCheckInCheckOutScreen = "/eventCheckInCheckOutScreen";
   static const String contactUsScreen = "/contactUsScreen";
   static const String contactQrScreen = "/contactQrScreen";
   static const String qrScannerScreen = "/qrScannerScreen";
@@ -170,6 +175,15 @@ class AppRoutes {
   static const String exhibitorLeadsScreen = "/exhibitorLeadsScreen";
   static const String organizerAttendeeScreen = "/organizerAttendeeScreen";
   static const String roleSwitchScreen = "/roleSwitchScreen";
+
+
+  /// ======================================> Booth Sponsors Exhibiotors =================
+  static const String performanceScreen = "/performanceScreen";
+  static const String boothProfileScreen = "/boothProfileScreen";
+  static const String boothScreen = "/boothScreen";
+  static const String boothStaffScreen = "/boothStaffScreen";
+  static const String addMemberScreen = "/addMemberScreen";
+  static const String leadManagementScreen = "/leadManagementScreen";
 
   // verifyScreen and resetPasswordScreen already defined above with API constants
 
@@ -640,6 +654,36 @@ class AppRoutes {
         path: roleSwitchScreen,
         name: roleSwitchScreen,
         builder: (context, state) => const RoleSwitchScreen(),
+      ),
+      GoRoute(
+        path: performanceScreen,
+        name: performanceScreen,
+        builder: (context, state) => const PerformanceScreen(),
+      ),
+      GoRoute(
+        path: boothProfileScreen,
+        name: boothProfileScreen,
+        builder: (context, state) => const BoothProfileScreen(),
+      ),
+      GoRoute(
+        path: boothScreen,
+        name: boothScreen,
+        builder: (context, state) => const BoothScreen(),
+      ),
+      GoRoute(
+        path: boothStaffScreen,
+        name: boothStaffScreen,
+        builder: (context, state) => const BoothStaffScreen(),
+      ),
+      GoRoute(
+        path: addMemberScreen,
+        name: addMemberScreen,
+        builder: (context, state) => const AddMemberScreen(),
+      ),
+      GoRoute(
+        path: leadManagementScreen,
+        name: leadManagementScreen,
+        builder: (context, state) => const LeadManagementScreen(),
       ),
 
       GoRoute(

@@ -6,7 +6,6 @@ import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/exceptions/app_exceptions.dart';
 import '../../../../../core/helpers/logger_helper.dart';
 import '../../../../../core/helpers/prefs_helper.dart';
-import '../../../../../core/helpers/toast_message_helper.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/controllers/role_controller.dart';
 import '../../../../../core/controllers/session_controller.dart';
@@ -19,6 +18,10 @@ class SignInController extends GetxController {
   final signInFormKey = GlobalKey<FormState>();
   final isLoading = false.obs;
   final selectedTab = 0.obs;
+
+  final emailError = RxnString();
+  final passwordError = RxnString();
+  final serverError = RxnString();
 
   final LoggerHelper _logger = LoggerHelper('SignInController');
 
@@ -47,6 +50,12 @@ class SignInController extends GetxController {
     passwordController.clear();
   }
 
+  void clearErrors() {
+    emailError.value = null;
+    passwordError.value = null;
+    serverError.value = null;
+  }
+
   String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return "Please enter your email";
@@ -69,6 +78,8 @@ class SignInController extends GetxController {
   }
 
   Future<void> signInWithEmail(BuildContext context) async {
+    clearErrors();
+
     if (!signInFormKey.currentState!.validate()) {
       return;
     }
@@ -91,7 +102,6 @@ class SignInController extends GetxController {
       if (success && data != null) {
         _logger.i('Login successful for: ${emailController.text.trim()}');
 
-        // Save tokens to local storage
         final accessToken = data['accessToken'] as String? ?? '';
         final refreshToken = data['refreshToken'] as String? ?? '';
         final activeRole = data['activeRole'] as String? ?? 'ATTENDEE';
@@ -109,75 +119,72 @@ class SignInController extends GetxController {
           emailController.text.trim(),
         );
 
-        // Update RoleController with the active role
         Get.find<RoleController>().setRole(activeRole);
-
-        // ========== Clear previous event selection on login ==========
-        // Always show EventsScreen first so user can select/switch events
         await Get.find<SessionController>().clearEvent();
-        // ==========================================================
 
-        // ========== DEMO MODE: Auto-select default event ==========
         if (AppConstants.DEMO_MODE) {
           Get.find<SessionController>().setEvent(
             AppConstants.DEMO_EVENT_ID,
             title: AppConstants.DEMO_EVENT_TITLE,
           );
         }
-        // ==========================================================
 
         await Future.delayed(const Duration(milliseconds: 100));
         if (!context.mounted) return;
         _logger.i('Navigating to events screen (user must select an event)');
-        // Navigate to events screen - user must select an event first
-        // The routing redirect will handle if they already have an event
         context.go(AppRoutes.eventsScreen);
       } else {
-        final errorMessage = response['message'] as String? ?? 'Login failed';
-        _logger.w('Login failed: $errorMessage');
-        ToastMessageHelper.showToastMessage(errorMessage, title: '');
+        final message = response['message'] as String? ?? 'Login failed';
+        _logger.w('Login failed: $message');
+        _setFieldError(message);
       }
+    } on NoInternetException catch (e) {
+      isLoading.value = false;
+      _logger.e('No internet during login', error: e);
+      serverError.value = "No internet connection. Please check your network.";
+    } on TimeoutException catch (e) {
+      isLoading.value = false;
+      _logger.e('Timeout during login', error: e);
+      serverError.value = "Request timed out. Please try again.";
     } on ServerException catch (e) {
       isLoading.value = false;
       _logger.e('ServerException during login', error: e);
-
-      String errorMessage = e.message;
-
-      // Handle specific error cases
-      if (errorMessage.toLowerCase().contains('invalid credentials') ||
-          errorMessage.toLowerCase().contains('incorrect password') ||
-          errorMessage.toLowerCase().contains('user not found')) {
-        errorMessage = "Invalid email or password. Please try again.";
-      } else if (errorMessage.toLowerCase().contains('not verified') ||
-          errorMessage.toLowerCase().contains('verify your email')) {
-        errorMessage = "Please verify your email before signing in.";
+      if (e.statusCode != null && e.statusCode! >= 500) {
+        serverError.value =
+            "Server is currently unavailable. Please try again later.";
+      } else {
+        _setFieldError(e.message);
       }
-
-      ToastMessageHelper.showToastMessage(errorMessage, title: '');
     } catch (e) {
       isLoading.value = false;
       _logger.e('Exception during login', error: e);
-
-      String errorMessage = e.toString();
-
-      // Handle specific error cases from exception message
-      if (errorMessage.toLowerCase().contains('invalid credentials') ||
-          errorMessage.toLowerCase().contains('incorrect password') ||
-          errorMessage.toLowerCase().contains('user not found')) {
-        errorMessage = "Invalid email or password. Please try again.";
-      } else if (errorMessage.toLowerCase().contains('not verified') ||
-          errorMessage.toLowerCase().contains('verify your email')) {
-        errorMessage = "Please verify your email before signing in.";
-      } else if (errorMessage.toLowerCase().contains('no internet')) {
-        errorMessage =
-            "No internet connection. Please check your network and try again.";
-      } else if (errorMessage.toLowerCase().contains('timeout')) {
-        errorMessage = "Request timed out. Please try again.";
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('socket') ||
+          msg.contains('connection refused') ||
+          msg.contains('no internet') ||
+          msg.contains('network')) {
+        serverError.value =
+            "Unable to connect to server. Please check your network.";
+      } else if (msg.contains('timeout')) {
+        serverError.value = "Request timed out. Please try again.";
       } else {
-        errorMessage = "Login failed. Please try again.";
+        serverError.value = "Login failed. Please try again.";
       }
+    }
+  }
 
-      ToastMessageHelper.showToastMessage(errorMessage, title: '');
+  void _setFieldError(String message) {
+    final lower = message.toLowerCase();
+    if (lower.contains('invalid credentials') ||
+        lower.contains('incorrect password') ||
+        lower.contains('user not found') ||
+        lower.contains('wrong password')) {
+      passwordError.value = "Invalid email or password. Please try again.";
+    } else if (lower.contains('not verified') ||
+        lower.contains('verify your email')) {
+      emailError.value = "Please verify your email before signing in.";
+    } else {
+      serverError.value = message;
     }
   }
 

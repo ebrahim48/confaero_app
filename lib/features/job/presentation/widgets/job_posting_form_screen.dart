@@ -17,7 +17,7 @@ import '../../../attendees/presentation/widgets/custom_app_bar_widget.dart';
 
 /// Job Posting Form Screen for Exhibitors/Sponsors
 ///
-/// Allows exhibitors and sponsors to create new job postings
+/// Allows exhibitors_sponsors_booth and sponsors to create new job postings
 class JobPostingFormScreen extends StatelessWidget {
   const JobPostingFormScreen({super.key});
 

@@ -338,11 +338,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
 
   Widget _buildRegistrationSection(EventModel event) {
-    // Already registered — show status + Go to Event button
-    if (controller.isAlreadyRegistered) {
+    // VERIFIED / REGISTERED — show badge + Join Now button
+    if (controller.isVerifiedOrRegistered) {
       return Column(
         children: [
-          // Registered badge
           Container(
             width: double.infinity,
             height: 54.h,
@@ -367,43 +366,71 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
               ],
             ),
           ),
-
           SizedBox(height: 12.h),
-
-          // Go to Home button (navigates to MainNavigationScreen)
-          GestureDetector(
-            onTap: () {
-              final event = controller.event.value;
-              if (event != null && event.id.isNotEmpty) {
-                // Navigate to main navigation screen (role-based home)
-                context.goNamed(AppRoutes.mainNavigationScreen);
-              }
-            },
+          Obx(() => GestureDetector(
+            onTap: controller.isJoining.value
+                ? null
+                : () => controller.joinNow(context),
             child: Container(
               width: double.infinity,
-              height: 46.h,
+              height: 50.h,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: const Color(0xff5BB8AE),
                 borderRadius: BorderRadius.circular(8.r),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CustomText(
-                    text: 'Go to Home',
-                    fontsize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                  SizedBox(width: 8.w),
-                  Icon(Icons.home_rounded,
-                      color: Colors.white, size: 18.sp),
-                ],
-              ),
+              child: controller.isJoining.value
+                  ? SizedBox(
+                      width: 22.w,
+                      height: 22.h,
+                      child: const CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CustomText(
+                          text: 'Join Now',
+                          fontsize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 8.w),
+                        Icon(Icons.arrow_forward_rounded,
+                            color: Colors.white, size: 18.sp),
+                      ],
+                    ),
             ),
-          ),
+          )),
         ],
+      );
+    }
+
+    // PENDING — show pending badge only (no join button)
+    if (controller.isPendingRegistration) {
+      return Container(
+        width: double.infinity,
+        height: 54.h,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.orange.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: Colors.orange.shade400),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.hourglass_top_rounded,
+                color: Colors.orange.shade700, size: 20.sp),
+            SizedBox(width: 8.w),
+            CustomText(
+              text: 'Pending Approval',
+              fontsize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.orange.shade700,
+            ),
+          ],
+        ),
       );
     }
 

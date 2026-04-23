@@ -42,7 +42,7 @@ class EventsController extends GetxController {
   final isInvitedLoading = false.obs;
   final invitedError = ''.obs;
 
-  // All Events tab (for exhibitors, sponsors, etc.)
+  // All Events tab (for exhibitors_sponsors_booth, sponsors, etc.)
   final allEvents = <EventModel>[].obs;
   final isAllEventsLoading = false.obs;
   final allEventsError = ''.obs;
@@ -317,12 +317,8 @@ class EventsController extends GetxController {
   // ── Navigation ────────────────────────────────────────────────────────────
 
   void openEventDetails(BuildContext context, String eventId, {String title = '', String registrationStatus = ''}) {
-    // Only set the session (and connect socket) if the user is already registered.
-    // For unregistered events we just navigate to view details — the socket must
-    // not attempt to join an event room the user doesn't belong to yet.
-    if (registrationStatus == 'VERIFIED' || registrationStatus == 'PENDING') {
-      SessionController.to.setEvent(eventId, title: title);
-    }
+    // Do NOT set the session here — session is set only after the user
+    // clicks "Join Now" (calls PATCH /attendee/event/{id}/join).
     context.pushNamed(AppRoutes.eventsDetailsScreen, extra: {
       'eventId': eventId,
       'registrationStatus': registrationStatus,

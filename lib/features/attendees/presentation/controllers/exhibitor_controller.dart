@@ -31,7 +31,7 @@ class ExhibitorController extends GetxController {
         booths.assignAll(list);
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load exhibitors', title: 'Error');
+      ToastMessageHelper.showToastMessage('Failed to load exhibitors_sponsors_booth', title: 'Error');
     } finally {
       isLoading.value = false;
     }

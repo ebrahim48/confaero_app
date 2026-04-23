@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/approutes/app_routes.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../presentations/widgets/custom_button.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 import '../../../../presentations/widgets/custom_text_field.dart';
@@ -115,9 +114,23 @@ class _SignInScreenState extends State<SignInScreen>
                       contentPaddingHorizontal: 16.w,
                       contentPaddingVertical: 14.h,
                       validator: (value) => controller.validateEmail(value),
+                      onChanged: (_) => controller.emailError.value = null,
                     ),
+                    Obx(() => controller.emailError.value != null
+                        ? Padding(
+                            padding: EdgeInsets.only(
+                                left: 12.w, bottom: 4.h),
+                            child: Text(
+                              controller.emailError.value!,
+                              style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w400),
+                            ),
+                          )
+                        : const SizedBox.shrink()),
 
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 8.h),
 
                     // Password Field
                     CustomText(
@@ -135,7 +148,21 @@ class _SignInScreenState extends State<SignInScreen>
                       contentPaddingHorizontal: 16.w,
                       contentPaddingVertical: 14.h,
                       validator: (value) => controller.validatePassword(value),
+                      onChanged: (_) => controller.passwordError.value = null,
                     ),
+                    Obx(() => controller.passwordError.value != null
+                        ? Padding(
+                            padding: EdgeInsets.only(
+                                left: 12.w, bottom: 4.h),
+                            child: Text(
+                              controller.passwordError.value!,
+                              style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w400),
+                            ),
+                          )
+                        : const SizedBox.shrink()),
                   ],
                 ),
               ),
@@ -146,11 +173,13 @@ class _SignInScreenState extends State<SignInScreen>
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
-                  onTap: (){
-                    if(controller.emailController.text.isEmpty){
-                      ToastMessageHelper.showToastMessage("Please enter your email",title: 'Attention');
-                    }else{
-                      context.pushNamed(AppRoutes.forgetPasswordScreen, extra: controller.emailController.text);
+                  onTap: () {
+                    if (controller.emailController.text.isEmpty) {
+                      controller.emailError.value =
+                          "Please enter your email to reset password";
+                    } else {
+                      context.pushNamed(AppRoutes.forgetPasswordScreen,
+                          extra: controller.emailController.text);
                     }
                   },
                   child: CustomText(
@@ -162,7 +191,39 @@ class _SignInScreenState extends State<SignInScreen>
                 ),
               ),
 
-              SizedBox(height: 24.h),
+              SizedBox(height: 16.h),
+
+              // Server / connection error
+              Obx(() => controller.serverError.value != null
+                  ? Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.only(bottom: 16.h),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 14.w, vertical: 12.h),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.error_outline,
+                              color: Colors.red.shade700, size: 16.sp),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: Text(
+                              controller.serverError.value!,
+                              style: TextStyle(
+                                  color: Colors.red.shade700,
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w400),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink()),
 
               // Sign In Button
               Obx(() => CustomButton(

@@ -19,6 +19,7 @@ class EventDetailsController extends GetxController {
 
   final isLoading = false.obs;
   final isRegistering = false.obs;
+  final isJoining = false.obs;
   final showInvitationInput = false.obs;
 
   final event = Rxn<EventModel>();
@@ -153,52 +154,68 @@ class EventDetailsController extends GetxController {
     }
   }
 
+  Future<void> joinNow(BuildContext context) async {
+    final currentEvent = event.value;
+    final eventId = currentEvent?.id;
+    if (eventId == null || eventId.isEmpty) return;
+
+    try {
+      isJoining.value = true;
+      errorMessage.value = '';
+      await _repository.joinEvent(eventId);
+      await SessionController.to.setEvent(eventId, title: currentEvent?.title ?? '');
+      if (context.mounted) {
+        context.goNamed(AppRoutes.mainNavigationScreen);
+      }
+    } catch (e) {
+      errorMessage.value = e
+          .toString()
+          .replaceAll('Exception: ', '')
+          .replaceAll('Exception:', '')
+          .trim();
+    } finally {
+      isJoining.value = false;
+    }
+  }
+
   void toggleInvitationInput() {
     showInvitationInput.value = !showInvitationInput.value;
   }
 
   void joinWithInvitationCode() async {
-    if (invitationCodeController.text.trim().isEmpty) {
-      ToastMessageHelper.showToastMessage(
-        'Please enter an invitation code',
-        title: 'Error',
-      );
-      return;
-    }
     isLoading.value = true;
     await Future.delayed(const Duration(seconds: 2));
     isLoading.value = false;
   }
 
-  bool get isAlreadyRegistered {
-    // Check passed registration status first (from "My Events" tab)
-    if (registrationStatus.value.isNotEmpty) {
-      return registrationStatus.value == 'VERIFIED' || 
-             registrationStatus.value == 'PENDING';
-    }
-    // Fallback to event's registration status
-    return event.value?.registrationStatus == 'VERIFIED' ||
-           event.value?.registrationStatus == 'PENDING';
+  // True only for VERIFIED / REGISTERED — can join
+  bool get isVerifiedOrRegistered {
+    final status = registrationStatus.value.isNotEmpty
+        ? registrationStatus.value
+        : event.value?.registrationStatus ?? '';
+    return status == 'VERIFIED' || status == 'REGISTERED';
   }
 
+  // True only for PENDING — awaiting approval
+  bool get isPendingRegistration {
+    final status = registrationStatus.value.isNotEmpty
+        ? registrationStatus.value
+        : event.value?.registrationStatus ?? '';
+    return status == 'PENDING';
+  }
+
+  bool get isAlreadyRegistered => isVerifiedOrRegistered || isPendingRegistration;
+
   String get registrationStatusLabel {
-    // Use passed registration status first
-    if (registrationStatus.value.isNotEmpty) {
-      switch (registrationStatus.value) {
-        case 'VERIFIED':
-          return 'Registered';
-        case 'PENDING':
-          return 'Pending';
-        default:
-          return '';
-      }
-    }
-    // Fallback to event's registration status
-    switch (event.value?.registrationStatus) {
+    final status = registrationStatus.value.isNotEmpty
+        ? registrationStatus.value
+        : event.value?.registrationStatus ?? '';
+    switch (status) {
       case 'VERIFIED':
+      case 'REGISTERED':
         return 'Registered';
       case 'PENDING':
-        return 'Pending';
+        return 'Pending Approval';
       default:
         return '';
     }
