@@ -140,6 +140,19 @@ class LeadController extends GetxController {
     }
   }
 
+  // ── QR scan → add lead ───────────────────────────────────────────────────
+
+  Future<void> onQrScanned(String qrToken) async {
+    final eventId = SessionController.to.eventId;
+    if (eventId.isEmpty || qrToken.isEmpty) return;
+    try {
+      await _qrService.scanExhibitorLead(eventId, qrToken);
+      await loadLeads(); // refresh list to show new lead
+    } catch (e) {
+      // silently ignore — user will see unchanged list
+    }
+  }
+
   // ── Filter ────────────────────────────────────────────────────────────────
 
   void setFilter(String filter) => selectedFilter.value = filter;

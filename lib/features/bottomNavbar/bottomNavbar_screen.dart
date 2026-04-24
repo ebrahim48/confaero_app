@@ -16,6 +16,7 @@ import '../volunteer/presentation/widgets/volunteer_dashboard_screen.dart';
 import '../volunteer/presentation/widgets/volunteer_home_screen.dart';
 import '../volunteer/presentation/widgets/volunteer_qr_scan_screen.dart';
 import '../sponsor_dashboard/presentation/widgets/sponsor_dashboard_screen.dart';
+import '../sponsors_profile/presentation/widgets/view/sponsor_home_screen.dart';
 import '../reviewer/presentation/widgets/reviewer_dashboard_screen.dart';
 import '../organizer/presentation/widgets/organizer_dashboard_screen.dart';
 import '../booth_management/presentation/widgets/booth_management_screen.dart';
@@ -117,6 +118,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
       case 'EXHIBITOR':
       case 'BOOTH_STAFF':
+      case 'STAFF':
         return {
           'screens': [
             HomeScreen(eventId: eventId), // Home
@@ -131,9 +133,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       case 'SPONSOR':
         return {
           'screens': [
-            const SponsorDashboardScreen(), // Home - Sponsor dashboard
+            const SponsorHomeScreen(), // Home
             const AgendaScreen(), // Agenda
-            const SponsorDashboardScreen(), // Booth
+            const SponsorHomeScreen(), // Booth (profile)
             const LeadManagementScreen(), // Lead
             const MessageScreen(),
           ],

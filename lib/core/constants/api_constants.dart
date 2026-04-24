@@ -231,13 +231,18 @@ class ApiConstants {
   static const String getPerformance = '/exhibitor/performance'; // eventId
 
   //--------------------------Sponsor Dashboard------------------------
+
+
   static const String createSponsor = '/sponsor/create';
   static const String updateSponsor = '/sponsor/update'; // PATCH /:id
   static const String getMySponsor = '/sponsor/get-my-sponsor'; // GET /:eventId
-  static const String getSponsorDashboard =
-      '/sponsor/dashboard'; // GET /:eventId
-  static const String approveSponsor =
-      '/organizerSponsor'; // PATCH /:id/approve
+  static const String getSponsorDashboard = '/sponsor/dashboard'; // GET /:eventId
+
+  static const String incrementView = '/sponsor/view'; // PATCH /: id
+
+
+
+  static const String approveSponsor = '/organizerSponsor'; // PATCH /:id/approve
   static const String rejectSponsor = '/organizerSponsor'; // PATCH /:id/reject
 
   //--------------------------Poster----------------------------------

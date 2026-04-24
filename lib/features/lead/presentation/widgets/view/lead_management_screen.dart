@@ -164,7 +164,12 @@ class LeadManagementScreen extends StatelessWidget {
       ),
 
       floatingActionButton: GestureDetector(
-        onTap: () => context.pushNamed(AppRoutes.qrScannerScreen),
+        onTap: () async {
+          final result = await context.pushNamed(AppRoutes.qrScannerScreen);
+          if (result != null && result is String && result.isNotEmpty) {
+            await controller.onQrScanned(result);
+          }
+        },
         child: SizedBox(
           width: 52.w,
           height: 52.h,
