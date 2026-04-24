@@ -1,117 +1,187 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/services/api_service.dart';
+import '../../../../core/services/connectivity_service.dart';
+import '../../../../core/services/qr_service.dart';
+
 class LeadController extends GetxController {
-  // Filter tabs
+  late final QrService _qrService;
+
+  // Loading / error
+  final isLoading = false.obs;
+  final errorMessage = ''.obs;
+
+  // Filter tabs — display labels
   final RxString selectedFilter = 'All Scans'.obs;
-  final List<String> filters = ['All Scans', 'Hot Lead', 'Follow-up', 'Reached'];
+  final List<String> filters = ['All Scans', 'Hot Lead', 'Follow Up', 'General'];
 
-  // Leads list
-  final RxList<Map<String, dynamic>> allLeads = <Map<String, dynamic>>[
-    {
-      'id': '1',
-      'name': 'Ronald Richards',
-      'role': 'VP of Marketing @ TecGlobl',
-      'time': '2:30 PM',
-      'image': 'assets/images/profile.png',
-      'tags': <String>[],
-      'note': '',
-    },
-    {
-      'id': '2',
-      'name': 'Sarah Jenkins',
-      'role': 'VP of Marketing @ TecGlobl',
-      'time': '2:30 PM',
-      'image': 'assets/images/profile.png',
-      'tags': <String>['Hot Lead'],
-      'note': '',
-    },
-    {
-      'id': '3',
-      'name': 'Arlene McCoy',
-      'role': 'VP of Marketing @ TecGlobl',
-      'time': '2:30 PM',
-      'image': 'assets/images/profile.png',
-      'tags': <String>['Follow-Up', 'Demo'],
-      'note': '',
-    },
-    {
-      'id': '4',
-      'name': 'Floyd Miles',
-      'role': 'VP of Marketing @ TecGlobl',
-      'time': '2:30 PM',
-      'image': 'assets/images/profile.png',
-      'tags': <String>['Follow-Up', 'Demo'],
-      'note': '',
-    },
-    {
-      'id': '5',
-      'name': 'Eleanor Pena',
-      'role': 'VP of Marketing @ TecGlobl',
-      'time': '2:30 PM',
-      'image': 'assets/images/profile.png',
-      'tags': <String>[],
-      'note': '',
-    },
-  ].obs;
+  // All leads — stores API-mapped data
+  final RxList<Map<String, dynamic>> allLeads = <Map<String, dynamic>>[].obs;
 
-  // Available tag options
-  final List<String> availableTags = [
-    'Hot Lead',
-    'Follow-Up',
-    'Demo',
-    'Reached',
-    'Cold Lead',
+  // Available tag options: value = API enum, label = display text
+  static const List<Map<String, String>> availableTagOptions = [
+    {'value': 'HOT', 'label': 'Hot Lead'},
+    {'value': 'FOLLOW_UP', 'label': 'Follow Up'},
+    {'value': 'GENERAL', 'label': 'General'},
   ];
 
   // Tag dialog state
   final RxList<String> tempSelectedTags = <String>[].obs;
   final RxString selectedTagDropdown = ''.obs;
+  final RxString currentTagLeadId = ''.obs;
 
   // Note dialog state
   final TextEditingController noteController = TextEditingController();
   final RxInt noteLength = 0.obs;
   final RxString currentNoteLeadId = ''.obs;
 
-  // Add tag dialog state
-  final RxString currentTagLeadId = ''.obs;
+  // ── Filtered list ─────────────────────────────────────────────────────────
 
   RxList<Map<String, dynamic>> get filteredLeads {
     if (selectedFilter.value == 'All Scans') return allLeads;
+    final apiTag = _filterToApiTag(selectedFilter.value);
+    if (apiTag.isEmpty) return allLeads;
     return allLeads
-        .where((lead) =>
-        (lead['tags'] as List<String>).contains(selectedFilter.value))
+        .where((lead) => (lead['tags'] as List<String>).contains(apiTag))
         .toList()
         .obs;
   }
 
   int get totalLeads => allLeads.length;
 
-  void setFilter(String filter) {
-    selectedFilter.value = filter;
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+
+  @override
+  void onInit() {
+    super.onInit();
+    _qrService = QrService(
+      apiService: Get.find<ApiService>(),
+      connectivityService: Get.find<ConnectivityService>(),
+    );
+    noteController.addListener(() {
+      noteLength.value = noteController.text.length;
+    });
+
+    final eventId = SessionController.to.eventId;
+    if (eventId.isNotEmpty) {
+      loadLeads();
+    } else {
+      ever(SessionController.to.eventIdRx, (String id) {
+        if (id.isNotEmpty) loadLeads();
+      });
+    }
   }
 
-  // Tag dialog
-  void openTagDialog(String leadId) {
+  @override
+  void onClose() {
+    noteController.dispose();
+    super.onClose();
+  }
+
+  // ── Load leads ────────────────────────────────────────────────────────────
+
+  Future<void> loadLeads() async {
+    final eventId = SessionController.to.eventId;
+    if (eventId.isEmpty) return;
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+      final rawLeads = await _qrService.getExhibitorLeads(eventId);
+      allLeads.value = rawLeads.map(_mapLead).toList();
+    } catch (e) {
+      errorMessage.value = e.toString()
+          .replaceAll('Exception: ', '')
+          .replaceAll('Exception:', '')
+          .trim();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Map<String, dynamic> _mapLead(Map<String, dynamic> raw) {
+    final designation = raw['designation'] as String? ?? '';
+    final company = raw['company'] as String? ?? '';
+    final role = [designation, company].where((s) => s.isNotEmpty).join(' @ ');
+    final tags = (raw['tags'] as List?)?.map((t) => t.toString()).toList() ?? <String>[];
+    return {
+      'id': raw['leadId'] as String? ?? '',
+      'name': raw['name'] as String? ?? 'Unknown',
+      'role': role,
+      'time': _formatTime(raw['createdAt'] as String?),
+      'image': raw['avatar'] as String? ?? '',
+      'tags': tags,
+      'note': raw['note'] as String? ?? '',
+      'email': raw['email'] as String? ?? '',
+    };
+  }
+
+  String _formatTime(String? iso) {
+    if (iso == null || iso.isEmpty) return '';
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      final now = DateTime.now();
+      final diff = now.difference(dt);
+      if (diff.inDays == 0) {
+        final h = dt.hour;
+        final m = dt.minute.toString().padLeft(2, '0');
+        final period = h >= 12 ? 'PM' : 'AM';
+        final hour = h > 12 ? h - 12 : (h == 0 ? 12 : h);
+        return '$hour:$m $period';
+      } else if (diff.inDays == 1) {
+        return 'Yesterday';
+      } else {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return '${months[dt.month - 1]} ${dt.day}';
+      }
+    } catch (_) {
+      return '';
+    }
+  }
+
+  // ── Filter ────────────────────────────────────────────────────────────────
+
+  void setFilter(String filter) => selectedFilter.value = filter;
+
+  String _filterToApiTag(String filter) {
+    switch (filter) {
+      case 'Hot Lead': return 'HOT';
+      case 'Follow Up': return 'FOLLOW_UP';
+      case 'General': return 'GENERAL';
+      default: return '';
+    }
+  }
+
+  // ── Tag dialog ────────────────────────────────────────────────────────────
+
+  void openTagDialog(BuildContext context, String leadId) {
     currentTagLeadId.value = leadId;
-    final lead = allLeads.firstWhere((l) => l['id'] == leadId);
-    tempSelectedTags.value = List<String>.from(lead['tags']);
+    final lead = allLeads.firstWhere(
+      (l) => l['id'] == leadId,
+      orElse: () => {'tags': <String>[]},
+    );
+    tempSelectedTags.value = List<String>.from(lead['tags'] as List? ?? []);
     selectedTagDropdown.value = '';
-    Get.dialog(_TagDialog());
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => LeadTagDialog(controller: this),
+    );
   }
 
-  void removeTag(String tag) {
-    tempSelectedTags.remove(tag);
-  }
+  void removeTag(String tag) => tempSelectedTags.remove(tag);
 
   void addTagFromDropdown() {
     final tag = selectedTagDropdown.value;
     if (tag.isEmpty) return;
     if (tempSelectedTags.length >= 2) {
-      Get.snackbar('Limit Reached', 'Only up to 2 tags can be added.',
+      ScaffoldMessenger.of(Get.context!).showSnackBar(
+        const SnackBar(
+          content: Text('Only up to 2 tags can be added.'),
           backgroundColor: Colors.orange,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM);
+        ),
+      );
       return;
     }
     if (!tempSelectedTags.contains(tag)) {
@@ -120,57 +190,80 @@ class LeadController extends GetxController {
     selectedTagDropdown.value = '';
   }
 
-  void saveTags() {
-    final index =
-    allLeads.indexWhere((l) => l['id'] == currentTagLeadId.value);
+  Future<void> saveTags(BuildContext context) async {
+    final leadId = currentTagLeadId.value;
+    final tags = List<String>.from(tempSelectedTags);
+    Navigator.of(context).pop();
+    // Update local list immediately so UI reflects change
+    final index = allLeads.indexWhere((l) => l['id'] == leadId);
     if (index != -1) {
       final updated = Map<String, dynamic>.from(allLeads[index]);
-      updated['tags'] = List<String>.from(tempSelectedTags);
+      updated['tags'] = tags;
       allLeads[index] = updated;
       allLeads.refresh();
     }
-    Get.back();
+    try {
+      await _qrService.tagLead(leadId, tags);
+    } catch (e) {
+      // silently ignore — local state already updated
+    }
   }
 
-  // Note dialog
-  void openNoteDialog(String leadId) {
+  // ── Note dialog ───────────────────────────────────────────────────────────
+
+  void openNoteDialog(BuildContext context, String leadId) {
     currentNoteLeadId.value = leadId;
-    final lead = allLeads.firstWhere((l) => l['id'] == leadId);
-    noteController.text = lead['note'] ?? '';
+    final lead = allLeads.firstWhere(
+      (l) => l['id'] == leadId,
+      orElse: () => {'note': ''},
+    );
+    noteController.text = lead['note'] as String? ?? '';
     noteLength.value = noteController.text.length;
-    Get.dialog(_NoteDialog());
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => LeadNoteDialog(controller: this),
+    );
   }
 
-  void saveNote() {
-    final index =
-    allLeads.indexWhere((l) => l['id'] == currentNoteLeadId.value);
+  Future<void> saveNote(BuildContext context) async {
+    final leadId = currentNoteLeadId.value;
+    final note = noteController.text.trim();
+    Navigator.of(context).pop();
+    noteController.clear();
+    // Update local list immediately so UI reflects change
+    final index = allLeads.indexWhere((l) => l['id'] == leadId);
     if (index != -1) {
       final updated = Map<String, dynamic>.from(allLeads[index]);
-      updated['note'] = noteController.text;
+      updated['note'] = note;
       allLeads[index] = updated;
       allLeads.refresh();
     }
-    Get.back();
-  }
-
-  @override
-  void onInit() {
-    super.onInit();
-    noteController.addListener(() {
-      noteLength.value = noteController.text.length;
-    });
-  }
-
-  @override
-  void onClose() {
-    noteController.dispose();
-    super.onClose();
+    try {
+      await _qrService.addLeadNote(leadId, note);
+    } catch (e) {
+      // silently ignore — local state already updated
+    }
   }
 }
 
-// ── Dialogs ──────────────────────────────────────────────────────────────────
+// ── Tag label helper ──────────────────────────────────────────────────────────
 
-class _TagDialog extends GetWidget<LeadController> {
+String tagDisplayLabel(String apiTag) {
+  switch (apiTag) {
+    case 'HOT': return 'Hot Lead';
+    case 'FOLLOW_UP': return 'Follow Up';
+    case 'GENERAL': return 'General';
+    default: return apiTag;
+  }
+}
+
+// ── Tag Dialog ────────────────────────────────────────────────────────────────
+
+class LeadTagDialog extends StatelessWidget {
+  final LeadController controller;
+  const LeadTagDialog({super.key, required this.controller});
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -182,15 +275,13 @@ class _TagDialog extends GetWidget<LeadController> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Add Tag',
-                    style:
-                    TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                 GestureDetector(
-                  onTap: () => Get.back(),
+                  onTap: () => Navigator.of(context).pop(),
                   child: const Icon(Icons.close, size: 20),
                 ),
               ],
@@ -200,7 +291,7 @@ class _TagDialog extends GetWidget<LeadController> {
                 style: TextStyle(fontSize: 13, color: Color(0xff7E7F7E))),
             const SizedBox(height: 10),
 
-            // Selected tags chips
+            // Selected tag chips
             Obx(() => Wrap(
               spacing: 8,
               runSpacing: 6,
@@ -214,26 +305,23 @@ class _TagDialog extends GetWidget<LeadController> {
             Obx(() => Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                border:
-                Border.all(color: const Color(0xffD2D2D2)),
+                border: Border.all(color: const Color(0xffD2D2D2)),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   isExpanded: true,
                   hint: const Text('select tag',
-                      style: TextStyle(
-                          fontSize: 13, color: Color(0xff7E7F7E))),
+                      style: TextStyle(fontSize: 13, color: Color(0xff7E7F7E))),
                   value: controller.selectedTagDropdown.value.isEmpty
                       ? null
                       : controller.selectedTagDropdown.value,
                   icon: const Icon(Icons.keyboard_arrow_down),
-                  items: controller.availableTags
-                      .where((t) =>
-                  !controller.tempSelectedTags.contains(t))
-                      .map((tag) => DropdownMenuItem(
-                    value: tag,
-                    child: Text(tag,
+                  items: LeadController.availableTagOptions
+                      .where((opt) => !controller.tempSelectedTags.contains(opt['value']))
+                      .map((opt) => DropdownMenuItem(
+                    value: opt['value'],
+                    child: Text(opt['label']!,
                         style: const TextStyle(fontSize: 13)),
                   ))
                       .toList(),
@@ -254,24 +342,19 @@ class _TagDialog extends GetWidget<LeadController> {
             ),
             const SizedBox(height: 16),
 
-            // Save button
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: controller.saveTags,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xff32A69A),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text('Save',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600)),
+            ElevatedButton(
+              onPressed: () => controller.saveTags(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xff32A69A),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
+              child: const Text('Save',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -279,7 +362,7 @@ class _TagDialog extends GetWidget<LeadController> {
     );
   }
 
-  Widget _tagChip(String tag) {
+  Widget _tagChip(String apiTag) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -289,12 +372,11 @@ class _TagDialog extends GetWidget<LeadController> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(tag,
-              style: const TextStyle(
-                  fontSize: 12, color: Color(0xff424242))),
+          Text(tagDisplayLabel(apiTag),
+              style: const TextStyle(fontSize: 12, color: Color(0xff424242))),
           const SizedBox(width: 6),
           GestureDetector(
-            onTap: () => controller.removeTag(tag),
+            onTap: () => controller.removeTag(apiTag),
             child: const Icon(Icons.close, size: 14, color: Color(0xff7E7F7E)),
           ),
         ],
@@ -303,7 +385,12 @@ class _TagDialog extends GetWidget<LeadController> {
   }
 }
 
-class _NoteDialog extends GetWidget<LeadController> {
+// ── Note Dialog ───────────────────────────────────────────────────────────────
+
+class LeadNoteDialog extends StatelessWidget {
+  final LeadController controller;
+  const LeadNoteDialog({super.key, required this.controller});
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -319,10 +406,9 @@ class _NoteDialog extends GetWidget<LeadController> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Write A Note',
-                    style:
-                    TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                 GestureDetector(
-                  onTap: () => Get.back(),
+                  onTap: () => Navigator.of(context).pop(),
                   child: const Icon(Icons.close, size: 20),
                 ),
               ],
@@ -352,9 +438,23 @@ class _NoteDialog extends GetWidget<LeadController> {
               alignment: Alignment.centerRight,
               child: Text(
                 'Write at least 200 characters.',
-                style:
-                TextStyle(fontSize: 11, color: Color(0xff7E7F7E)),
+                style: TextStyle(fontSize: 11, color: Color(0xff7E7F7E)),
               ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => controller.saveNote(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xff32A69A),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Save',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600)),
             ),
           ],
         ),

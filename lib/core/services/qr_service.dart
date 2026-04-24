@@ -46,10 +46,17 @@ class QrService {
     );
     if (response.data is Map<String, dynamic>) {
       final data = response.data as Map<String, dynamic>;
-      if (data['success'] == true && data['data'] is List) {
-        return (data['data'] as List)
-            .map((e) => e as Map<String, dynamic>)
-            .toList();
+      if (data['success'] == true) {
+        final inner = data['data'];
+        if (inner is Map<String, dynamic> && inner['leads'] is List) {
+          return (inner['leads'] as List)
+              .map((e) => e as Map<String, dynamic>)
+              .toList();
+        } else if (inner is List) {
+          return (inner as List)
+              .map((e) => e as Map<String, dynamic>)
+              .toList();
+        }
       }
     }
     return [];
