@@ -38,7 +38,17 @@ class QrService {
     return response.data as Map<String, dynamic>;
   }
 
-  /// GET /qr/exhibitor/:boothId/leads
+  /// POST /qr/exhibitor/:eventId  — scan attendee QR and add as lead
+  Future<Map<String, dynamic>> scanExhibitorLead(String eventId, String qrToken) async {
+    await _checkConnectivity();
+    final response = await _apiService.post(
+      '${ApiConstants.getExhibitorLeads}/$eventId',
+      data: {'qrToken': qrToken},
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// GET /qr/exhibitor/:eventId/leads
   Future<List<Map<String, dynamic>>> getExhibitorLeads(String boothId) async {
     await _checkConnectivity();
     final response = await _apiService.get(

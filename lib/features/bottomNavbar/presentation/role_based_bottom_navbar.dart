@@ -178,6 +178,7 @@ class RoleBasedBottomNav extends StatelessWidget {
       case 'SPONSOR':
       case 'BOOTH_STUFF':
       case 'BOOTH_STAFF':
+      case 'STAFF':
         return [
           {'icon': 'home', 'label': 'Home', 'iconType': 'icon'},
           {'icon': 'calendar', 'label': 'Agenda', 'iconType': 'icon'},

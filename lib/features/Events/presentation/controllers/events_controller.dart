@@ -98,6 +98,7 @@ class EventsController extends GetxController {
 
       case 'EXHIBITOR':
       case 'BOOTH_STAFF':
+      case 'STAFF':
       case 'SPONSOR':
         // My Events, All Events
         tabLabels.value = ['My Events', 'All Events'];
@@ -140,6 +141,7 @@ class EventsController extends GetxController {
       }
     } else if (activeRole == 'EXHIBITOR' ||
         activeRole == 'BOOTH_STAFF' ||
+        activeRole == 'STAFF' ||
         activeRole == 'SPONSOR') {
       // All Events tab
       if (allEvents.isEmpty) {

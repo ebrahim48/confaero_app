@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/constants/app_colors.dart';
+import '../../../../../core/controllers/role_controller.dart';
 import '../../controllers/booth_controllers.dart';
 import '../booth_header_card.dart';
 import '../booth_quick_action_tile.dart';
@@ -138,18 +139,24 @@ class _BoothScreenState extends State<BoothScreen> {
                 ),
                 SizedBox(height: 12.h),
 
-                // Quick Actions
-                Obx(() => BoothQuickActionTile(
-                      icon: 'assets/icons/totalleads.svg',
-                      title: 'Booth Staff',
-                      subtitle:
-                          'Total member ${controller.totalStaff.value}',
-                      backgroundColor: const Color(0xffE8F8F5),
-                      iconBgColor: const Color(0xffD0F0EC),
-                      onTap: () =>
-                          context.push(AppRoutes.boothStaffScreen),
-                    )),
-                SizedBox(height: 10.h),
+                // Quick Actions — hide Booth Staff tile for STAFF role
+                Obx(() {
+                  final role = RoleController.to.activeRole.value.toUpperCase();
+                  if (role == 'STAFF') return const SizedBox.shrink();
+                  return Column(
+                    children: [
+                      BoothQuickActionTile(
+                        icon: 'assets/icons/totalleads.svg',
+                        title: 'Booth Staff',
+                        subtitle: 'Total member ${controller.totalStaff.value}',
+                        backgroundColor: const Color(0xffE8F8F5),
+                        iconBgColor: const Color(0xffD0F0EC),
+                        onTap: () => context.push(AppRoutes.boothStaffScreen),
+                      ),
+                      SizedBox(height: 10.h),
+                    ],
+                  );
+                }),
                 BoothQuickActionTile(
                   icon: 'assets/icons/detailedanalytics.svg',
                   title: 'Detailed Analytics',
@@ -168,7 +175,7 @@ class _BoothScreenState extends State<BoothScreen> {
                   backgroundColor: Colors.white,
                   iconBgColor: const Color(0xffF5F5F5),
                   onTap: () =>
-                      context.push(AppRoutes.performanceScreen),
+                      context.push(AppRoutes.leadManagementScreen),
                 ),
               ],
             ),

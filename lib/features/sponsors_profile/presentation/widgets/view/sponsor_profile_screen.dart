@@ -22,7 +22,7 @@ class SponsorProfileScreen extends StatelessWidget {
         backgroundColor: AppColors.backgroundColor,
         elevation: 0,
         leading: GestureDetector(
-          onTap: () => Get.back(),
+          onTap: () => Navigator.of(context).pop(),
           child: Icon(
             Icons.arrow_back,
             color: AppColors.textColor252525,
@@ -51,6 +51,7 @@ class SponsorProfileScreen extends StatelessWidget {
             SizedBox(height: 10.h),
             Obx(() => SponsorLogoPicker(
               logoPath: controller.logoPath.value,
+              pickedFile: controller.pickedImageFile.value,
               onTap: controller.pickLogo,
             )),
             SizedBox(height: 4.h),
@@ -150,12 +151,12 @@ class SponsorProfileScreen extends StatelessWidget {
               title: controller.hasProfile.value
                   ? 'Save Changes'
                   : 'Create Company Profile',
-              loading: controller.isLoading.value,
+              loading: controller.isSaving.value,
               onpress: () {
                 if (controller.hasProfile.value) {
-                  controller.saveProfile();
+                  controller.saveProfile(context);
                 } else {
-                  controller.createProfile();
+                  controller.createProfile(context);
                 }
               },
             )),

@@ -145,6 +145,7 @@ class _EventsScreenState extends State<EventsScreen>
                             : _buildInvitedEventsTab();
                       } else if (activeRole == 'EXHIBITOR' ||
                           activeRole == 'BOOTH_STAFF' ||
+                          activeRole == 'STAFF' ||
                           activeRole == 'SPONSOR') {
                         return tabIndex == 0
                             ? _buildMyEventsTab()
