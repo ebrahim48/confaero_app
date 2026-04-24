@@ -24,7 +24,6 @@ class LeadManagementScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── AppBar ────────────────────────────────────────────
             Padding(
               padding:
               EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
@@ -46,7 +45,6 @@ class LeadManagementScreen extends StatelessWidget {
               ),
             ),
 
-            // ── Filter Tabs ───────────────────────────────────────
             SizedBox(
               height: 38.h,
               child: ListView.separated(
@@ -67,7 +65,6 @@ class LeadManagementScreen extends StatelessWidget {
             ),
             SizedBox(height: 14.h),
 
-            // ── My Leads Header ───────────────────────────────────
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Row(
@@ -93,9 +90,50 @@ class LeadManagementScreen extends StatelessWidget {
             ),
             SizedBox(height: 10.h),
 
-            // ── Lead List ─────────────────────────────────────────
             Expanded(
               child: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                        color: Color(0xff32A69A)),
+                  );
+                }
+                if (controller.errorMessage.isNotEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline,
+                            size: 48.sp, color: Colors.red),
+                        SizedBox(height: 12.h),
+                        Text(
+                          controller.errorMessage.value,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 13.sp,
+                              color: AppColors.textColor7E7F7E),
+                        ),
+                        SizedBox(height: 16.h),
+                        GestureDetector(
+                          onTap: controller.loadLeads,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 24.w, vertical: 10.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xff32A69A),
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                            child: Text('Retry',
+                                style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
                 final leads = controller.filteredLeads;
                 if (leads.isEmpty) {
                   return Center(
@@ -111,12 +149,12 @@ class LeadManagementScreen extends StatelessWidget {
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   itemCount: leads.length,
                   separatorBuilder: (_, __) => SizedBox(height: 10.h),
-                  itemBuilder: (_, i) => LeadCard(
+                  itemBuilder: (ctx, i) => LeadCard(
                     lead: leads[i],
                     onAddNote: () =>
-                        controller.openNoteDialog(leads[i]['id']),
+                        controller.openNoteDialog(ctx, leads[i]['id']),
                     onEditTags: () =>
-                        controller.openTagDialog(leads[i]['id']),
+                        controller.openTagDialog(ctx, leads[i]['id']),
                   ),
                 );
               }),
@@ -125,23 +163,14 @@ class LeadManagementScreen extends StatelessWidget {
         ),
       ),
 
-      // ── FAB QR Scan ────────────────────────────────────────────
       floatingActionButton: GestureDetector(
         onTap: () => context.pushNamed(AppRoutes.qrScannerScreen),
-        child: Container(
+        child: SizedBox(
           width: 52.w,
           height: 52.h,
-          decoration: BoxDecoration(
-            color: AppColors.primaryColor32A69A,
-            shape: BoxShape.circle,
-          ),
           child: Center(
             child: SvgPicture.asset(
               'assets/icons/leadscan.svg',
-              width: 24.w,
-              height: 24.h,
-              colorFilter: const ColorFilter.mode(
-                  Colors.white, BlendMode.srcIn),
             ),
           ),
         ),

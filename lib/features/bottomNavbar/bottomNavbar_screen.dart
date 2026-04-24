@@ -2,7 +2,7 @@ import 'package:confaero_app/features/agenda/presentation/widgets/view/agenda_sc
 import 'package:confaero_app/features/bottomNavbar/presentation/bottom_navbar_widgets.dart';
 import 'package:confaero_app/features/bottomNavbar/presentation/role_based_bottom_navbar.dart';
 import 'package:confaero_app/features/community/presentation/widgets/view/community_screen.dart';
-import 'package:confaero_app/features/job/presentation/widgets/my_jobs_screen.dart';
+import 'package:confaero_app/features/lead/presentation/widgets/view/lead_management_screen.dart';
 import 'package:confaero_app/features/mainattendees/presentation/widgets/view/attendees_screen.dart';
 import 'package:confaero_app/features/message/presentation/widgets/view/message_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/resources_screen.dart' as resources_view;
@@ -122,7 +122,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             HomeScreen(eventId: eventId), // Home
             const AgendaScreen(), // Agenda
             const BoothScreen(), // Booth
-            const MyJobsScreen(), // Lead/My Jobs
+            const LeadManagementScreen(), // Lead
             const MessageScreen(),
           ],
           'useRoleBasedNav': true,
@@ -134,7 +134,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             const SponsorDashboardScreen(), // Home - Sponsor dashboard
             const AgendaScreen(), // Agenda
             const SponsorDashboardScreen(), // Booth
-            const MyJobsScreen(), // Lead/My Jobs
+            const LeadManagementScreen(), // Lead
             const MessageScreen(),
           ],
           'useRoleBasedNav': true,
