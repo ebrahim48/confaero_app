@@ -247,7 +247,7 @@ class EventsService {
 
   // ── PATCH /attendee/event/{eventId}/join ────────────────────────────────
 
-  Future<bool> joinEvent(String eventId) async {
+  Future<Map<String, dynamic>?> joinEvent(String eventId) async {
     try {
       await _checkConnectivity();
       _logger.i('Joining event: $eventId');
@@ -257,9 +257,10 @@ class EventsService {
       _logger.d('Status: ${response.statusCode}');
       if (response.data is Map<String, dynamic>) {
         final data = response.data as Map<String, dynamic>;
-        return data['success'] as bool? ?? false;
+        final success = data['success'] as bool? ?? false;
+        if (success) return data['data'] as Map<String, dynamic>?;
       }
-      return false;
+      return null;
     } catch (e) {
       _logger.e('joinEvent failed', error: e);
       rethrow;

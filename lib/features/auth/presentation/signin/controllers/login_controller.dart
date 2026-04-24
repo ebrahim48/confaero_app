@@ -104,7 +104,8 @@ class SignInController extends GetxController {
 
         final accessToken = data['accessToken'] as String? ?? '';
         final refreshToken = data['refreshToken'] as String? ?? '';
-        final activeRole = data['activeRole'] as String? ?? 'ATTENDEE';
+        final roleRaw = (data['activeRole'] ?? data['role'] ?? data['userRole']) as String?;
+        final activeRole = (roleRaw?.trim().isNotEmpty == true) ? roleRaw!.trim().toUpperCase() : 'ATTENDEE';
 
         _logger.d(
           'Tokens received - AccessToken: ${accessToken.substring(0, 20)}...',

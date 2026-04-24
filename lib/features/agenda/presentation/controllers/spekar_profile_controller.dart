@@ -5,158 +5,136 @@ import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class SpeakerProfileController extends GetxController {
   final AgendaService _agendaService = Get.find<AgendaService>();
+  final String speakerId;
 
-  // Speaker data
+  SpeakerProfileController(this.speakerId);
+
   final RxMap<String, dynamic> speaker = <String, dynamic>{}.obs;
-
-  // Bio expanded state
   final RxBool isBioExpanded = false.obs;
-
-  // Loading state
   final RxBool isLoading = false.obs;
-
-  // Favorite session IDs
   final RxList<String> favoriteSessions = <String>[].obs;
 
-  // Event ID from global session state
   String get currentEventId => SessionController.to.eventId;
 
+  Map<String, dynamic> get _info =>
+      (speaker['speaker'] as Map<String, dynamic>?) ?? {};
+
+  // ── Computed fields ──────────────────────────────────────────────
+  String get speakerName => _info['name']?.toString() ?? '';
+
+  String get speakerAvatar => _info['avatar']?.toString() ?? '';
+
+  String get speakerLocation =>
+      (_info['location'] as Map<String, dynamic>?)?['address']?.toString() ?? '';
+
+  String get speakerRole {
+    final affiliations = _info['affiliations'] as List?;
+    if (affiliations == null || affiliations.isEmpty) return '';
+    final aff = affiliations.firstWhere(
+          (a) => (a as Map<String, dynamic>)['isCurrent'] == true,
+      orElse: () => affiliations.first,
+    ) as Map<String, dynamic>;
+    final position = aff['position']?.toString() ?? '';
+    final company = aff['company']?.toString() ?? '';
+    if (position.isEmpty) return company;
+    if (company.isEmpty) return position;
+    return '$position at $company';
+  }
+
+  List<Map<String, dynamic>> get speakingAtSessions {
+    final list = (speaker['speakingAt'] as List?) ?? [];
+    return list.cast<Map<String, dynamic>>();
+  }
+
+  // ── Data loading ─────────────────────────────────────────────────
   @override
   void onInit() {
     super.onInit();
     loadSpeakerData();
   }
 
-  // Load speaker data from API or arguments
   Future<void> loadSpeakerData() async {
+    if (speakerId.isEmpty) return;
     isLoading(true);
-
-    // Get speaker data from navigation arguments
-    final args = Get.arguments;
-    if (args != null && args is Map<String, dynamic>) {
-      // If full data passed via arguments, use it
-      speaker.value = args;
-
-      // If only speakerId passed, fetch from API
-      final speakerId =
-          args['speakerId']?.toString() ??
-          args['_id']?.toString() ??
-          args['id']?.toString();
-      if (speakerId != null && speakerId.isNotEmpty && args.keys.length <= 2) {
-        try {
-          final data = await _agendaService.getSpeakerDetails(
-            currentEventId,
-            speakerId,
-          );
-          if (data != null) {
-            speaker.value = data;
-          }
-        } catch (e) {
-          ToastMessageHelper.showToastMessage('Failed to load speaker details', title: 'Error');
-        }
+    try {
+      final data = await _agendaService.getSpeakerDetails(currentEventId, speakerId);
+      if (data != null) {
+        speaker.value = data;
       }
+    } catch (e) {
+      ToastMessageHelper.showToastMessage('Failed to load speaker details', title: 'Error');
+    } finally {
+      isLoading(false);
     }
-
-    isLoading(false);
   }
 
-  // Toggle bio expansion
-  void toggleBioExpansion() {
-    isBioExpanded.value = !isBioExpanded.value;
+  // ── Bio ──────────────────────────────────────────────────────────
+  void toggleBioExpansion() => isBioExpanded.value = !isBioExpanded.value;
+
+  String getBioText() {
+    final bio = _info['about']?.toString() ?? '';
+    if (isBioExpanded.value || bio.length <= 200) return bio;
+    return '${bio.substring(0, 200)}...';
   }
 
-  // Toggle session favorite via API
+  // ── Session bookmark toggle ───────────────────────────────────────
   Future<void> toggleSessionFavorite(String sessionId) async {
     if (favoriteSessions.contains(sessionId)) {
       favoriteSessions.remove(sessionId);
       try {
         await _agendaService.removeBookmarkSession(currentEventId, sessionId);
       } catch (e) {
-        favoriteSessions.add(sessionId); // revert
+        favoriteSessions.add(sessionId);
       }
     } else {
       favoriteSessions.add(sessionId);
       try {
         await _agendaService.bookmarkSession(currentEventId, sessionId);
       } catch (e) {
-        favoriteSessions.remove(sessionId); // revert
-      }
-    }
-
-    // Update session favorites count in speaker data
-    final sessions = speaker['sessions'] as List?;
-    if (sessions != null) {
-      final sessionIndex = sessions.indexWhere(
-        (s) => s['id'] == sessionId || s['_id'] == sessionId,
-      );
-      if (sessionIndex != -1) {
-        final session = sessions[sessionIndex];
-        session['favorites'] = favoriteSessions.contains(sessionId) ? 1 : 0;
-        speaker.refresh();
+        favoriteSessions.remove(sessionId);
       }
     }
   }
 
-  // Check if session is favorited
-  bool isSessionFavorited(String sessionId) {
-    return favoriteSessions.contains(sessionId);
+  bool isSessionFavorited(String sessionId) => favoriteSessions.contains(sessionId);
+
+  int getSessionCount() => speakingAtSessions.length;
+
+  // ── External links ───────────────────────────────────────────────
+  String? _getSocialUrl(String platform) {
+    final links = _info['socialLinks'] as List?;
+    if (links == null) return null;
+    for (final link in links) {
+      final m = link as Map<String, dynamic>;
+      if (m['platform'] == platform) return m['url']?.toString();
+    }
+    return null;
   }
 
-  // Open link
-  void openLink(String url) {
-    // TODO: use url_launcher
-  }
-
-  // Open LinkedIn profile
   void openLinkedIn() {
-    final linkedin = speaker['linkedin'];
-    if (linkedin != null && linkedin.toString().isNotEmpty) {
-      openLink(linkedin.toString());
+    final url = _getSocialUrl('LinkedIn');
+    if (url != null && url.isNotEmpty) {
+      // TODO: url_launcher
     } else {
       ToastMessageHelper.showToastMessage('LinkedIn profile not available', title: 'Not Available');
     }
   }
 
-  // Open website
   void openWebsite() {
-    final website = speaker['website'];
-    if (website != null && website.toString().isNotEmpty) {
-      openLink(website.toString());
+    final websites = _info['personalWebsites'] as List?;
+    final url = (websites != null && websites.isNotEmpty) ? websites.first?.toString() : null;
+    if (url != null && url.isNotEmpty) {
+      // TODO: url_launcher
     } else {
       ToastMessageHelper.showToastMessage('Website not available', title: 'Not Available');
     }
   }
 
-  // Contact speaker
   void contractSpeaker() {
-    final email = speaker['email'];
-    if (email != null && email.toString().isNotEmpty) {
-      // TODO: use url_launcher to open mailto
-    } else {
-      ToastMessageHelper.showToastMessage('Email not available', title: 'Not Available');
-    }
+    ToastMessageHelper.showToastMessage('Contact not available', title: 'Not Available');
   }
 
-  // Navigate to session details
   void goToSessionDetails(Map<String, dynamic> session) {
-    // TODO: navigate to session details screen
-  }
-
-  // Get bio text (truncated or full)
-  String getBioText() {
-    final bio = speaker['bio']?.toString() ?? '';
-    if (isBioExpanded.value || bio.length <= 200) {
-      return bio;
-    }
-    return '${bio.substring(0, 200)}...';
-  }
-
-  // Get session count
-  int getSessionCount() {
-    final sessions = speaker['sessions'];
-    if (sessions != null && sessions is List) {
-      return sessions.length;
-    }
-    return 0;
+    // TODO: navigate to session details
   }
 }

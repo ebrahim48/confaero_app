@@ -1,5 +1,6 @@
 class SessionModel {
   final String id;
+  final int idx;
   final String title;
   final String description;
   final String startTime;
@@ -11,6 +12,7 @@ class SessionModel {
 
   SessionModel({
     required this.id,
+    required this.idx,
     required this.title,
     required this.description,
     required this.startTime,
@@ -21,35 +23,30 @@ class SessionModel {
     this.likesCount = 0,
   });
 
-  factory SessionModel.fromJson(Map<String, dynamic> json) {
-    // Parse time field which can be in format "08:00 - 10:00" or "08:00-10:30"
+  factory SessionModel.fromJson(Map<String, dynamic> json, {int idx = 0}) {
     String startTime = '';
     String endTime = '';
-    
+
     final timeStr = json['time']?.toString() ?? '';
     if (timeStr.isNotEmpty) {
-      // Try to split by ' - ' first (with spaces)
       if (timeStr.contains(' - ')) {
         final parts = timeStr.split(' - ');
         startTime = parts[0];
         endTime = parts.length > 1 ? parts[1] : '';
-      } 
-      // Try to split by '-' (without spaces)
-      else if (timeStr.contains('-')) {
+      } else if (timeStr.contains('-')) {
         final parts = timeStr.split('-');
         startTime = parts[0].trim();
         endTime = parts.length > 1 ? parts[1].trim() : '';
-      } 
-      // If no separator found, use the whole string as startTime
-      else {
+      } else {
         startTime = timeStr;
       }
     }
-    
+
     return SessionModel(
       id: json['_id']?.toString() ?? '',
+      idx: idx,
       title: json['title']?.toString() ?? '',
-      description: json['description']?.toString() ?? '',
+      description: json['details']?.toString() ?? '',
       startTime: startTime,
       endTime: endTime,
       location: json['location']?.toString() ?? '',

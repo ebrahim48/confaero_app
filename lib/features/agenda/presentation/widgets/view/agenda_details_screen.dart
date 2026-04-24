@@ -9,43 +9,76 @@ import '../action_button_widgets.dart';
 import '../section_header_widgets.dart';
 import '../spark_card_widgets.dart';
 
-class AgendaDetailsScreen extends StatelessWidget {
-  const AgendaDetailsScreen({super.key});
+class AgendaDetailsScreen extends StatefulWidget {
+  final String sessionIdx;
+
+  const AgendaDetailsScreen({super.key, required this.sessionIdx});
+
+  @override
+  State<AgendaDetailsScreen> createState() => _AgendaDetailsScreenState();
+}
+
+class _AgendaDetailsScreenState extends State<AgendaDetailsScreen> {
+  late final AgendaDetailsController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    if (Get.isRegistered<AgendaDetailsController>()) {
+      Get.delete<AgendaDetailsController>(force: true);
+    }
+    controller = Get.put(AgendaDetailsController(widget.sessionIdx));
+  }
+
+  @override
+  void dispose() {
+    Get.delete<AgendaDetailsController>(force: true);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final AgendaDetailsController controller = Get.put(AgendaDetailsController());
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // App Bar
-          const CustomAppBarWidget(
-            title: 'Sample session 1:Whova for.....',
-          ),
+          Obx(() => CustomAppBarWidget(title: controller.sessionTitle)),
 
-          // Content
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(24.w),
               child: Obx(() {
+                if (controller.isLoading.value) {
+                  return SizedBox(
+                    height: 300.h,
+                    child: const Center(
+                      child:
+                          CircularProgressIndicator(color: Color(0xff5BB8AE)),
+                    ),
+                  );
+                }
+
                 final session = controller.sessionDetails;
+                final sessionData =
+                    (session['session'] as Map<String, dynamic>?) ?? {};
+                final isOnline = sessionData['isOnline'] as bool? ?? false;
+                final liveStatus =
+                    sessionData['liveStatus']?.toString() ?? '';
+                final liveProvider =
+                    sessionData['liveProvider']?.toString() ?? '';
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Session Info Card
+                    // ── Session Info Card ─────────────────────────────
                     Container(
                       width: 345.w,
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(
-                          color: const Color(0xffE0E0E0),
-                          width: 1,
-                        ),
+                        border:
+                            Border.all(color: const Color(0xffE0E0E0)),
                         boxShadow: [
                           BoxShadow(
                             color: const Color(0x26000000),
@@ -56,17 +89,15 @@ class AgendaDetailsScreen extends StatelessWidget {
                       ),
                       child: Column(
                         children: [
-                          // Title
                           CustomText(
-                            text: session['title']?.toString() ?? 'Untitled Session',
+                            text: sessionData['title']?.toString() ??
+                                'Untitled Session',
                             fontsize: 16.sp,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xff252525),
                             textAlign: TextAlign.center,
                           ),
                           SizedBox(height: 12.h),
-
-                          // Date Time
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -74,7 +105,10 @@ class AgendaDetailsScreen extends StatelessWidget {
                               SizedBox(width: 6.w),
                               Expanded(
                                 child: CustomText(
-                                  text: session['date']?.toString() ?? 'Date not available',
+                                  text: _formatDateTime(
+                                    sessionData['date']?.toString(),
+                                    sessionData['time']?.toString(),
+                                  ),
                                   fontsize: 12.sp,
                                   color: const Color(0xff757575),
                                 ),
@@ -82,15 +116,15 @@ class AgendaDetailsScreen extends StatelessWidget {
                             ],
                           ),
                           SizedBox(height: 8.h),
-
-                          // Location
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Assets.icons.location.svg(),
                               SizedBox(width: 6.w),
                               CustomText(
-                                text: session['location']?.toString() ?? 'Location TBD',
+                                text: sessionData['floorMapLocation'] != null
+                                    ? 'Floor Map Available'
+                                    : 'Location TBD',
                                 fontsize: 12.sp,
                                 color: const Color(0xff757575),
                               ),
@@ -105,9 +139,9 @@ class AgendaDetailsScreen extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     border: Border.all(
                                       color: const Color(0xffD2D2D2),
-                                      width: 1,
                                     ),
-                                    borderRadius: BorderRadius.circular(4.r),
+                                    borderRadius:
+                                        BorderRadius.circular(4.r),
                                   ),
                                   child: CustomText(
                                     text: 'View Map',
@@ -123,7 +157,7 @@ class AgendaDetailsScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 16.h),
 
-                    // Action Buttons
+                    // ── Action Buttons ────────────────────────────────
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -140,7 +174,6 @@ class AgendaDetailsScreen extends StatelessWidget {
                       ],
                     ),
                     SizedBox(height: 12.h),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -149,21 +182,19 @@ class AgendaDetailsScreen extends StatelessWidget {
                           text: 'Note',
                           onTap: () => controller.openNote(context),
                         ),
-                        ActionButton(
-                          svgIcon: controller.isLiked.value
-                              ? 'assets/icons/like.svg'
-                              : 'assets/icons/like.svg',
-                          text: 'Like',
-                          onTap: () => controller.toggleLike(),
-                          iconColor: controller.isLiked.value
-                              ? const Color(0xffE53935)
-                              : null,
-                        ),
+                        Obx(() => ActionButton(
+                              svgIcon: 'assets/icons/like.svg',
+                              text: 'Like',
+                              onTap: () => controller.toggleLike(),
+                              iconColor: controller.isLiked.value
+                                  ? const Color(0xffE53935)
+                                  : null,
+                            )),
                       ],
                     ),
                     SizedBox(height: 24.h),
 
-                    // Session Overview
+                    // ── Session Overview ──────────────────────────────
                     const SectionHeader(title: 'Session Overview'),
                     Container(
                       width: 345.w,
@@ -177,16 +208,20 @@ class AgendaDetailsScreen extends StatelessWidget {
                       ),
                       child: CustomText(
                         textAlign: TextAlign.start,
-                        maxline: 6,
-                        text: session['overview']?.toString() ?? 'No overview available',
+                        maxline: 10,
+                        text: sessionData['details']
+                                    ?.toString()
+                                    .isNotEmpty ==
+                                true
+                            ? sessionData['details'].toString()
+                            : 'No overview available',
                         fontsize: 14.sp,
                         color: const Color(0xff252525),
-
                       ),
                     ),
                     SizedBox(height: 24.h),
 
-                    // How to Attend
+                    // ── How to Attend ─────────────────────────────────
                     const SectionHeader(title: 'How to attend'),
                     Container(
                       width: 345.w,
@@ -199,66 +234,91 @@ class AgendaDetailsScreen extends StatelessWidget {
                         ),
                       ),
                       child: Column(
-                        children: ((session['howToAttend'] as List?) ?? []).map((item) {
-                          IconData icon;
-                          if (item['icon'] == 'desktop') {
-                            icon = Icons.desktop_mac_outlined;
-                          } else if (item['icon'] == 'video') {
-                            icon = Icons.videocam_outlined;
-                          } else {
-                            icon = Icons.meeting_room_outlined;
-                          }
-
-                          return Padding(
-                            padding: EdgeInsets.only(bottom: 12.h),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  icon,
-                                  size: 20.sp,
-                                  color: const Color(0xff252525),
-                                ),
-                                SizedBox(width: 12.w),
-                                Expanded(
-                                  child: CustomText(
-                                    textAlign: TextAlign.start,
-                                    text: item['text']?.toString() ?? '',
-                                    fontsize: 14.sp,
-                                    color: const Color(0xff252525),
-                                  ),
-                                ),
-                              ],
+                        children: [
+                          _attendRow(
+                            icon: isOnline
+                                ? Icons.videocam_outlined
+                                : Icons.meeting_room_outlined,
+                            text: isOnline
+                                ? 'Join online${liveProvider.isNotEmpty ? ' via $liveProvider' : ''}'
+                                : 'Attend in person',
+                          ),
+                          if (isOnline && liveStatus.isNotEmpty) ...[
+                            SizedBox(height: 12.h),
+                            _attendRow(
+                              icon: liveStatus == 'LIVE'
+                                  ? Icons.circle
+                                  : Icons.access_time,
+                              iconColor: liveStatus == 'LIVE'
+                                  ? const Color(0xffE53935)
+                                  : const Color(0xff757575),
+                              text: liveStatus == 'LIVE'
+                                  ? 'Session is currently LIVE'
+                                  : 'Status: $liveStatus',
                             ),
-                          );
-                        }).toList(),
+                          ],
+                          if (isOnline) ...[
+                            SizedBox(height: 12.h),
+                            _attendRow(
+                              icon: Icons.desktop_mac_outlined,
+                              text:
+                                  'Open the app and tap "Join" when the session starts',
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                     SizedBox(height: 24.h),
 
-                    ///  Speakers
-                    const SectionHeader(title: 'Speakers'),
-                    Container(
-                      width: 345.w,
-                      padding: EdgeInsets.all(16.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0x66EFEFF0),
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(12.r),
-                          bottomRight: Radius.circular(12.r),
-                        ),
-                      ),
-                      child: Column(
-                        children: ((session['speakers'] as List?) ?? []).map((speaker) {
-                          return SpeakerCard(
-                            name: speaker['name']?.toString() ?? 'Unknown',
-                            role: speaker['role']?.toString() ?? '',
-                            company: speaker['company']?.toString() ?? '',
-                            imagePath: speaker['image']?.toString() ?? '',
-                            onTap: () => controller.openSpeakerDetails(context),
-                          );
-                        }).toList(),
-                      ),
-                    ),
+                    // ── Speakers ──────────────────────────────────────
+                    Obx(() {
+                      final profiles = controller.speakerProfiles;
+                      if (profiles.isEmpty) return const SizedBox.shrink();
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SectionHeader(title: 'Speakers'),
+                          Container(
+                            width: 345.w,
+                            padding: EdgeInsets.all(16.w),
+                            decoration: BoxDecoration(
+                              color: const Color(0x66EFEFF0),
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(12.r),
+                                bottomRight: Radius.circular(12.r),
+                              ),
+                            ),
+                            child: Column(
+                              children: profiles.map((sp) {
+                                final accountId =
+                                    sp['accountId']?.toString() ?? '';
+                                final affiliations =
+                                    sp['affiliations'] as List?;
+                                final company = affiliations != null &&
+                                        affiliations.isNotEmpty
+                                    ? (affiliations.first
+                                            as Map<String, dynamic>)['company']
+                                        ?.toString() ??
+                                        ''
+                                    : '';
+                                return SpeakerCard(
+                                  name: sp['name']?.toString() ?? 'Speaker',
+                                  role: sp['sessionRole']?.toString() ?? '',
+                                  company: company,
+                                  imagePath: sp['avatar']?.toString() ?? '',
+                                  about: sp['about']?.toString() ?? '',
+                                  onTap: () =>
+                                      controller.openSpeakerDetails(
+                                    context,
+                                    accountId,
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
                   ],
                 );
               }),
@@ -267,5 +327,47 @@ class AgendaDetailsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _attendRow({
+    required IconData icon,
+    required String text,
+    Color iconColor = const Color(0xff252525),
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: iconColor),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: CustomText(
+            textAlign: TextAlign.start,
+            text: text,
+            fontsize: 14.sp,
+            color: const Color(0xff252525),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDateTime(String? isoDate, String? time) {
+    String datePart = '';
+    if (isoDate != null && isoDate.isNotEmpty) {
+      try {
+        final dt = DateTime.parse(isoDate);
+        const months = [
+          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+        ];
+        datePart = '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+      } catch (_) {
+        datePart = isoDate;
+      }
+    }
+    if (time != null && time.isNotEmpty) {
+      return datePart.isNotEmpty ? '$datePart · $time' : time;
+    }
+    return datePart.isNotEmpty ? datePart : 'Date not available';
   }
 }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_button.dart';
 import '../../../../../presentations/widgets/custom_text_field.dart';
 import '../../controllers/booth_controllers.dart';
-
 
 class BoothProfileScreen extends StatefulWidget {
   const BoothProfileScreen({super.key});
@@ -21,19 +21,22 @@ class _BoothProfileScreenState extends State<BoothProfileScreen> {
   @override
   void initState() {
     super.initState();
-    controller = Get.put(BoothController());
+    if (!Get.isRegistered<BoothController>()) {
+      controller = Get.put(BoothController());
+    } else {
+      controller = Get.find<BoothController>();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
         backgroundColor: AppColors.backgroundColor,
         elevation: 0,
         leading: GestureDetector(
-          onTap: () => Get.back(),
+          onTap: () => Navigator.pop(context),
           child: Icon(Icons.arrow_back,
               color: AppColors.textColor252525, size: 22.sp),
         ),
@@ -47,172 +50,185 @@ class _BoothProfileScreenState extends State<BoothProfileScreen> {
         ),
         centerTitle: false,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 16.h),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return _buildShimmer();
+        }
+        return SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 16.h),
 
-            // ── Visuals ──────────────────────────────────────────
-            _sectionTitle('Visuals'),
-            SizedBox(height: 10.h),
-            Obx(() => controller.boothBannerPath.value.isEmpty
-                ? _bannerUploadEmpty(controller)
-                : _bannerFilled()),
-            SizedBox(height: 4.h),
-            Divider(color: AppColors.borderColorD2D2D2),
-            SizedBox(height: 16.h),
-
-            // ── Content ──────────────────────────────────────────
-            _sectionTitle('Content'),
-            SizedBox(height: 10.h),
-
-            CustomTextField(
-              controller: controller.companyNameController,
-              labelText: 'Company Name',
-              hintText: 'Company name',
-            ),
-            CustomTextField(
-              controller: controller.offerTitleController,
-              labelText: 'Offer Title',
-              hintText: 'e.g., 20% Off Annual Plan',
-            ),
-            CustomTextField(
-              controller: controller.boothOpeningController,
-              labelText: 'Booth Opening',
-              hintText: '7:00 AM- 10 PM',
-            ),
-
-            // Description with character counter
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Description',
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textColor252525,
-                  ),
-                ),
-                SizedBox(height: 6.h),
-                TextFormField(
-                  controller: controller.descriptionController,
-                  maxLines: 5,
-                  maxLength: 500,
-                  style: TextStyle(
-                      fontSize: 12.sp, color: AppColors.textColor424242),
-                  decoration: InputDecoration(
-                    counterText: '',
-                    contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16.w, vertical: 12.h),
-                    hintText: 'Enter booth description...',
-                    hintStyle: TextStyle(
-                        fontSize: 12.sp,
-                        color: AppColors.textColor7E7F7E),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                      borderSide: BorderSide(
-                          color: AppColors.borderColorD2D2D2),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                      borderSide: BorderSide(
-                          color: AppColors.borderColorD2D2D2),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                      borderSide: BorderSide(
-                          color: AppColors.borderColorD2D2D2),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Obx(() => Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    '${controller.descriptionLength.value}/500 characters',
-                    style: TextStyle(
-                        fontSize: 10.sp,
-                        color: AppColors.textColor7E7F7E),
-                  ),
-                )),
-              ],
-            ),
-            SizedBox(height: 12.h),
-
-            Divider(color: AppColors.borderColorD2D2D2),
-            SizedBox(height: 16.h),
-
-            // ── Logistics ─────────────────────────────────────────
-            _sectionTitle('Logistics'),
-            SizedBox(height: 10.h),
-            CustomTextField(
-              controller: controller.boothNumberController,
-              labelText: 'Booth Number',
-              hintText: '——',
-            ),
-
-            Divider(color: AppColors.borderColorD2D2D2),
-            SizedBox(height: 16.h),
-
-            // ── Connect & Resources ───────────────────────────────
-            _sectionTitle('Connect & Resources'),
-            SizedBox(height: 10.h),
-
-            CustomTextField(
-              controller: controller.websiteUrlController,
-              labelText: 'Website URL',
-              hintText: 'https://example.com',
-              prefixIcon: Icon(Icons.language,
-                  size: 18.sp, color: AppColors.textColor7E7F7E),
-              keyboardType: TextInputType.url,
-            ),
-            CustomTextField(
-              controller: controller.publicEmailController,
-              labelText: 'Public Email',
-              hintText: 'https://example.com',
-              prefixIcon: Icon(Icons.language,
-                  size: 18.sp, color: AppColors.textColor7E7F7E),
-              keyboardType: TextInputType.emailAddress,
-            ),
-
-            Divider(color: AppColors.borderColorD2D2D2),
-            SizedBox(height: 16.h),
-
-            // ── Downloadable Resources ────────────────────────────
-            _sectionTitle('Downloadable Resources'),
-            SizedBox(height: 10.h),
-
-            Obx(() => Column(
-              children: controller.downloadableResources
-                  .asMap()
-                  .entries
-                  .map((entry) => _resourceTile(
-                  entry.value, entry.key, controller))
-                  .toList(),
-            )),
-
-            SizedBox(height: 24.h),
-
-            // ── Button ────────────────────────────────────────────
-            Obx(() => CustomButton(
-              title: controller.hasBooth.value
-                  ? 'Save Changes'
-                  : 'Create Booth',
-              onpress: () {
-                if (controller.hasBooth.value) {
-                  controller.saveBoothChanges();
+              // ── Visuals ──────────────────────────────────────────
+              _sectionTitle('Visuals'),
+              SizedBox(height: 10.h),
+              Obx(() {
+                final bannerVal = controller.boothBannerPath.value;
+                if (bannerVal.isEmpty) {
+                  return _bannerUploadEmpty();
+                } else if (bannerVal.startsWith('http')) {
+                  return _bannerNetwork(bannerVal);
                 } else {
-                  controller.createBooth();
+                  return _bannerAsset(bannerVal);
                 }
-              },
-            )),
-            SizedBox(height: 24.h),
-          ],
-        ),
-      ),
+              }),
+              SizedBox(height: 4.h),
+              Divider(color: AppColors.borderColorD2D2D2),
+              SizedBox(height: 16.h),
+
+              // ── Content ──────────────────────────────────────────
+              _sectionTitle('Content'),
+              SizedBox(height: 10.h),
+
+              CustomTextField(
+                controller: controller.companyNameController,
+                labelText: 'Company Name',
+                hintText: 'Company name',
+              ),
+              CustomTextField(
+                controller: controller.offerTitleController,
+                labelText: 'Offer Title',
+                hintText: 'e.g., 20% Off Annual Plan',
+              ),
+              CustomTextField(
+                controller: controller.boothOpeningController,
+                labelText: 'Booth Opening',
+                hintText: '7:00 AM- 10 PM',
+              ),
+
+              // Description with character counter
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Description',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textColor252525,
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  TextFormField(
+                    controller: controller.descriptionController,
+                    maxLines: 5,
+                    maxLength: 500,
+                    style: TextStyle(
+                        fontSize: 12.sp, color: AppColors.textColor424242),
+                    decoration: InputDecoration(
+                      counterText: '',
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w, vertical: 12.h),
+                      hintText: 'Enter booth description...',
+                      hintStyle: TextStyle(
+                          fontSize: 12.sp,
+                          color: AppColors.textColor7E7F7E),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                        borderSide:
+                            BorderSide(color: AppColors.borderColorD2D2D2),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                        borderSide:
+                            BorderSide(color: AppColors.borderColorD2D2D2),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                        borderSide:
+                            BorderSide(color: AppColors.borderColorD2D2D2),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Obx(() => Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          '${controller.descriptionLength.value}/500 characters',
+                          style: TextStyle(
+                              fontSize: 10.sp,
+                              color: AppColors.textColor7E7F7E),
+                        ),
+                      )),
+                ],
+              ),
+              SizedBox(height: 12.h),
+
+              Divider(color: AppColors.borderColorD2D2D2),
+              SizedBox(height: 16.h),
+
+              // ── Logistics ─────────────────────────────────────────
+              _sectionTitle('Logistics'),
+              SizedBox(height: 10.h),
+              CustomTextField(
+                controller: controller.boothNumberController,
+                labelText: 'Booth Number',
+                hintText: '——',
+              ),
+
+              Divider(color: AppColors.borderColorD2D2D2),
+              SizedBox(height: 16.h),
+
+              // ── Connect & Resources ───────────────────────────────
+              _sectionTitle('Connect & Resources'),
+              SizedBox(height: 10.h),
+
+              CustomTextField(
+                controller: controller.websiteUrlController,
+                labelText: 'Website URL',
+                hintText: 'https://example.com',
+                prefixIcon: Icon(Icons.language,
+                    size: 18.sp, color: AppColors.textColor7E7F7E),
+                keyboardType: TextInputType.url,
+              ),
+              CustomTextField(
+                controller: controller.publicEmailController,
+                labelText: 'Public Email',
+                hintText: 'contact@example.com',
+                prefixIcon: Icon(Icons.email_outlined,
+                    size: 18.sp, color: AppColors.textColor7E7F7E),
+                keyboardType: TextInputType.emailAddress,
+              ),
+
+              Divider(color: AppColors.borderColorD2D2D2),
+              SizedBox(height: 16.h),
+
+              // ── Downloadable Resources ────────────────────────────
+              _sectionTitle('Downloadable Resources'),
+              SizedBox(height: 10.h),
+
+              Obx(() => Column(
+                    children: controller.downloadableResources
+                        .asMap()
+                        .entries
+                        .map((entry) =>
+                            _resourceTile(entry.value, entry.key))
+                        .toList(),
+                  )),
+
+              SizedBox(height: 24.h),
+
+              // ── Button ────────────────────────────────────────────
+              Obx(() => CustomButton(
+                    title: controller.hasBooth.value
+                        ? 'Save Changes'
+                        : 'Create Booth',
+                    loading: controller.isSaving.value,
+                    onpress: () {
+                      if (controller.hasBooth.value) {
+                        controller.saveBoothChanges();
+                      } else {
+                        controller.createBooth();
+                      }
+                    },
+                  )),
+              SizedBox(height: 24.h),
+            ],
+          ),
+        );
+      }),
     );
   }
 
@@ -227,10 +243,10 @@ class _BoothProfileScreenState extends State<BoothProfileScreen> {
     );
   }
 
-  Widget _bannerUploadEmpty(BoothController controller) {
+  Widget _bannerUploadEmpty() {
     return GestureDetector(
       onTap: () {
-        // image picker logic
+        // TODO: image picker integration
       },
       child: Container(
         width: double.infinity,
@@ -269,11 +285,24 @@ class _BoothProfileScreenState extends State<BoothProfileScreen> {
     );
   }
 
-  Widget _bannerFilled() {
+  Widget _bannerNetwork(String url) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10.r),
+      child: Image.network(
+        url,
+        width: double.infinity,
+        height: 130.h,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _bannerUploadEmpty(),
+      ),
+    );
+  }
+
+  Widget _bannerAsset(String path) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10.r),
       child: Image.asset(
-        'assets/images/booth.png',
+        path,
         width: double.infinity,
         height: 130.h,
         fit: BoxFit.cover,
@@ -281,35 +310,41 @@ class _BoothProfileScreenState extends State<BoothProfileScreen> {
     );
   }
 
-  Widget _resourceTile(
-      Map<String, dynamic> resource, int index, BoothController controller) {
+  Widget _resourceTile(Map<String, dynamic> resource, int index) {
+    final name = resource['name']?.toString() ?? '';
+    final type = resource['type']?.toString() ?? '';
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10.r),
-        border:
-        Border.all(color: AppColors.borderColorD2D2D2.withOpacity(0.5)),
+        border: Border.all(
+            color: AppColors.borderColorD2D2D2.withOpacity(0.5)),
       ),
       child: Row(
         children: [
-          Icon(Icons.picture_as_pdf,
-              color: Colors.red, size: 24.sp),
+          Icon(
+            type.toLowerCase() == 'pdf'
+                ? Icons.picture_as_pdf
+                : Icons.insert_drive_file_outlined,
+            color: type.toLowerCase() == 'pdf' ? Colors.red : Colors.blue,
+            size: 24.sp,
+          ),
           SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  resource['name'],
+                  name,
                   style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w500,
                       color: AppColors.textColor252525),
                 ),
                 Text(
-                  resource['size'],
+                  type.toUpperCase(),
                   style: TextStyle(
                       fontSize: 10.sp, color: AppColors.textColor7E7F7E),
                 ),
@@ -322,6 +357,55 @@ class _BoothProfileScreenState extends State<BoothProfileScreen> {
                 color: AppColors.textColor7E7F7E, size: 20.sp),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildShimmer() {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 16.h),
+            Container(width: 80.w, height: 14.h, color: Colors.white),
+            SizedBox(height: 10.h),
+            Container(
+              width: double.infinity,
+              height: 130.h,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+            ),
+            SizedBox(height: 20.h),
+            ...List.generate(
+              6,
+              (i) => Padding(
+                padding: EdgeInsets.only(bottom: 14.h),
+                child: Container(
+                  width: double.infinity,
+                  height: 48.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              height: 50.h,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

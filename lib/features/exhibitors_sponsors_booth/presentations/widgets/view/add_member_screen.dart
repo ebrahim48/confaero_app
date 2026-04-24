@@ -20,7 +20,7 @@ class AddMemberScreen extends StatelessWidget {
         backgroundColor: const Color(0xffF5F5F5),
         elevation: 0,
         leading: GestureDetector(
-          onTap: () => Get.back(),
+          onTap: () => Navigator.pop(context),
           child: Icon(Icons.arrow_back,
               color: AppColors.textColor252525, size: 22.sp),
         ),
@@ -102,7 +102,7 @@ class AddMemberScreen extends StatelessWidget {
             // Add Member Button
             Obx(() => CustomButton(
               title: 'Add Member',
-              loading: controller.isLoading.value,
+              loading: controller.isAdding.value,
               onpress: controller.addMember,
             )),
           ],

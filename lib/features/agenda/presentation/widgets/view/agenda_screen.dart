@@ -87,18 +87,7 @@ class AgendaScreen extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(6.r),
                     ),
-                    child: Row(
-                      children: [
-                        Assets.icons.filter.svg(),
-                        SizedBox(width: 4.w),
-                        CustomText(
-                          text: 'Filters',
-                          fontsize: 12.sp,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xff252525),
-                        ),
-                      ],
-                    ),
+
                   ),
                 ],
               ),
@@ -192,6 +181,7 @@ class AgendaScreen extends StatelessWidget {
                               onTap: () {
                                 context.pushNamed(
                                   AppRoutes.agendaDetailsScreen,
+                                  extra: session.idx.toString(),
                                 );
                               },
                             ),
@@ -218,7 +208,7 @@ class AgendaScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              isMyAgenda ? Icons.calendar_today_outlined : Icons.event_note_outlined,
+              isMyAgenda ? Icons.bookmark_border : Icons.event_note_outlined,
               size: 80.sp,
               color: const Color(0xFFAD9D8D),
             ),

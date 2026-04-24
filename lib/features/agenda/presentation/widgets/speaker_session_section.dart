@@ -43,12 +43,12 @@ class SpeakerSessionsSection extends StatelessWidget {
 
         // Sessions List
         ...sessions.map((session) {
-          final sessionId = session['id']?.toString() ?? '';
+          final sessionId = session['_id']?.toString() ?? '';
           return SpeakerSessionCard(
-            type: session['type']?.toString() ?? '',
+            type: 'SESSION',
             title: session['title']?.toString() ?? '',
             time: session['time']?.toString() ?? '',
-            attendees: session['attendees'] ?? 0,
+            attendees: session['bookmarkCount'] as int? ?? 0,
             isFavorited: isSessionFavorited(sessionId),
             onTap: () => onSessionTap(sessionId),
             onFavoriteTap: () => onFavoriteTap(sessionId),

@@ -90,7 +90,7 @@ class BoothManagementController extends GetxController {
 
         // Load staff separately
         try {
-          final staffResponse = await _service.getBoothStaff();
+          final staffResponse = await _service.getBoothStaff(currentEventId);
           if (staffResponse['data'] is List) {
             staffMembers.value =
                 (staffResponse['data'] as List)
@@ -109,7 +109,7 @@ class BoothManagementController extends GetxController {
   Future<void> updateMyBooth() async {
     try {
       isSaving.value = true;
-      await _service.updateMyBooth({
+      await _service.updateMyBooth(currentEventId, {
         'name': boothNameController.text,
         'description': boothDescController.text,
       });
@@ -123,7 +123,7 @@ class BoothManagementController extends GetxController {
 
   Future<void> addStaff(String email) async {
     try {
-      await _service.addBoothStaff({'email': email});
+      await _service.addBoothStaff(currentEventId, email);
       ToastMessageHelper.showToastMessage('Staff added', title: 'Success');
       loadMyBooth();
     } catch (e) {

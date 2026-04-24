@@ -8,38 +8,36 @@ import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class AgendaDetailsController extends GetxController {
   final AgendaService _agendaService = Get.find<AgendaService>();
+  final String sessionIdx;
 
-  // Session details
+  AgendaDetailsController(this.sessionIdx);
+
   final RxMap<String, dynamic> sessionDetails = <String, dynamic>{}.obs;
+  final RxList<Map<String, dynamic>> speakerProfiles = <Map<String, dynamic>>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isLiked = false.obs;
 
-  // Event ID from global session state
   String get currentEventId => SessionController.to.eventId;
+
+  String get sessionTitle =>
+      (sessionDetails['session'] as Map<String, dynamic>?)?['title']?.toString() ??
+      'Session Details';
 
   @override
   void onInit() {
     super.onInit();
-    // Get session ID from route arguments
-    final args = Get.arguments;
-    if (args != null &&
-        args is Map<String, dynamic> &&
-        args['sessionId'] != null) {
-      loadSessionDetails(args['sessionId'] as String);
-    }
+    if (sessionIdx.isNotEmpty) loadSessionDetails();
   }
 
-  /// Load session details from API
-  Future<void> loadSessionDetails(String sessionId) async {
+  Future<void> loadSessionDetails() async {
     isLoading.value = true;
     try {
-      final data = await _agendaService.getSessionDetails(
-        currentEventId,
-        sessionId,
-      );
+      final data = await _agendaService.getSessionDetails(currentEventId, sessionIdx);
       if (data != null) {
         sessionDetails.value = data;
-        isLiked.value = data['isLiked'] as bool? ?? false;
+        isLiked.value =
+            (data['session'] as Map<String, dynamic>?)?['isLiked'] as bool? ?? false;
+        await _loadSpeakerProfiles(data['speakers'] as List? ?? []);
       }
     } catch (e) {
       ToastMessageHelper.showToastMessage('Failed to load session details', title: 'Error');
@@ -48,16 +46,39 @@ class AgendaDetailsController extends GetxController {
     }
   }
 
-  // Toggle like via API
-  Future<void> toggleLike() async {
-    final sessionId = sessionDetails['_id']?.toString() ?? '';
-    if (sessionId.isEmpty) return;
+  Future<void> _loadSpeakerProfiles(List speakers) async {
+    speakerProfiles.clear();
+    for (final item in speakers) {
+      final s = item as Map<String, dynamic>;
+      final accountId = s['accountId']?.toString() ?? '';
+      final sessionRole = s['role']?.toString() ?? '';
+      if (accountId.isEmpty) continue;
+      try {
+        final data = await _agendaService.getSpeakerDetails(currentEventId, accountId);
+        if (data != null) {
+          final profile = Map<String, dynamic>.from(
+            (data['speaker'] as Map<String, dynamic>?) ?? {},
+          );
+          profile['sessionRole'] = sessionRole;
+          speakerProfiles.add(profile);
+        }
+      } catch (_) {
+        speakerProfiles.add({
+          'accountId': accountId,
+          'sessionRole': sessionRole,
+          'name': 'Speaker',
+        });
+      }
+    }
+  }
 
+  Future<void> toggleLike() async {
+    if (sessionIdx.isEmpty) return;
     isLiked.value = !isLiked.value;
     try {
-      await _agendaService.toggleSessionLike(currentEventId, sessionId);
+      await _agendaService.toggleSessionLike(currentEventId, sessionIdx);
     } catch (e) {
-      isLiked.value = !isLiked.value; // revert on failure
+      isLiked.value = !isLiked.value;
     }
   }
 
@@ -77,7 +98,7 @@ class AgendaDetailsController extends GetxController {
     context.pushNamed(AppRoutes.floorMapScreen);
   }
 
-  void openSpeakerDetails(BuildContext context) {
-    context.pushNamed(AppRoutes.speakarProfileScreen);
+  void openSpeakerDetails(BuildContext context, String speakerId) {
+    context.pushNamed(AppRoutes.speakarProfileScreen, extra: speakerId);
   }
 }

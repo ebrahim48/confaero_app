@@ -85,12 +85,15 @@ class BoothService {
     return response.data as Map<String, dynamic>;
   }
 
-  /// PATCH /booth/me
-  Future<Map<String, dynamic>> updateMyBooth(Map<String, dynamic> data) async {
+  /// PATCH /booth/me/:eventId
+  Future<Map<String, dynamic>> updateMyBooth(
+    String eventId,
+    Map<String, dynamic> data,
+  ) async {
     await _checkConnectivity();
-    _logger.i('Updating my booth');
+    _logger.i('Updating my booth for event: $eventId');
     final response = await _apiService.patch(
-      ApiConstants.updateMyBooth,
+      '${ApiConstants.updateMyBooth}/$eventId',
       data: data,
     );
     return response.data as Map<String, dynamic>;
@@ -107,22 +110,54 @@ class BoothService {
     return response.data as Map<String, dynamic>;
   }
 
-  /// POST /booth/staff
-  Future<Map<String, dynamic>> addBoothStaff(Map<String, dynamic> data) async {
+  /// GET /booth/staff/:eventId
+  Future<Map<String, dynamic>> getBoothStaff(String eventId) async {
     await _checkConnectivity();
-    _logger.i('Adding booth staff');
-    final response = await _apiService.post(
-      ApiConstants.addBoothStaff,
-      data: data,
+    _logger.i('Fetching booth staff for event: $eventId');
+    final response = await _apiService.get(
+      '${ApiConstants.getBoothStaff}/$eventId',
     );
     return response.data as Map<String, dynamic>;
   }
 
-  /// GET /booth/staff
-  Future<Map<String, dynamic>> getBoothStaff() async {
+  /// POST /booth/staff/:eventId
+  Future<Map<String, dynamic>> addBoothStaff(String eventId, String email) async {
     await _checkConnectivity();
-    _logger.i('Fetching booth staff');
-    final response = await _apiService.get(ApiConstants.getBoothStaff);
+    _logger.i('Adding booth staff for event: $eventId');
+    final response = await _apiService.post(
+      '${ApiConstants.addBoothStaff}/$eventId',
+      data: {'email': email},
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// GET /booth/analytics/:eventId
+  Future<Map<String, dynamic>> getAnalytics(String eventId) async {
+    await _checkConnectivity();
+    _logger.i('Fetching booth analytics for event: $eventId');
+    final response = await _apiService.get(
+      '${ApiConstants.getAnalytics}/$eventId',
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// GET /exhibitor/performance/:eventId
+  Future<Map<String, dynamic>> getPerformance(String eventId) async {
+    await _checkConnectivity();
+    _logger.i('Fetching exhibitor performance for event: $eventId');
+    final response = await _apiService.get(
+      '${ApiConstants.getPerformance}/$eventId',
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// GET /booth/me/:eventId
+  Future<Map<String, dynamic>> getMyBoothByEvent(String eventId) async {
+    await _checkConnectivity();
+    _logger.i('Fetching my booth for event: $eventId');
+    final response = await _apiService.get(
+      '${ApiConstants.getMyBooth}/$eventId',
+    );
     return response.data as Map<String, dynamic>;
   }
 }

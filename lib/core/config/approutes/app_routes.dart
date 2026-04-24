@@ -69,6 +69,8 @@ import '../../../features/sponsor_dashboard/presentation/widgets/sponsor_dashboa
 import '../../../features/sponsor_dashboard/presentation/widgets/sponsor_form_screen.dart';
 import '../../../features/poster_assign/presentation/widgets/poster_assign_screen.dart';
 import '../../../features/reviewer/presentation/widgets/reviewer_dashboard_screen.dart';
+import '../../../features/sponsors_profile/presentation/widgets/view/sponsor_home_screen.dart';
+import '../../../features/sponsors_profile/presentation/widgets/view/sponsor_profile_screen.dart';
 import '../../../features/volunteer/presentation/widgets/volunteer_dashboard_screen.dart';
 import '../../../features/volunteer/presentation/widgets/task_form_screen.dart';
 import '../../../features/video_conference/presentation/widgets/live_session_screen.dart';
@@ -184,6 +186,8 @@ class AppRoutes {
   static const String boothStaffScreen = "/boothStaffScreen";
   static const String addMemberScreen = "/addMemberScreen";
   static const String leadManagementScreen = "/leadManagementScreen";
+  static const String sponsorHomeScreen = "/sponsorHomeScreen";
+  static const String sponsorProfileScreen = "/sponsorProfileScreen";
 
   // verifyScreen and resetPasswordScreen already defined above with API constants
 
@@ -483,12 +487,14 @@ class AppRoutes {
       GoRoute(
         path: agendaDetailsScreen,
         name: agendaDetailsScreen,
-        builder: (context, state) => AgendaDetailsScreen(),
+        builder: (context, state) =>
+            AgendaDetailsScreen(sessionIdx: state.extra as String? ?? ''),
       ),
       GoRoute(
         path: speakarProfileScreen,
         name: speakarProfileScreen,
-        builder: (context, state) => SpeakerProfileScreen(),
+        builder: (context, state) =>
+            SpeakerProfileScreen(speakerId: state.extra as String? ?? ''),
       ),
       GoRoute(
         path: eventSpekarScreen,
@@ -684,6 +690,16 @@ class AppRoutes {
         path: leadManagementScreen,
         name: leadManagementScreen,
         builder: (context, state) => const LeadManagementScreen(),
+      ),
+      GoRoute(
+        path: sponsorHomeScreen,
+        name: sponsorHomeScreen,
+        builder: (context, state) => const SponsorHomeScreen(),
+      ),
+      GoRoute(
+        path: sponsorProfileScreen,
+        name: sponsorProfileScreen,
+        builder: (context, state) => const SponsorProfileScreen(),
       ),
 
       GoRoute(

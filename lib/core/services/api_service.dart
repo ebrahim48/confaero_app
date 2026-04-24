@@ -162,6 +162,9 @@ class ApiService {
       '/resource/survey/',
       '/eventAttendee/events/',
       '/connection/request/',
+      '/booth/me',
+      '/booth/analytics',
+      '/exhibitor/performance',
     ];
     
     if (suppressedPaths.any((suppressed) => path.contains(suppressed))) {

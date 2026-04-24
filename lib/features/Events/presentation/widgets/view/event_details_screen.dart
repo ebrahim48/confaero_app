@@ -34,11 +34,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       if (extra is Map<String, dynamic>) {
         final eventId = extra['eventId'] as String? ?? '';
         final registrationStatus = extra['registrationStatus'] as String? ?? '';
+        final role = extra['role'] as String? ?? '';
         if (eventId.isNotEmpty) {
-          controller.loadEvent(eventId, status: registrationStatus);
+          controller.loadEvent(eventId, status: registrationStatus, role: role);
         }
       } else if (extra is String && extra.isNotEmpty) {
-        // Fallback for old navigation calls
         controller.loadEvent(extra);
       }
     });

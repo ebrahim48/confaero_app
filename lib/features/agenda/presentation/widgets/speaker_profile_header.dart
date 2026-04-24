@@ -39,7 +39,9 @@ class SpeakerProfileHeader extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   image: DecorationImage(
-                    image: AssetImage(imagePath),
+                    image: imagePath.startsWith('http')
+                        ? NetworkImage(imagePath) as ImageProvider
+                        : const AssetImage('assets/images/profile.png'),
                     fit: BoxFit.cover,
                   ),
                 ),

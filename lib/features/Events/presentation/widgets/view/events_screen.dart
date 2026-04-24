@@ -216,10 +216,11 @@ class _EventsScreenState extends State<EventsScreen>
       isRegistered: true,
       registrationStatus: m.status,
       onCardTap: () => controller.openEventDetails(
-        context, 
-        e.id, 
+        context,
+        e.id,
         title: e.title,
         registrationStatus: m.status,
+        role: m.role,
       ),
     );
   }

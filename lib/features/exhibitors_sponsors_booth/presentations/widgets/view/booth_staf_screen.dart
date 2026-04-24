@@ -2,26 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../controllers/booth_staff_controller.dart';
 
-
-class BoothStaffScreen extends StatelessWidget {
+class BoothStaffScreen extends StatefulWidget {
   const BoothStaffScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.put(BoothStaffController());
+  State<BoothStaffScreen> createState() => _BoothStaffScreenState();
+}
 
+class _BoothStaffScreenState extends State<BoothStaffScreen> {
+  late final BoothStaffController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!Get.isRegistered<BoothStaffController>()) {
+      controller = Get.put(BoothStaffController());
+    } else {
+      controller = Get.find<BoothStaffController>();
+      controller.loadStaff();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffF5F5F5),
       appBar: AppBar(
         backgroundColor: const Color(0xffF5F5F5),
         elevation: 0,
         leading: GestureDetector(
-          onTap: () => Get.back(),
+          onTap: () => context.pop(),
           child: Icon(Icons.arrow_back,
               color: AppColors.textColor252525, size: 22.sp),
         ),
@@ -51,22 +67,36 @@ class BoothStaffScreen extends StatelessWidget {
 
             // Staff List
             Expanded(
-              child: Obx(() => ListView.separated(
-                itemCount: controller.staffList.length,
-                separatorBuilder: (_, __) => SizedBox(height: 0.h),
-                itemBuilder: (context, index) {
-                  final staff = controller.staffList[index];
-                  return _staffTile(staff, index, controller);
-                },
-              )),
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return _buildShimmer();
+                }
+                if (controller.staffList.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No staff members yet',
+                      style: TextStyle(
+                          fontSize: 14.sp, color: AppColors.textColor7E7F7E),
+                    ),
+                  );
+                }
+                return ListView.separated(
+                  itemCount: controller.staffList.length,
+                  separatorBuilder: (_, __) => const SizedBox.shrink(),
+                  itemBuilder: (context, index) {
+                    final staff = controller.staffList[index];
+                    return _staffTile(staff, index);
+                  },
+                );
+              }),
             ),
 
             // Add Member Button
             GestureDetector(
-              onTap: () => context.pushNamed(AppRoutes.addMemberScreen),
+              onTap: () => context.push(AppRoutes.addMemberScreen),
               child: Container(
                 padding:
-                EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8.r),
@@ -98,8 +128,8 @@ class BoothStaffScreen extends StatelessWidget {
     );
   }
 
-  Widget _staffTile(
-      Map<String, dynamic> staff, int index, BoothStaffController controller) {
+  Widget _staffTile(Map<String, dynamic> staff, int index) {
+    final imageUrl = staff['image']?.toString() ?? '';
     return Container(
       padding: EdgeInsets.symmetric(vertical: 10.h),
       decoration: BoxDecoration(
@@ -112,7 +142,6 @@ class BoothStaffScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Avatar with teal border
           Container(
             width: 46.w,
             height: 46.h,
@@ -124,26 +153,39 @@ class BoothStaffScreen extends StatelessWidget {
               ),
             ),
             child: ClipOval(
-              child: Image.asset(
-                staff['image'],
-                fit: BoxFit.cover,
-              ),
+              child: imageUrl.startsWith('http')
+                  ? Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _avatarFallback(),
+                    )
+                  : _avatarFallback(),
             ),
           ),
           SizedBox(width: 14.w),
           Expanded(
-            child: Text(
-              staff['name'],
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textColor252525,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  staff['name']?.toString() ?? '',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textColor252525,
+                  ),
+                ),
+                if ((staff['email']?.toString() ?? '').isNotEmpty)
+                  Text(
+                    staff['email'].toString(),
+                    style: TextStyle(
+                        fontSize: 11.sp, color: AppColors.textColor7E7F7E),
+                  ),
+              ],
             ),
           ),
-          // Three dot menu
           GestureDetector(
-            onTap: () => _showOptions(index, controller),
+            onTap: () => _showOptions(context, index),
             child: Icon(Icons.more_vert,
                 size: 20.sp, color: AppColors.textColor7E7F7E),
           ),
@@ -152,14 +194,21 @@ class BoothStaffScreen extends StatelessWidget {
     );
   }
 
-  void _showOptions(int index, BoothStaffController controller) {
-    Get.bottomSheet(
-      Container(
+  Widget _avatarFallback() {
+    return Image.asset(
+      'assets/images/profile.png',
+      fit: BoxFit.cover,
+    );
+  }
+
+  void _showOptions(BuildContext context, int index) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      builder: (_) => Container(
         padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -173,15 +222,14 @@ class BoothStaffScreen extends StatelessWidget {
             ),
             SizedBox(height: 16.h),
             ListTile(
-              leading: Icon(Icons.delete_outline,
-                  color: Colors.red, size: 22.sp),
+              leading:
+                  Icon(Icons.delete_outline, color: Colors.red, size: 22.sp),
               title: Text(
                 'Remove Member',
-                style: TextStyle(
-                    fontSize: 14.sp, color: Colors.red),
+                style: TextStyle(fontSize: 14.sp, color: Colors.red),
               ),
               onTap: () {
-                Get.back();
+                Navigator.pop(context);
                 controller.removeMember(index);
               },
             ),
@@ -190,13 +238,50 @@ class BoothStaffScreen extends StatelessWidget {
                   color: AppColors.textColor424242, size: 22.sp),
               title: Text(
                 'Cancel',
-                style: TextStyle(
-                    fontSize: 14.sp, color: AppColors.textColor424242),
+                style:
+                    TextStyle(fontSize: 14.sp, color: AppColors.textColor424242),
               ),
-              onTap: () => Get.back(),
+              onTap: () => Navigator.pop(context),
             ),
             SizedBox(height: 8.h),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmer() {
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE0E0E0),
+      highlightColor: const Color(0xFFF5F5F5),
+      child: ListView.separated(
+        itemCount: 4,
+        separatorBuilder: (_, __) => const SizedBox.shrink(),
+        itemBuilder: (_, __) => Padding(
+          padding: EdgeInsets.symmetric(vertical: 10.h),
+          child: Row(
+            children: [
+              Container(
+                width: 46.w,
+                height: 46.h,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              SizedBox(width: 14.w),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                      width: 140.w, height: 13.h, color: Colors.white),
+                  SizedBox(height: 4.h),
+                  Container(
+                      width: 100.w, height: 10.h, color: Colors.white),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

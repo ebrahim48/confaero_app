@@ -316,12 +316,11 @@ class EventsController extends GetxController {
 
   // ── Navigation ────────────────────────────────────────────────────────────
 
-  void openEventDetails(BuildContext context, String eventId, {String title = '', String registrationStatus = ''}) {
-    // Do NOT set the session here — session is set only after the user
-    // clicks "Join Now" (calls PATCH /attendee/event/{id}/join).
+  void openEventDetails(BuildContext context, String eventId, {String title = '', String registrationStatus = '', String role = ''}) {
     context.pushNamed(AppRoutes.eventsDetailsScreen, extra: {
       'eventId': eventId,
       'registrationStatus': registrationStatus,
+      'role': role,
     });
   }
 
@@ -334,8 +333,10 @@ class EventsController extends GetxController {
     });
   }
 
-  void selectEventAndNavigate(BuildContext context, String eventId, {String title = ''}) {
-    // Set the event and navigate directly to main navigation
+  void selectEventAndNavigate(BuildContext context, String eventId, {String title = '', String role = ''}) {
+    if (role.trim().isNotEmpty) {
+      RoleController.to.setRole(role.trim());
+    }
     SessionController.to.setEvent(eventId, title: title);
     context.goNamed(AppRoutes.mainNavigationScreen);
   }
