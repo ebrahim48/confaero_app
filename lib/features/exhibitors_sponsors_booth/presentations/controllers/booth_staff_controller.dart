@@ -1,51 +1,95 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
+import '../../../../core/services/booth_service.dart';
+
 class BoothStaffController extends GetxController {
+  final BoothService _service = Get.find<BoothService>();
+
   final TextEditingController emailController = TextEditingController();
 
-  final RxList<Map<String, dynamic>> staffList = <Map<String, dynamic>>[
-    {'name': 'Hariza Williamson', 'image': 'assets/images/profile.png'},
-    {'name': 'Hariza Williamson', 'image': 'assets/images/profile.png'},
-    {'name': 'Hariza Williamson', 'image': 'assets/images/profile.png'},
-  ].obs;
-
+  final RxList<Map<String, dynamic>> staffList = <Map<String, dynamic>>[].obs;
   final RxBool isLoading = false.obs;
+  final RxBool isAdding = false.obs;
 
-  void removeMember(int index) {
-    staffList.removeAt(index);
+  String get eventId => SessionController.to.eventId;
+
+  @override
+  void onInit() {
+    super.onInit();
+    if (SessionController.to.eventId.isNotEmpty) {
+      loadStaff();
+    } else {
+      ever(SessionController.to.eventIdRx, (String id) {
+        if (id.isNotEmpty && staffList.isEmpty && !isLoading.value) loadStaff();
+      });
+    }
+  }
+
+  Future<void> loadStaff() async {
+    if (eventId.isEmpty) return;
+    isLoading.value = true;
+    try {
+      final res = await _service.getBoothStaff(eventId);
+      if (res['success'] == true && res['data'] is List) {
+        final list = (res['data'] as List)
+            .map((e) => _parseStaffMember(e as Map<String, dynamic>))
+            .toList();
+        staffList.assignAll(list);
+      }
+    } catch (_) {
+      staffList.clear();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Map<String, dynamic> _parseStaffMember(Map<String, dynamic> raw) {
+    final user = raw['user'] as Map<String, dynamic>? ?? {};
+    final profile = user['profile'] as Map<String, dynamic>? ?? {};
+    final name = profile['name']?.toString() ?? user['email']?.toString() ?? 'Staff';
+    final avatar = profile['avatar']?.toString() ?? '';
+    return <String, dynamic>{
+      'id': raw['_id']?.toString() ?? '',
+      'name': name,
+      'email': user['email']?.toString() ?? '',
+      'image': avatar,
+    };
   }
 
   Future<void> addMember() async {
-    if (emailController.text.trim().isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Please enter an email address',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+    final email = emailController.text.trim();
+    if (email.isEmpty) {
+      ToastMessageHelper.showToastMessage('Please enter an email address',
+          title: 'Error');
+      return;
+    }
+    if (eventId.isEmpty) {
+      ToastMessageHelper.showToastMessage('No event selected', title: 'Error');
       return;
     }
 
-    isLoading.value = true;
-    await Future.delayed(const Duration(seconds: 1));
-    isLoading.value = false;
+    isAdding.value = true;
+    try {
+      final res = await _service.addBoothStaff(eventId, email);
+      if (res['success'] == true) {
+        emailController.clear();
+        Navigator.pop(Get.context!);
+        ToastMessageHelper.showToastMessage('Member added successfully',
+            title: 'Success');
+        await loadStaff();
+      }
+    } catch (e) {
+      ToastMessageHelper.showToastMessage('Failed to add member', title: 'Error');
+    } finally {
+      isAdding.value = false;
+    }
+  }
 
-    staffList.add({
-      'name': emailController.text.trim(),
-      'image': 'assets/images/profile.png',
-    });
-    emailController.clear();
-    Get.back();
-
-    Get.snackbar(
-      'Success',
-      'Member added successfully',
-      backgroundColor: const Color(0xff32A69A),
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  void removeMember(int index) {
+    staffList.removeAt(index);
   }
 
   @override

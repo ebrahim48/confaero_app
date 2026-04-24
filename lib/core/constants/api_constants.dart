@@ -1,8 +1,8 @@
 class ApiConstants {
 
-  static const String baseUrl = 'http://10.10.11.30:8080/api/v1';
-  static const String imageUrl = "http://10.10.11.30:8080";
-  static const String socketServerUrl = 'http://10.10.11.30:8080';
+  static const String baseUrl = 'http://10.10.11.30:8081/api/v1';
+  static const String imageUrl = "http://10.10.11.30:8081";
+  static const String socketServerUrl = 'http://10.10.11.30:8081';
 
   // static const String baseUrl = 'https://reazul8078.suplify.life/api/v1';
   // static const String imageUrl = "https://reazul8078.suplify.life";
@@ -66,20 +66,19 @@ class ApiConstants {
   static const String uploadChatAttachment = '/upload/chat-attachment';
 
   //--------------------------Agenda/Sessions-----------------------
-  static const String getEventAgenda =
-      '/organizer-sessions/events'; // append /:id/agenda
-  static const String getMyAgenda =
-      '/organizer-sessions/events'; // append /:id/my-agenda
-  static const String bookmarkSession =
-      '/organizer-sessions/events'; // append /:id/my-agenda/:idx
-  static const String removeBookmarkSession =
-      '/organizer-sessions/events'; // append /:id/my-agenda/:idx
-  static const String toggleSessionLike =
-      '/organizer-sessions/agenda'; // append /:id/:idx/toggle-like
-  static const String getSessionDetails =
-      '/organizer-sessions/events'; // append /:id/agenda/:idx
-  static const String getSpeakerDetails =
-      '/organizer-sessions/events'; // append /:id/speakers/:id
+  static const String getEventAgenda = '/organizer-sessions/events'; // append /:id/agenda
+
+  static const String getMyAgenda = '/organizer-sessions/events'; // append /:id/my-agenda
+
+  static const String bookmarkSession = '/organizer-sessions/events'; // append /:id/my-agenda/:idx
+
+  static const String removeBookmarkSession = '/organizer-sessions/events'; // append /:id/my-agenda/:idx
+
+  static const String toggleSessionLike = '/organizer-sessions/agenda'; // append /:id/:idx/toggle-like
+
+  static const String getSessionDetails = '/organizer-sessions/events'; // append /:id/agenda/:idx
+
+  static const String getSpeakerDetails = '/organizer-sessions/events'; // append /:id/speakers/:id
 
   //--------------------------Announcements-------------------------
   static const String getAnnouncements =
@@ -221,12 +220,15 @@ class ApiConstants {
   static const String cancelBooth =
       '/organizerBooth/booths'; // PATCH /:id/cancel
 
-  //--------------------------Booth (Exhibitor)------------------------
-  static const String getMyBooth = '/booth/me';
-  static const String updateMyBooth = '/booth/me';
+  ///--------------------------Booth (Exhibitor)------------------------
+
+  static const String getMyBooth = '/booth/me';   // eventId
+  static const String updateMyBooth = '/booth/me'; // eventId
   static const String createBooth = '/booth/create';
-  static const String addBoothStaff = '/booth/staff';
-  static const String getBoothStaff = '/booth/staff';
+  static const String addBoothStaff = '/booth/staff'; // eventId
+  static const String getBoothStaff = '/booth/staff'; // eventId
+  static const String getAnalytics = '/booth/analytics'; // eventId
+  static const String getPerformance = '/exhibitor/performance'; // eventId
 
   //--------------------------Sponsor Dashboard------------------------
   static const String createSponsor = '/sponsor/create';

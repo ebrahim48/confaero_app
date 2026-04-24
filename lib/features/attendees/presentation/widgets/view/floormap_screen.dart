@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../controllers/floormap_controller.dart';
 import '../../widgets/view_map_button_widget.dart';
 import '../../../../../core/constants/app_colors.dart';
+import '../../../../../core/controllers/session_controller.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../location_list_item.dart';
 
@@ -19,6 +20,14 @@ class FloorMapScreen extends StatefulWidget {
 class _FloorMapScreenState extends State<FloorMapScreen>
     with SingleTickerProviderStateMixin {
   FloorMapController get controller => Get.find<FloorMapController>();
+
+  @override
+  void initState() {
+    super.initState();
+    if (!Get.isRegistered<FloorMapController>()) {
+      Get.put(FloorMapController(eventId: SessionController.to.eventId));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

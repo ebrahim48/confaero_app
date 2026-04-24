@@ -32,8 +32,11 @@ class AgendaService {
     if (response.data is Map<String, dynamic>) {
       final resData = response.data as Map<String, dynamic>;
       if ((resData['success'] == true) && resData['data'] is List) {
-        return (resData['data'] as List)
-            .map((e) => SessionModel.fromJson(e))
+        final list = resData['data'] as List;
+        return list
+            .asMap()
+            .entries
+            .map((e) => SessionModel.fromJson(e.value as Map<String, dynamic>, idx: e.key))
             .toList();
       }
     }
@@ -50,8 +53,11 @@ class AgendaService {
     if (response.data is Map<String, dynamic>) {
       final resData = response.data as Map<String, dynamic>;
       if ((resData['success'] == true) && resData['data'] is List) {
-        return (resData['data'] as List)
-            .map((e) => SessionModel.fromJson(e))
+        final list = resData['data'] as List;
+        return list
+            .asMap()
+            .entries
+            .map((e) => SessionModel.fromJson(e.value as Map<String, dynamic>, idx: e.key))
             .toList();
       }
     }

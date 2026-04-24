@@ -147,8 +147,8 @@ class AgendaController extends GetxController {
   Future<void> toggleFavorite(int index) async {
     final session = currentSessions[index];
     try {
-      await _agendaService.toggleSessionLike(currentEventId, session.id);
-      await _fetchSessions(); // Refresh data to get updated likes count
+      await _agendaService.toggleSessionLike(currentEventId, session.idx.toString());
+      await _fetchSessions();
     } catch (e) {
       ToastMessageHelper.showToastMessage('Failed to toggle like', title: 'Error');
     }
@@ -157,7 +157,7 @@ class AgendaController extends GetxController {
   // Add session to my agenda (Bookmark)
   Future<void> addToMyAgenda(SessionModel session) async {
     try {
-      await _agendaService.bookmarkSession(currentEventId, session.id);
+      await _agendaService.bookmarkSession(currentEventId, session.idx.toString());
       ToastMessageHelper.showToastMessage('Added to your agenda', title: 'Success');
       await _fetchSessions();
     } catch (e) {
@@ -168,7 +168,7 @@ class AgendaController extends GetxController {
   // Remove session from my agenda
   Future<void> removeFromMyAgenda(SessionModel session) async {
     try {
-      await _agendaService.removeBookmarkSession(currentEventId, session.id);
+      await _agendaService.removeBookmarkSession(currentEventId, session.idx.toString());
       ToastMessageHelper.showToastMessage('Removed from your agenda', title: 'Success');
       await _fetchSessions();
     } catch (e) {

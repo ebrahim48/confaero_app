@@ -10,35 +10,48 @@ import '../speaker_bio_widget.dart';
 import '../speaker_profile_header.dart';
 import '../speaker_session_section.dart';
 
+class SpeakerProfileScreen extends StatefulWidget {
+  final String speakerId;
 
-class SpeakerProfileScreen extends StatelessWidget {
-  const SpeakerProfileScreen({super.key});
+  const SpeakerProfileScreen({super.key, required this.speakerId});
+
+  @override
+  State<SpeakerProfileScreen> createState() => _SpeakerProfileScreenState();
+}
+
+class _SpeakerProfileScreenState extends State<SpeakerProfileScreen> {
+  late final SpeakerProfileController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    if (Get.isRegistered<SpeakerProfileController>()) {
+      Get.delete<SpeakerProfileController>(force: true);
+    }
+    controller = Get.put(SpeakerProfileController(widget.speakerId));
+  }
+
+  @override
+  void dispose() {
+    Get.delete<SpeakerProfileController>(force: true);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final SpeakerProfileController controller = Get.put(SpeakerProfileController());
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Obx(() {
-        // // Loading State
-        // if (controller.isLoading.value) {
-        //   return const Center(
-        //     child: CircularProgressIndicator(
-        //       color: Color(0xff5BB8AE),
-        //     ),
-        //   );
-        // }
-
-        final speaker = controller.speaker;
+        if (controller.isLoading.value) {
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xff5BB8AE)),
+          );
+        }
 
         return SafeArea(
           child: Column(
             children: [
-              // Header with Back Button
               _buildAppBar(context),
-
-              // Content
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
@@ -46,12 +59,12 @@ class SpeakerProfileScreen extends StatelessWidget {
                       SizedBox(height: 24.h),
 
                       // Profile Header
-                      SpeakerProfileHeader(
-                        name: speaker['name']?.toString() ?? 'Speaker',
-                        role: speaker['role']?.toString() ?? '',
-                        location: speaker['location']?.toString() ?? '',
-                        imagePath: speaker['image']?.toString() ?? '',
-                      ),
+                      Obx(() => SpeakerProfileHeader(
+                            name: controller.speakerName,
+                            role: controller.speakerRole,
+                            location: controller.speakerLocation,
+                            imagePath: controller.speakerAvatar,
+                          )),
                       SizedBox(height: 24.h),
 
                       // Action Buttons
@@ -69,23 +82,23 @@ class SpeakerProfileScreen extends StatelessWidget {
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 24.w),
                         child: Obx(() => SpeakerBioWidget(
-                          bio: controller.getBioText(),
-                          isExpanded: controller.isBioExpanded.value,
-                          onToggle: controller.toggleBioExpansion,
-                        )),
+                              bio: controller.getBioText(),
+                              isExpanded: controller.isBioExpanded.value,
+                              onToggle: controller.toggleBioExpansion,
+                            )),
                       ),
                       SizedBox(height: 32.h),
 
-                      // Sessions Section
+                      // Speaking At Sessions
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 24.w),
                         child: Obx(() {
-                          final sessions = speaker['sessions'] as List? ?? [];
+                          final sessions = controller.speakingAtSessions;
                           return SpeakerSessionsSection(
-                            sessions: sessions.cast<Map<String, dynamic>>(),
+                            sessions: sessions,
                             onSessionTap: (sessionId) {
                               final session = sessions.firstWhere(
-                                    (s) => s['id'] == sessionId,
+                                (s) => s['_id'] == sessionId,
                                 orElse: () => {},
                               );
                               controller.goToSessionDetails(session);
@@ -131,12 +144,14 @@ class SpeakerProfileScreen extends StatelessWidget {
             ),
           ),
           SizedBox(width: 16.w),
-          CustomText(
-            text: 'Speaker',
-            fontsize: 20.sp,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xff252525),
-          ),
+          Obx(() => CustomText(
+                text: controller.speakerName.isNotEmpty
+                    ? controller.speakerName
+                    : 'Speaker',
+                fontsize: 20.sp,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xff252525),
+              )),
         ],
       ),
     );

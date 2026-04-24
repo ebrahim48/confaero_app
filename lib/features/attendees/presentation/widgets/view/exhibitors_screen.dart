@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
-import '../../../../../features/exhibitors/data/models/booth_model.dart';
+import '../../../../exhibitors_sponsors_booth/data/models/booth_model.dart';
 import '../../controllers/exhibitor_controller.dart';
 import '../custom_app_bar_widget.dart';
 

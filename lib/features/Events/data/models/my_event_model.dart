@@ -5,13 +5,15 @@ import 'event_model.dart';
 class MyEventModel {
   final EventModel event;
   final String status;
+  final String role;
 
-  MyEventModel({required this.event, required this.status});
+  MyEventModel({required this.event, required this.status, this.role = ''});
 
   factory MyEventModel.fromJson(Map<String, dynamic> json) {
     return MyEventModel(
       event: EventModel.fromJson(json['event'] as Map<String, dynamic>),
       status: json['status'] as String? ?? '',
+      role: (json['role'] ?? json['activeRole']) as String? ?? '',
     );
   }
 

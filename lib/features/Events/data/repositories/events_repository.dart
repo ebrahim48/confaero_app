@@ -93,7 +93,7 @@ class EventsRepository {
 
   // ── PATCH /attendee/event/{eventId}/join ─────────────────────────────────
 
-  Future<bool> joinEvent(String eventId) async {
+  Future<Map<String, dynamic>?> joinEvent(String eventId) async {
     try {
       _logger.d('joinEvent: $eventId');
       return await _eventsService.joinEvent(eventId);

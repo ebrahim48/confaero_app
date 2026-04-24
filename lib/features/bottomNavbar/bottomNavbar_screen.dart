@@ -19,6 +19,7 @@ import '../sponsor_dashboard/presentation/widgets/sponsor_dashboard_screen.dart'
 import '../reviewer/presentation/widgets/reviewer_dashboard_screen.dart';
 import '../organizer/presentation/widgets/organizer_dashboard_screen.dart';
 import '../booth_management/presentation/widgets/booth_management_screen.dart';
+import '../exhibitors_sponsors_booth/presentations/widgets/view/exhibitors_booth_sponsors_screen.dart';
 import '../speakers/presentation/widgets/speaker_home_screen.dart';
 import '../attendees/presentation/widgets/sidebar_drawer.dart';
 import '../speakers/presentation/widgets/speaker_sidebar_drawer.dart';
@@ -120,7 +121,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           'screens': [
             HomeScreen(eventId: eventId), // Home
             const AgendaScreen(), // Agenda
-            const BoothManagementScreen(), // Booth
+            const BoothScreen(), // Booth
             const MyJobsScreen(), // Lead/My Jobs
             const MessageScreen(),
           ],

@@ -10,6 +10,7 @@ class SpeakerCard extends StatelessWidget {
   final String role;
   final String company;
   final String imagePath;
+  final String about;
   final VoidCallback onTap;
 
   const SpeakerCard({
@@ -19,6 +20,7 @@ class SpeakerCard extends StatelessWidget {
     required this.company,
     required this.imagePath,
     required this.onTap,
+    this.about = '',
   });
 
   @override
@@ -27,11 +29,11 @@ class SpeakerCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 330.w,
-        height: 74.h,
         margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.symmetric(vertical: 12.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(50.r),
+          borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
               color: const Color(0x1A000000),
@@ -41,58 +43,73 @@ class SpeakerCard extends StatelessWidget {
           ],
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Speaker Image
             Container(
               width: 49.w,
               height: 49.h,
-              margin: EdgeInsets.all(12.w),
+              margin: EdgeInsets.symmetric(horizontal: 12.w),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 image: DecorationImage(
-                  image:
-                      imagePath.isNotEmpty
-                          ? AssetImage(imagePath)
-                          : AssetImage(Assets.images.profile.path),
+                  image: imagePath.isNotEmpty && imagePath.startsWith('http')
+                      ? NetworkImage(imagePath) as ImageProvider
+                      : AssetImage(Assets.images.profile.path),
                   fit: BoxFit.cover,
                 ),
               ),
             ),
+
             // Speaker Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CustomText(
                     textAlign: TextAlign.start,
                     text: name,
-                    fontsize: 16.sp,
+                    fontsize: 15.sp,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xff252525),
                   ),
-                  SizedBox(height: 2.h),
-                  CustomText(
-                    text: role,
-                    fontsize: 12.sp,
-                    color: const Color(0xff757575),
-                  ),
-                  SizedBox(height: 2.h),
-                  CustomText(
-                    textAlign: TextAlign.start,
-                    text: company,
-                    fontsize: 12.sp,
-                    color: const Color(0xff757575),
-                  ),
+                  if (role.isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    CustomText(
+                      text: role,
+                      fontsize: 12.sp,
+                      color: const Color(0xff5BB8AE),
+                    ),
+                  ],
+                  if (company.isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    CustomText(
+                      textAlign: TextAlign.start,
+                      text: company,
+                      fontsize: 12.sp,
+                      color: const Color(0xff757575),
+                    ),
+                  ],
+                  if (about.isNotEmpty) ...[
+                    SizedBox(height: 6.h),
+                    CustomText(
+                      textAlign: TextAlign.start,
+                      text: about,
+                      fontsize: 12.sp,
+                      color: const Color(0xff9E9E9E),
+                      maxline: 2,
+                      textOverflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ],
               ),
             ),
 
             // Arrow Button
             Container(
-              width: 50.w,
-              height: 50.h,
-              margin: EdgeInsets.all(12.w),
+              width: 36.w,
+              height: 36.h,
+              margin: EdgeInsets.symmetric(horizontal: 10.w),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
@@ -104,8 +121,8 @@ class SpeakerCard extends StatelessWidget {
               child: Center(
                 child: SvgPicture.asset(
                   'assets/icons/chevronright.svg',
-                  width: 20.w,
-                  height: 20.h,
+                  width: 16.w,
+                  height: 16.h,
                   color: Colors.white,
                 ),
               ),
