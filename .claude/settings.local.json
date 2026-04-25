@@ -18,7 +18,8 @@
       "Bash(powershell *)",
       "Bash(/c/Users/ebu/fvm/versions/stable/bin/flutter analyze *)",
       "Bash(/c/Users/ebu/fvm/versions/stable/bin/dart analyze *)",
-      "PowerShell(flutter analyze *)"
+      "PowerShell(flutter analyze *)",
+      "Bash(xargs grep *)"
     ]
   }
 }

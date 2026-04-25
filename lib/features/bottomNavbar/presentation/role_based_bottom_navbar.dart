@@ -170,7 +170,7 @@ class RoleBasedBottomNav extends StatelessWidget {
           {'icon': 'home', 'label': 'Home', 'iconType': 'icon'},
           {'icon': 'task', 'label': 'Tasks', 'iconType': 'icon'},
           {'icon': 'qr_code', 'label': 'QR Scan', 'iconType': 'icon'},
-          {'icon': 'resources', 'label': 'Resources', 'iconType': 'icon', 'route': AppRoutes.resourcesScreen},
+          {'icon': 'community', 'label': 'Community', 'iconType': 'icon'},
           {'icon': 'chat', 'label': 'Messages', 'iconType': 'icon'},
         ];
 

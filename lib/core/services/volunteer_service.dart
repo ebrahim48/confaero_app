@@ -4,7 +4,6 @@ import '../utils/logger_helper.dart';
 import 'api_service.dart';
 import 'connectivity_service.dart';
 
-/// Handles volunteer task management and reporting APIs.
 class VolunteerService {
   final ApiService _apiService;
   final ConnectivityService _connectivityService;
@@ -104,6 +103,16 @@ class VolunteerService {
     final response = await _apiService.post(
       ApiConstants.submitReport,
       data: data,
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// GET /qr/volunteer/:eventId
+  Future<Map<String, dynamic>> getVolunteerAttendance(String eventId) async {
+    await _checkConnectivity();
+    _logger.i('Fetching volunteer attendance history: $eventId');
+    final response = await _apiService.get(
+      '${ApiConstants.getVolunteerAttendance}/$eventId',
     );
     return response.data as Map<String, dynamic>;
   }

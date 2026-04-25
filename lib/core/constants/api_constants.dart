@@ -1,12 +1,12 @@
 class ApiConstants {
 
-  static const String baseUrl = 'http://10.10.11.30:8081/api/v1';
-  static const String imageUrl = "http://10.10.11.30:8081";
-  static const String socketServerUrl = 'http://10.10.11.30:8081';
+  // static const String baseUrl = 'http://10.10.11.30:8081/api/v1';
+  // static const String imageUrl = "http://10.10.11.30:8081";
+  // static const String socketServerUrl = 'http://10.10.11.30:8081';
 
-  // static const String baseUrl = 'https://reazul8078.suplify.life/api/v1';
-  // static const String imageUrl = "https://reazul8078.suplify.life";
-  // static const String socketServerUrl = 'https://reazul8078.suplify.life';
+  static const String baseUrl = 'http://206.162.244.11:8078/api/v1';
+  static const String imageUrl = "http://206.162.244.11:8078";
+  static const String socketServerUrl = 'http://206.162.244.11:8078';
 
 
   static Map<String, String> headers = {'Content-Type': 'application/json'};
@@ -293,15 +293,21 @@ class ApiConstants {
 
   //--------------------------Volunteer/Task----------------------------
   static const String createTask = '/volunteer/create';
-  static const String getMyTasks = '/volunteer/my-tasks';
+
+  static const String getMyTasks = '/volunteer/my-tasks'; //enum: ["ASSIGNED", "COMPLETED", "REPORTED"],
   static const String getTaskDetail = '/volunteer/my-task'; // GET /:id
-  static const String searchVolunteer =
-      '/volunteer'; // GET /:eventId/volunteer/search
   static const String getTodayProgress = '/volunteer/today-progress';
+  static const String submitReport = '/report/report'; // post
+  static const String completeTask = '/volunteer'; // PATCH /:id/complete
+
+
+
+
+  static const String searchVolunteer = '/volunteer'; // GET /:eventId/volunteer/search
   static const String getVolunteerDashboard = '/volunteer/volunteers';
   static const String getReportDetail = '/volunteer'; // GET /:id
-  static const String completeTask = '/volunteer'; // PATCH /:id/complete
-  static const String submitReport = '/report/report';
+
+
 
   //--------------------------Video Conference--------------------------
   static const String getLiveSession = '/eventLive/live'; // GET /:eventId
