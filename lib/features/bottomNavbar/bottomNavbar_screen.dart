@@ -5,16 +5,15 @@ import 'package:confaero_app/features/community/presentation/widgets/view/commun
 import 'package:confaero_app/features/lead/presentation/widgets/view/lead_management_screen.dart';
 import 'package:confaero_app/features/mainattendees/presentation/widgets/view/attendees_screen.dart';
 import 'package:confaero_app/features/message/presentation/widgets/view/message_screen.dart';
-import 'package:confaero_app/features/attendees/presentation/widgets/view/resources_screen.dart' as resources_view;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/controllers/role_controller.dart';
 import '../../core/controllers/session_controller.dart';
 import '../attendees/presentation/widgets/view/home_screen.dart';
-import '../volunteer/presentation/widgets/volunteer_dashboard_screen.dart';
-import '../volunteer/presentation/widgets/volunteer_home_screen.dart';
-import '../volunteer/presentation/widgets/volunteer_qr_scan_screen.dart';
+import '../volunteer/presentation/volunteer_home_screen.dart';
+import '../volunteer/presentation/volunteer_dashboard_screen.dart';
+import '../volunteer/presentation/volunteer_qr_scan_screen.dart';
 import '../sponsor_dashboard/presentation/widgets/sponsor_dashboard_screen.dart';
 import '../sponsors_profile/presentation/widgets/view/sponsor_home_screen.dart';
 import '../reviewer/presentation/widgets/reviewer_dashboard_screen.dart';
@@ -107,11 +106,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       case 'VOLUNTEER':
         return {
           'screens': [
-            const VolunteerHomeScreen(), // Home - Events (My Events / Invited Event)
+            const VolunteerHomeScreen(), // Home
             const VolunteerDashboardScreen(), // Tasks
             const VolunteerQRScanScreen(), // QR Scan
-            const resources_view.ResourcesScreen(), // Resources (Q&A, Polls, Survey)
-            const MessageScreen(),
+            const CommunityScreen(), // Community
+            const MessageScreen(), // Message
           ],
           'useRoleBasedNav': true,
         };

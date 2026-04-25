@@ -71,8 +71,10 @@ import '../../../features/poster_assign/presentation/widgets/poster_assign_scree
 import '../../../features/reviewer/presentation/widgets/reviewer_dashboard_screen.dart';
 import '../../../features/sponsors_profile/presentation/widgets/view/sponsor_home_screen.dart';
 import '../../../features/sponsors_profile/presentation/widgets/view/sponsor_profile_screen.dart';
-import '../../../features/volunteer/presentation/widgets/volunteer_dashboard_screen.dart';
-import '../../../features/volunteer/presentation/widgets/task_form_screen.dart';
+import '../../../features/volunteer/presentation/volunteer_report_issue_screen.dart';
+import '../../../features/volunteer/presentation/volunteer_task-details_screen.dart';
+import '../../../features/volunteer/presentation/task_form_screen.dart';
+import '../../../features/volunteer/presentation/checkin_history_screen.dart';
 import '../../../features/video_conference/presentation/widgets/live_session_screen.dart';
 import '../../../features/organizer_messaging/presentation/widgets/organizer_conversations_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/resources_screen.dart' as resources_view;
@@ -160,8 +162,10 @@ class AppRoutes {
   static const String sponsorFormScreen = "/sponsorFormScreen";
   static const String posterAssignScreen = "/posterAssignScreen";
   static const String reviewerDashboardScreen = "/reviewerDashboardScreen";
-  static const String volunteerDashboardScreen = "/volunteerDashboardScreen";
-  static const String taskFormScreen = "/taskFormScreen";
+  static const String taskScreen = "/taskScreen";
+  static const String taskDetailScreen = "/taskDetailScreen";
+  static const String reportIssueScreen = "/reportIssueScreen";
+  static const String checkHistoryScreen = "/checkHistoryScreen";
   static const String liveSessionScreen = "/liveSessionScreen";
   static const String organizerConversationsScreen =
       "/organizerConversationsScreen";
@@ -585,14 +589,31 @@ class AppRoutes {
         builder: (context, state) => const ReviewerDashboardScreen(),
       ),
       GoRoute(
-        path: volunteerDashboardScreen,
-        name: volunteerDashboardScreen,
-        builder: (context, state) => const VolunteerDashboardScreen(),
+        path: taskScreen,
+        name: taskScreen,
+        builder: (context, state) => const TaskScreen(),
       ),
       GoRoute(
-        path: taskFormScreen,
-        name: taskFormScreen,
-        builder: (context, state) => const TaskFormScreen(),
+        path: taskDetailScreen,
+        name: taskDetailScreen,
+        builder: (context, state) {
+          final taskId = state.extra as String? ?? '';
+          return TaskDetailScreen(taskId: taskId);
+        },
+      ),
+      GoRoute(
+        path: reportIssueScreen,
+        name: reportIssueScreen,
+        builder: (context, state) {
+          final taskId = state.extra as String? ?? '';
+          return ReportIssueScreen(taskId: taskId);
+        },
+      ),
+      GoRoute(
+        path: checkHistoryScreen,
+        name: checkHistoryScreen,
+        builder: (context, state) =>
+            const CheckHistoryScreen(showBackButton: true),
       ),
       GoRoute(
         path: liveSessionScreen,
