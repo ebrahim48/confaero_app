@@ -171,7 +171,7 @@ class _ConnectionDetailsScreenState extends State<ConnectionDetailsScreen> {
                                     label: 'Say Hi',
                                     color: const Color(0xffD7EAE8),
                                     textColor: const Color(0xff32A69A),
-                                    onTap: controller.sayHi,
+                                    onTap: () => controller.sayHi(context),
                                   ),
                                 ),
                                 SizedBox(width: 12.w),

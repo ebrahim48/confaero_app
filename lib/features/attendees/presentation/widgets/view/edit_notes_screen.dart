@@ -22,6 +22,7 @@ class EditNoteScreen extends StatefulWidget {
 class _EditNoteScreenState extends State<EditNoteScreen> {
   late TextEditingController _noteController;
   final QuickNotesController _controller = Get.find<QuickNotesController>();
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -51,7 +52,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
         ),
         actions: [
           IconButton(
-            onPressed: () => Get.back(),
+            onPressed: () => Navigator.pop(context),
             icon: const Icon(
               Icons.close,
               color: Color(0xff9E9E9E),
@@ -96,26 +97,41 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
             SizedBox(height: 16.h),
 
             // Update Button
-            ElevatedButton(
-              onPressed: () {
-                final content = _noteController.text.trim();
-                if (content.isNotEmpty) {
-                  _controller.updateNote(widget.noteId, content);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xff4DB6AC),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+            StatefulBuilder(
+              builder: (context, setSt) => ElevatedButton(
+                onPressed: _isSaving
+                    ? null
+                    : () async {
+                        final content = _noteController.text.trim();
+                        if (content.isEmpty) return;
+                        setSt(() => _isSaving = true);
+                        final ok = await _controller.updateNote(
+                            widget.noteId, content);
+                        if (!mounted) return;
+                        setSt(() => _isSaving = false);
+                        if (ok) Navigator.pop(context);
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xff4DB6AC),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  minimumSize: Size(345.w, 56.h),
+                  elevation: 0,
                 ),
-                minimumSize: Size(345.w, 56.h),
-                elevation: 0,
-              ),
-              child: CustomText(
-                text: 'Update Note',
-                fontsize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2),
+                      )
+                    : CustomText(
+                        text: 'Update Note',
+                        fontsize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
               ),
             ),
           ],

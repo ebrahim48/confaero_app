@@ -46,68 +46,27 @@ class QuickNotesController extends GetxController {
   }
 
   // Add new note
-  Future<void> addNote(String content) async {
-    if (content.trim().isEmpty) return;
-
+  Future<bool> addNote(String content) async {
+    if (content.trim().isEmpty) return false;
     try {
-      // Optimistic UI update
-      final title =
-          content.length > 35 ? '${content.substring(0, 35)}...' : content;
-      final tempId = DateTime.now().millisecondsSinceEpoch.toString();
-
-      final newNote = {
-        'id': tempId,
-        'title': title,
-        'content': content,
-        'date': DateTime.now(),
-      };
-
-      notes.insert(0, newNote);
-
-      await _noteService.createOrUpdateNote(
-        eventId: currentEventId,
-        content: content,
-      );
-
-      // Reload from server to get actual ID
+      await _noteService.createNote(eventId: currentEventId, content: content);
       await loadNotes();
-
-      ToastMessageHelper.showToastMessage('Note saved successfully!', title: 'Success');
-    } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to save note', title: 'Error');
-      // Revert if failed
-      await loadNotes();
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 
   // Update existing note
-  Future<void> updateNote(String id, String content) async {
-    final index = notes.indexWhere((note) => note['id'] == id);
-    if (index != -1) {
-      try {
-        final title =
-            content.length > 35 ? '${content.substring(0, 35)}...' : content;
-
-        // Optimistic update
-        notes[index] = {
-          'id': id,
-          'title': title,
-          'content': content,
-          'date': notes[index]['date'],
-        };
-        notes.refresh();
-        Get.back();
-
-        await _noteService.createOrUpdateNote(
-          eventId: currentEventId,
-          content: content,
-        );
-
-        ToastMessageHelper.showToastMessage('Note updated successfully!', title: 'Success');
-      } catch (e) {
-        ToastMessageHelper.showToastMessage('Failed to update note', title: 'Error');
-        await loadNotes(); // Revert on failure
-      }
+  Future<bool> updateNote(String id, String content) async {
+    if (content.trim().isEmpty) return false;
+    try {
+      await _noteService.updateNote(noteId: id, content: content);
+      await loadNotes();
+      return true;
+    } catch (_) {
+      await loadNotes();
+      return false;
     }
   }
 

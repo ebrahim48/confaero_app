@@ -120,7 +120,9 @@ class SignInController extends GetxController {
           emailController.text.trim(),
         );
 
-        Get.find<RoleController>().setRole(activeRole);
+        // Try to detect the user's actual role — backend always returns ATTENDEE on login
+        final resolvedRole = await _resolveActualRole(activeRole, accessToken);
+        Get.find<RoleController>().setRole(resolvedRole);
         await Get.find<SessionController>().clearEvent();
 
         if (AppConstants.DEMO_MODE) {
@@ -193,5 +195,77 @@ class SignInController extends GetxController {
     isLoading.value = true;
     await Future.delayed(const Duration(seconds: 2));
     isLoading.value = false;
+  }
+
+  /// Fetches the user's actual roles from the server.
+  /// If the login response only returned ATTENDEE but the user has a
+  /// higher-priority role assigned, auto-switches to it and returns
+  /// the resolved role string.
+  Future<String> _resolveActualRole(String loginRole, String accessToken) async {
+    try {
+      final rolesResponse = await _authRepository.getMyRoles();
+      final success = rolesResponse['success'] as bool? ?? false;
+      if (!success) return loginRole;
+
+      final data = rolesResponse['data'];
+      List<String> roles = [];
+
+      if (data is List) {
+        roles = data.cast<String>();
+      } else if (data is Map<String, dynamic>) {
+        final rolesList = data['roles'] as List?;
+        if (rolesList != null) roles = rolesList.cast<String>();
+      }
+
+      roles = roles.map((r) => r.toUpperCase()).toList();
+      Get.find<RoleController>().setUserRoles(roles);
+
+      // Priority order for auto-switch (highest first)
+      const priority = [
+        'ORGANIZER',
+        'ABSTRACT_REVIEWER',
+        'REVIEWER',
+        'TRACK_CHAIR',
+        'SPEAKER',
+        'EXHIBITOR',
+        'SPONSOR',
+        'BOOTH_STAFF',
+        'STAFF',
+        'VOLUNTEER',
+      ];
+
+      String? targetRole;
+      for (final r in priority) {
+        if (roles.contains(r)) {
+          targetRole = r;
+          break;
+        }
+      }
+
+      if (targetRole == null || targetRole == loginRole) return loginRole;
+
+      // Switch role on server to get a properly-scoped token
+      final switchResponse = await _authRepository.changeRole(targetRole);
+      final switchSuccess = switchResponse['success'] as bool? ?? false;
+      if (switchSuccess) {
+        final switchData = switchResponse['data'] as Map<String, dynamic>?;
+        if (switchData != null) {
+          final newToken = switchData['accessToken'] as String?;
+          final newRefresh = switchData['refreshToken'] as String?;
+          if (newToken != null) {
+            await PrefsHelper.setString(AppConstants.bearerToken, newToken);
+          }
+          if (newRefresh != null) {
+            await PrefsHelper.setString(AppConstants.refreshToken, newRefresh);
+          }
+        }
+        await PrefsHelper.setString(AppConstants.userRole, targetRole);
+        _logger.i('Auto-switched role from $loginRole → $targetRole');
+        return targetRole;
+      }
+    } catch (e) {
+      _logger.w('Role auto-switch failed, keeping $loginRole: $e');
+    }
+    return loginRole;
   }
 }

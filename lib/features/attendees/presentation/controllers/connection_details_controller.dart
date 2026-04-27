@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -47,16 +48,18 @@ class ConnectionDetailsController extends GetxController {
     }
   }
 
-  void sayHi() {
+  void sayHi(BuildContext context) {
     final c = connection.value;
     if (c == null) return;
-    Get.to(
-      () => MessageChatScreen(
-        receiverId: c.accountId.isNotEmpty ? c.accountId : c.id,
-        receiverName: c.name,
-        receiverImage: c.avatarUrl,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MessageChatScreen(
+          receiverId: c.accountId.isNotEmpty ? c.accountId : c.id,
+          receiverName: c.name,
+          receiverImage: c.avatarUrl,
+        ),
       ),
-      preventDuplicates: false,
     );
   }
 

@@ -80,9 +80,6 @@ class AttendeesController extends GetxController {
       bookmarkedCount.value = response.bookmarkedCount;
       filteredAttendees.value = attendees;
     } catch (e) {
-      if (!e.toString().contains('404')) {
-        ToastMessageHelper.showToastMessage('Failed to load attendees', title: 'Error');
-      }
       attendees.clear();
       filteredAttendees.clear();
     } finally {
@@ -129,14 +126,16 @@ class AttendeesController extends GetxController {
     }
   }
 
-  void sayHi(AttendeeModel attendee) {
-    Get.to(
-      () => MessageChatScreen(
-        receiverId: attendee.accountId.isNotEmpty ? attendee.accountId : attendee.id,
-        receiverName: attendee.name,
-        receiverImage: attendee.avatarUrl,
+  void sayHi(BuildContext context, AttendeeModel attendee) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MessageChatScreen(
+          receiverId: attendee.accountId.isNotEmpty ? attendee.accountId : attendee.id,
+          receiverName: attendee.name,
+          receiverImage: attendee.avatarUrl,
+        ),
       ),
-      preventDuplicates: false,
     );
   }
 

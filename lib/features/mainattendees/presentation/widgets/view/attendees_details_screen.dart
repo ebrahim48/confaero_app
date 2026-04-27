@@ -164,7 +164,7 @@ class _AttendeeDetailsScreenState extends State<AttendeeDetailsScreen> {
                             // Action buttons
                             Row(
                               children: [
-                                Expanded(child: _actionBtn(Icons.chat_bubble_outline, 'Say Hi', const Color(0xffD7EAE8), const Color(0xff32A69A), controller.sayHi)),
+                                Expanded(child: _actionBtn(Icons.chat_bubble_outline, 'Say Hi', const Color(0xffD7EAE8), const Color(0xff32A69A), () => controller.sayHi(context))),
                                 SizedBox(width: 12.w),
                                 Expanded(child: _actionBtn(Icons.mail_outline, 'Send Mail', const Color(0xffF5F5F5), AppColors.textColor424242, controller.sendMail)),
                               ],
