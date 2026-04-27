@@ -30,7 +30,7 @@ class HomeController extends GetxController {
   final categories = [
     {'icon': 'assets/icons/speakers.svg', 'label': 'Speakers'},
     {'icon': 'assets/icons/floormap.svg', 'label': 'Floor map'},
-    {'icon': 'assets/icons/exhibitors_sponsors_booth.svg', 'label': 'Exhibitors'},
+    {'icon': 'assets/icons/exhibitors.svg', 'label': 'Exhibitors'},
     {'icon': 'assets/icons/resources.svg', 'label': 'Resources'},
     {'icon': 'assets/icons/checkinout.svg', 'label': 'Check In/Out'},
     {'icon': 'assets/icons/sponsors.svg', 'label': 'Sponsors'},

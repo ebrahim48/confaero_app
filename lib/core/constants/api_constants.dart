@@ -94,6 +94,7 @@ class ApiConstants {
   //--------------------------Notes-------------------------------
   static const String createNote = '/note/create';
   static const String getNotes = '/note/notes';
+  static const String updateNotes = '/note/create';
 
   //--------------------------Sponsors----------------------------
   static const String getAllSponsors =
@@ -273,23 +274,16 @@ class ApiConstants {
       '/poster-assign/reported'; // GET /:eventId
 
   //--------------------------Reviewer---------------------------------
-  static const String getReviewerDashboard =
-      '/reviewer/dashboard'; // GET /:eventId
+  static const String getReviewerDashboard = '/reviewer/dashboard'; // GET /:eventId
   static const String getReviewerAuthors = '/reviewer/authors'; // GET /:eventId
-  static const String getAuthorSubmissions =
-      '/reviewer/authors'; // GET /:id/submissions
-  static const String getAttachmentDetails =
-      '/reviewer/attachments'; // GET /:id
-  static const String approveAttachment =
-      '/reviewer/attachments'; // PATCH /:id/approve
-  static const String rejectAttachment =
-      '/reviewer/attachments'; // PATCH /:id/reject
-  static const String reviseAttachment =
-      '/reviewer/attachments'; // PATCH /:id/revise
-  static const String flagAttachmentAdmin =
-      '/reviewer/attachments'; // PATCH /:id/flag-admin
-  static const String reviewPosterImage =
-      '/reviewer/attachments'; // POST /:id/image-review
+  static const String getAuthorSubmissions = '/reviewer/authors'; // GET /:id/submissions
+  static const String getAttachmentDetails = '/reviewer/attachments'; // GET /:id
+  static const String approveAttachment = '/reviewer/attachments'; // PATCH /:id/approve
+  static const String rejectAttachment = '/reviewer/attachments'; // PATCH /:id/reject
+  static const String reviseAttachment = '/reviewer/attachments'; // PATCH /:id/revise
+  static const String flagAttachmentAdmin = '/reviewer/attachments'; // PATCH /:id/flag-admin
+  static const String reviewPosterImage = '/reviewer/attachments'; // POST /:id/image-review
+  static const String rejectPoster = '/reviewer/attachments'; // POST /:id
 
   //--------------------------Volunteer/Task----------------------------
   static const String createTask = '/volunteer/create';

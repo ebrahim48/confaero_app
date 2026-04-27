@@ -22,18 +22,29 @@ class NoteService {
     }
   }
 
-  Future<Map<String, dynamic>> createOrUpdateNote({
+  Future<Map<String, dynamic>> createNote({
     required String eventId,
     required String content,
   }) async {
     await _checkConnectivity();
-    _logger.i('Creating/Updating note for event: $eventId');
-
+    _logger.i('Creating note for event: $eventId');
     final response = await _apiService.post(
       ApiConstants.createNote,
       data: {'eventId': eventId, 'content': content},
     );
+    return response.data as Map<String, dynamic>;
+  }
 
+  Future<Map<String, dynamic>> updateNote({
+    required String noteId,
+    required String content,
+  }) async {
+    await _checkConnectivity();
+    _logger.i('Updating note: $noteId');
+    final response = await _apiService.post(
+      ApiConstants.updateNotes,
+      data: {'noteId': noteId, 'content': content},
+    );
     return response.data as Map<String, dynamic>;
   }
 

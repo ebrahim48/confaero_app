@@ -15,6 +15,7 @@ class WriteNoteScreen extends StatefulWidget {
 class _WriteNoteScreenState extends State<WriteNoteScreen> {
   final TextEditingController _noteController = TextEditingController();
   final QuickNotesController _controller = Get.find<QuickNotesController>();
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -99,26 +100,40 @@ class _WriteNoteScreenState extends State<WriteNoteScreen> {
             SizedBox(height: 16.h),
 
             // Save Button
-            ElevatedButton(
-              onPressed: () {
-                final content = _noteController.text.trim();
-                if (content.isNotEmpty) {
-                  _controller.addNote(content);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xff4DB6AC),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+            StatefulBuilder(
+              builder: (context, setSt) => ElevatedButton(
+                onPressed: _isSaving
+                    ? null
+                    : () async {
+                        final content = _noteController.text.trim();
+                        if (content.isEmpty) return;
+                        setSt(() => _isSaving = true);
+                        final ok = await _controller.addNote(content);
+                        if (!mounted) return;
+                        setSt(() => _isSaving = false);
+                        if (ok) Navigator.pop(context);
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xff4DB6AC),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  minimumSize: Size(345.w, 56.h),
+                  elevation: 0,
                 ),
-                minimumSize: Size(345.w, 56.h),
-                elevation: 0,
-              ),
-              child: CustomText(
-                text: 'Save Note',
-                fontsize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2),
+                      )
+                    : CustomText(
+                        text: 'Save Note',
+                        fontsize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
               ),
             ),
           ],

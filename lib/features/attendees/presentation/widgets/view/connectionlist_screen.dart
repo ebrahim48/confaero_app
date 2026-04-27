@@ -125,7 +125,7 @@ class ConnectionListScreen extends StatelessWidget {
                               ),
                             ),
                             onBookmark: () => controller.toggleBookmark(c.id),
-                            onSayHi: () => controller.sayHi(c),
+                            onSayHi: () => controller.sayHi(context, c),
                             onMail: () => controller.sendMail(c.email),
                           );
                         },
@@ -156,7 +156,6 @@ class ConnectionListScreen extends StatelessWidget {
       );
 }
 
-// ── Connection Card ───────────────────────────────────────────────────────────
 
 class _ConnectionCard extends StatelessWidget {
   final dynamic connection;
@@ -290,7 +289,6 @@ class _ConnectionCard extends StatelessWidget {
       );
 }
 
-// ── Shimmer ───────────────────────────────────────────────────────────────────
 
 class _ConnectionShimmer extends StatelessWidget {
   const _ConnectionShimmer();

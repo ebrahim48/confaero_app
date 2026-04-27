@@ -201,7 +201,7 @@ class _AttendeesScreenState extends State<AttendeesScreen>
                                     ? attendee.accountId
                                     : attendee.id),
                             onBookmarkTap: () => controller.toggleBookmark(attendee),
-                            onSayHi: () => controller.sayHi(attendee),
+                            onSayHi: () => controller.sayHi(context, attendee),
                             onSendMail: () => controller.sendMail(attendee.email),
                             onTap: () => Navigator.push(
                               context,

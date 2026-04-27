@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/controllers/session_controller.dart';
@@ -47,10 +48,6 @@ class AttendeeDetailsController extends GetxController {
         });
       }
     } catch (e) {
-      final err = e.toString();
-      if (!err.contains('404') && !err.contains('500')) {
-        ToastMessageHelper.showToastMessage('Failed to load attendee details', title: 'Error');
-      }
     } finally {
       isLoading.value = false;
     }
@@ -79,7 +76,7 @@ class AttendeeDetailsController extends GetxController {
     }
   }
 
-  void sayHi() {
+  void sayHi(BuildContext context) {
     final accountId = attendeeDetails['accountId']?.toString() ?? '';
     final id = attendeeDetails['id']?.toString() ?? '';
     final receiverId = accountId.isNotEmpty ? accountId : id;
@@ -87,13 +84,15 @@ class AttendeeDetailsController extends GetxController {
       ToastMessageHelper.showToastMessage('Unable to message: ID not available', title: 'Error');
       return;
     }
-    Get.to(
-      () => MessageChatScreen(
-        receiverId: receiverId,
-        receiverName: attendeeDetails['name']?.toString() ?? 'Attendee',
-        receiverImage: attendeeDetails['image']?.toString() ?? '',
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MessageChatScreen(
+          receiverId: receiverId,
+          receiverName: attendeeDetails['name']?.toString() ?? 'Attendee',
+          receiverImage: attendeeDetails['image']?.toString() ?? '',
+        ),
       ),
-      preventDuplicates: false,
     );
   }
 

@@ -23,6 +23,8 @@ import '../exhibitors_sponsors_booth/presentations/widgets/view/exhibitors_booth
 import '../speakers/presentation/widgets/speaker_home_screen.dart';
 import '../attendees/presentation/widgets/sidebar_drawer.dart';
 import '../speakers/presentation/widgets/speaker_sidebar_drawer.dart';
+import '../abstractreviewer/presentation/content_home_screen.dart';
+import '../abstractreviewer/presentation/abstracts_list_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -141,24 +143,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           'useRoleBasedNav': true,
         };
 
-      case 'REVIEWER':
       case 'ABSTRACT_REVIEWER':
         return {
           'screens': [
-            const ReviewerDashboardScreen(), // Home - Reviewer dashboard
-            const AgendaScreen(), // Agenda
-            const ReviewerDashboardScreen(), // Content
+            const ContentHomeScreen(),   // Home - Abstract reviewer dashboard
+            const AgendaScreen(),        // Agenda
+            const AbstractsListScreen(), // Content - Authors & submissions list
             const CommunityScreen(),
             const MessageScreen(),
           ],
           'useRoleBasedNav': true,
         };
 
+      case 'REVIEWER':
       case 'TRACK_CHAIR':
         return {
           'screens': [
-            const ReviewerDashboardScreen(), // Home - Similar to reviewer
-            const AgendaScreen(), // Agenda
+            const ReviewerDashboardScreen(), // Home - Reviewer dashboard
+            const AgendaScreen(),
             const ReviewerDashboardScreen(), // Content
             const CommunityScreen(),
             const MessageScreen(),

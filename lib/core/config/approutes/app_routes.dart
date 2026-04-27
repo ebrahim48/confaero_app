@@ -17,6 +17,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../features/Events/presentation/widgets/view/event_speaker_screen.dart';
+import '../../../features/abstractreviewer/data/reviewer_models.dart';
+import '../../../features/abstractreviewer/presentation/abstract_details_screen.dart';
+import '../../../features/abstractreviewer/presentation/abstracts_list_screen.dart';
+import '../../../features/abstractreviewer/presentation/content_home_screen.dart';
+import '../../../features/abstractreviewer/presentation/poster_details_screen.dart';
+import '../../../features/abstractreviewer/presentation/review_documents_screen.dart';
 import '../../../features/agenda/presentation/widgets/view/agenda_details_screen.dart';
 import '../../../features/agenda/presentation/widgets/view/spekar_profile_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/add_poster_screen.dart';
@@ -192,6 +198,14 @@ class AppRoutes {
   static const String leadManagementScreen = "/leadManagementScreen";
   static const String sponsorHomeScreen = "/sponsorHomeScreen";
   static const String sponsorProfileScreen = "/sponsorProfileScreen";
+
+
+
+  static const String abstractDetailScreen = "/abstractDetailScreen";
+  static const String abstractsListScreen = "/abstractsListScreen";
+  static const String contentHomeScreen = "/contentHomeScreen";
+  static const String posterDetailScreen = "/posterDetailScreen";
+  static const String reviewDocumentsScreen = "/reviewDocumentsScreen";
 
   // verifyScreen and resetPasswordScreen already defined above with API constants
 
@@ -722,6 +736,62 @@ class AppRoutes {
         name: sponsorProfileScreen,
         builder: (context, state) => const SponsorProfileScreen(),
       ),
+
+
+
+
+
+
+      GoRoute(
+        path: abstractDetailScreen,
+        name: abstractDetailScreen,
+        builder: (context, state) {
+          final doc = state.extra as SubmissionModel;
+          return AbstractDetailScreen(doc: doc);
+        },
+      ),
+
+      GoRoute(
+        path: abstractsListScreen,
+        name: abstractsListScreen,
+        builder: (context, state) => const AbstractsListScreen(),
+      ),
+      GoRoute(
+        path: contentHomeScreen,
+        name: contentHomeScreen,
+        builder: (context, state) => const ContentHomeScreen(),
+      ),
+
+      GoRoute(
+        path: posterDetailScreen,
+        name: posterDetailScreen,
+        builder: (context, state) {
+          final doc = state.extra as SubmissionModel;
+          return PosterDetailScreen(doc: doc);
+        },
+      ),
+
+      GoRoute(
+        path: reviewDocumentsScreen,
+        name: reviewDocumentsScreen,
+        builder: (context, state) {
+          final author = state.extra as AuthorModel;
+          return ReviewDocumentsScreen(author: author);
+        },
+      ),
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       GoRoute(
         path: forgetPasswordScreen,

@@ -79,14 +79,16 @@ class ConnectionListController extends GetxController {
     }
   }
 
-  void sayHi(ConnectionModel c) {
-    Get.to(
-      () => MessageChatScreen(
-        receiverId: c.accountId.isNotEmpty ? c.accountId : c.id,
-        receiverName: c.name,
-        receiverImage: c.avatarUrl,
+  void sayHi(BuildContext context, ConnectionModel c) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MessageChatScreen(
+          receiverId: c.accountId.isNotEmpty ? c.accountId : c.id,
+          receiverName: c.name,
+          receiverImage: c.avatarUrl,
+        ),
       ),
-      preventDuplicates: false,
     );
   }
 

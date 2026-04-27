@@ -19,7 +19,8 @@
       "Bash(/c/Users/ebu/fvm/versions/stable/bin/flutter analyze *)",
       "Bash(/c/Users/ebu/fvm/versions/stable/bin/dart analyze *)",
       "PowerShell(flutter analyze *)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(grep -i \"\\\\.dart$\")"
     ]
   }
 }

@@ -73,31 +73,34 @@ class ReviewerService {
   }
 
   /// PATCH /reviewer/attachments/:id/reject
-  Future<Map<String, dynamic>> rejectAttachment(String attachmentId) async {
+  Future<Map<String, dynamic>> rejectAttachment(String attachmentId, [String reason = '']) async {
     await _checkConnectivity();
     _logger.i('Rejecting attachment: $attachmentId');
     final response = await _apiService.patch(
       '${ApiConstants.rejectAttachment}/$attachmentId/reject',
+      data: reason.isNotEmpty ? {'reason': reason} : null,
     );
     return response.data as Map<String, dynamic>;
   }
 
   /// PATCH /reviewer/attachments/:id/revise
-  Future<Map<String, dynamic>> reviseAttachment(String attachmentId) async {
+  Future<Map<String, dynamic>> reviseAttachment(String attachmentId, [String reason = '']) async {
     await _checkConnectivity();
     _logger.i('Requesting revision for attachment: $attachmentId');
     final response = await _apiService.patch(
       '${ApiConstants.reviseAttachment}/$attachmentId/revise',
+      data: reason.isNotEmpty ? {'reason': reason} : null,
     );
     return response.data as Map<String, dynamic>;
   }
 
   /// PATCH /reviewer/attachments/:id/flag-admin
-  Future<Map<String, dynamic>> flagToAdmin(String attachmentId) async {
+  Future<Map<String, dynamic>> flagToAdmin(String attachmentId, [String reason = '']) async {
     await _checkConnectivity();
     _logger.i('Flagging attachment to admin: $attachmentId');
     final response = await _apiService.patch(
       '${ApiConstants.flagAttachmentAdmin}/$attachmentId/flag-admin',
+      data: reason.isNotEmpty ? {'reason': reason} : null,
     );
     return response.data as Map<String, dynamic>;
   }
@@ -112,6 +115,20 @@ class ReviewerService {
     final response = await _apiService.post(
       '${ApiConstants.reviewPosterImage}/$attachmentId/image-review',
       data: data,
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// POST /reviewer/attachments/:id
+  Future<Map<String, dynamic>> rejectPoster(
+    String attachmentId, {
+    String? reason,
+  }) async {
+    await _checkConnectivity();
+    _logger.i('Rejecting poster: $attachmentId');
+    final response = await _apiService.post(
+      '${ApiConstants.rejectPoster}/$attachmentId',
+      data: reason != null && reason.isNotEmpty ? {'reason': reason} : null,
     );
     return response.data as Map<String, dynamic>;
   }
