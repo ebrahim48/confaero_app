@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/prefs_helper.dart';
 import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/video_conference_service.dart';
-import '../widgets/live_chat_screen.dart';
+import '../../../../core/config/approutes/app_routes.dart';
 
 class VideoConferenceController extends GetxController {
   final VideoConferenceService _service = Get.find<VideoConferenceService>();
@@ -71,6 +74,28 @@ class VideoConferenceController extends GetxController {
 
   Future<void> joinSession(int sessionIndex) async {
     if (_eventId.isEmpty) return;
+
+    // Request camera + mic permissions before entering the conference
+    final camStatus = await Permission.camera.request();
+    final micStatus = await Permission.microphone.request();
+
+    if (camStatus.isPermanentlyDenied || micStatus.isPermanentlyDenied) {
+      ToastMessageHelper.showToastMessage(
+        'Camera and microphone access is required. Please enable them in Settings.',
+        title: 'Permission Required',
+      );
+      await openAppSettings();
+      return;
+    }
+
+    if (camStatus.isDenied || micStatus.isDenied) {
+      ToastMessageHelper.showToastMessage(
+        'Camera and microphone permissions are required to join the session.',
+        title: 'Permission Denied',
+      );
+      return;
+    }
+
     loadingIndex.value = sessionIndex;
     try {
       final response = await _service.joinSession(_eventId, sessionIndex);
@@ -82,13 +107,37 @@ class VideoConferenceController extends GetxController {
           zego?['roomId']?.toString() ?? data?['roomId']?.toString() ?? '';
       zegoAppId.value = (zego?['appId'] as num?)?.toInt() ?? 0;
 
+      final role = data?['role']?.toString() ?? userRole.value;
+
       loadingIndex.value = null;
 
-      // Navigate to live chat for this session
-      Get.to(() => LiveChatScreen(sessionIndex: sessionIndex));
-    } catch (_) {
+      final userId = await PrefsHelper.getString(AppConstants.userId);
+      final userName = await PrefsHelper.getString(AppConstants.name);
+
+      if (zegoToken.value.isEmpty || zegoRoomId.value.isEmpty || zegoAppId.value == 0) {
+        ToastMessageHelper.showToastMessage('Invalid session credentials',
+            title: 'Error');
+        return;
+      }
+
+      AppRoutes.goRouter.push(
+        AppRoutes.zegoConferenceScreen,
+        extra: {
+          'appId': zegoAppId.value,
+          'token': zegoToken.value,
+          'roomId': zegoRoomId.value,
+          'userId': userId.isEmpty
+              ? 'user_${DateTime.now().millisecondsSinceEpoch}'
+              : userId,
+          'userName': userName.isEmpty ? 'Conference User' : userName,
+          'role': role,
+        },
+      );
+    } catch (e, s) {
       loadingIndex.value = null;
-      ToastMessageHelper.showToastMessage('Failed to join session',
+      // ignore: avoid_print
+      print('JOIN SESSION ERROR: $e\n$s');
+      ToastMessageHelper.showToastMessage('Failed to join session: $e',
           title: 'Error');
     }
   }

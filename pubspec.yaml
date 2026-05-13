@@ -49,6 +49,16 @@ dependencies:
   mobile_scanner: ^5.2.3
   country_picker: ^2.0.26
   table_calendar: ^3.1.2
+  zego_uikit_prebuilt_video_conference: 2.10.3
+  zego_uikit: 2.28.28
+  permission_handler: ^12.0.1
+
+dependency_overrides:
+  # zego_express_engine 3.23.0+ added 2 new args to ZegoPublishStreamQuality (17 total)
+  # zego_uikit 2.28.28 passes only 15 args — pin to 3.22.0 which has 15 args
+  zego_express_engine: 3.22.0
+  # zego_plugin_adapter 2.14.x renamed/removed licence param — pin to compatible version
+  zego_plugin_adapter: 2.13.12
 
 dev_dependencies:
   flutter_test:

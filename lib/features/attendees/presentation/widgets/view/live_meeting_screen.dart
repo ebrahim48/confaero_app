@@ -7,11 +7,17 @@ import '../../controllers/live_meeting_controller.dart';
 import '../poll_card_widget.dart';
 
 class LiveMeetingScreen extends StatelessWidget {
-  const LiveMeetingScreen({super.key});
+  final int sessionIndex;
+  final String sessionTitle;
+
+  const LiveMeetingScreen({
+    super.key,
+    this.sessionIndex = 0,
+    this.sessionTitle = 'Sample session live discussion',
+  });
 
   @override
   Widget build(BuildContext context) {
-
     final controller = Get.put(LiveMeetingController());
 
     return Scaffold(
@@ -39,7 +45,7 @@ class LiveMeetingScreen extends StatelessWidget {
                   SizedBox(width: 16.w),
                   Expanded(
                     child: CustomText(
-                      text: 'Sample session live discussion',
+                      text: sessionTitle,
                       fontsize: 18.sp,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textColor424242,
@@ -95,6 +101,61 @@ class LiveMeetingScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                  ),
+                ),
+
+                // Join Video Conference Button
+                Positioned(
+                  bottom: 16.h,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Obx(() => GestureDetector(
+                          onTap: controller.isJoining.value
+                              ? null
+                              : () => controller.joinSession(
+                                  sessionIndex: sessionIndex),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 20.w,
+                              vertical: 10.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xff32A69A),
+                              borderRadius: BorderRadius.circular(24.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: controller.isJoining.value
+                                ? SizedBox(
+                                    width: 18.w,
+                                    height: 18.h,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.videocam,
+                                          color: Colors.white, size: 18.sp),
+                                      SizedBox(width: 8.w),
+                                      CustomText(
+                                        text: 'Join Video Conference',
+                                        fontsize: 13.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        )),
                   ),
                 ),
               ],
