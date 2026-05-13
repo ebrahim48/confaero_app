@@ -8,8 +8,12 @@ import '../../../../presentations/widgets/custom_text.dart';
 import '../widgets/custom_pin_code.dart';
 import 'controllers/verify_controller.dart';
 
+enum VerifyMode { passwordReset, accountActivation }
+
 class VerifyScreen extends StatefulWidget {
-  const VerifyScreen({super.key});
+  final VerifyMode mode;
+
+  const VerifyScreen({super.key, this.mode = VerifyMode.passwordReset});
 
   @override
   State<VerifyScreen> createState() => _VerifyScreenState();
@@ -27,6 +31,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
       _email = GoRouterState.of(context).uri.queryParameters['email'] ?? '';
       controller = Get.put(VerifyController());
       controller.setEmail(_email!);
+      controller.setMode(widget.mode);
     }
   }
 

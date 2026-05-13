@@ -152,6 +152,19 @@ class SignInController extends GetxController {
     } on ServerException catch (e) {
       isLoading.value = false;
       _logger.e('ServerException during login', error: e);
+      // 401 "not verified" — redirect to account verification screen
+      if (e.statusCode == 401 &&
+          e.message.toLowerCase().contains('not verified')) {
+        final email = emailController.text.trim();
+        _logger.w('Account not verified, redirecting to verify screen: $email');
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (!context.mounted) return;
+        context.pushNamed(
+          AppRoutes.accountVerifyScreen,
+          queryParameters: {'email': email},
+        );
+        return;
+      }
       if (e.statusCode != null && e.statusCode! >= 500) {
         serverError.value =
             "Server is currently unavailable. Please try again later.";
@@ -183,9 +196,6 @@ class SignInController extends GetxController {
         lower.contains('user not found') ||
         lower.contains('wrong password')) {
       passwordError.value = "Invalid email or password. Please try again.";
-    } else if (lower.contains('not verified') ||
-        lower.contains('verify your email')) {
-      emailError.value = "Please verify your email before signing in.";
     } else {
       serverError.value = message;
     }

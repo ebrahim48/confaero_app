@@ -4,9 +4,9 @@ class ApiConstants {
   // static const String imageUrl = "http://10.10.11.30:8081";
   // static const String socketServerUrl = 'http://10.10.11.30:8081';
 
-  static const String baseUrl = 'http://206.162.244.11:8078/api/v1';
-  static const String imageUrl = "http://206.162.244.11:8078";
-  static const String socketServerUrl = 'http://206.162.244.11:8078';
+  static const String baseUrl = 'http://api.confaero.com/api/v1';
+  static const String imageUrl = "http://api.confaero.com";
+  static const String socketServerUrl = 'http://api.confaero.com';
 
 
   static Map<String, String> headers = {'Content-Type': 'application/json'};
@@ -15,6 +15,8 @@ class ApiConstants {
   static const String register = '/auth/register';
   static const String login = '/auth/login';
   static const String refreshTokenApi = '/auth/refresh-token';
+  static const String verifiedAccount = '/auth/verified-account';
+  static const String newVerificationLink = '/auth/new-verification-link';
   static const String forgetPassword = '/auth/forgot-password';
   static const String verifyResetCode = '/auth/verify-reset-code';
   static const String resetPassword = '/auth/reset-password';

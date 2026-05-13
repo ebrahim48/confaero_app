@@ -9,6 +9,7 @@ import '../../../../../core/helpers/logger_helper.dart';
 import '../../../../../core/helpers/toast_message_helper.dart';
 import '../../../../../core/services/api_service.dart';
 import '../../../../../core/services/connectivity_service.dart';
+import '../verify_screen.dart';
 
 class VerifyController extends GetxController {
   final pinController = TextEditingController();
@@ -16,6 +17,8 @@ class VerifyController extends GetxController {
   final email = ''.obs;
   final resendTimer = 60.obs;
   final canResend = false.obs;
+
+  VerifyMode _mode = VerifyMode.passwordReset;
 
   final LoggerHelper _logger = LoggerHelper('VerifyController');
 
@@ -31,6 +34,12 @@ class VerifyController extends GetxController {
   void setEmail(String emailValue) {
     email.value = emailValue;
   }
+
+  void setMode(VerifyMode mode) {
+    _mode = mode;
+  }
+
+  bool get isAccountActivation => _mode == VerifyMode.accountActivation;
 
   @override
   void onClose() {
@@ -70,8 +79,67 @@ class VerifyController extends GetxController {
 
     isLoading.value = true;
 
-    _logger.i('Verifying code for: ${email.value}');
+    _logger.i('Verifying code for: ${email.value} (mode: $_mode)');
 
+    if (isAccountActivation) {
+      await _verifyAccountActivation(context);
+    } else {
+      await _verifyPasswordReset(context);
+    }
+  }
+
+  /// Account activation: POST /auth/verified-account
+  Future<void> _verifyAccountActivation(BuildContext context) async {
+    try {
+      final response = await _apiService.post(
+        ApiConstants.verifiedAccount,
+        data: {'email': email.value, 'code': pinController.text},
+        validateStatus: false,
+      );
+
+      isLoading.value = false;
+
+      _logger.d(
+        'Account verify response - Status: ${response.statusCode}, Data: ${response.data}',
+      );
+
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        final success = data['success'] as bool? ?? false;
+        final message = data['message'] as String? ?? 'Account verified successfully';
+
+        if (success) {
+          _logger.i('Account verified, navigating to sign in');
+          ToastMessageHelper.showToastMessage(message, title: 'Success');
+          if (!context.mounted) return;
+          context.go(AppRoutes.signInScreen);
+        } else {
+          _logger.w('Account verification failed: $message');
+          ToastMessageHelper.showToastMessage(message, title: 'Error');
+        }
+      }
+    } on ServerException catch (e) {
+      isLoading.value = false;
+      _logger.e('ServerException during account verification', error: e, stackTrace: e.stackTrace);
+      ToastMessageHelper.showToastMessage(e.message, title: 'Error');
+    } on TimeoutException catch (_) {
+      isLoading.value = false;
+      ToastMessageHelper.showToastMessage('Request timed out. Please try again.', title: 'Error');
+    } on NoInternetException catch (_) {
+      isLoading.value = false;
+      ToastMessageHelper.showToastMessage(
+        'No internet connection. Please check your network and try again.',
+        title: 'Error',
+      );
+    } catch (e, stackTrace) {
+      isLoading.value = false;
+      _logger.e('Exception during account verification', error: e, stackTrace: stackTrace);
+      ToastMessageHelper.showToastMessage('Verification failed. Please try again.', title: 'Error');
+    }
+  }
+
+  /// Password reset: POST /auth/verify-reset-code
+  Future<void> _verifyPasswordReset(BuildContext context) async {
     try {
       final response = await _apiService.post(
         ApiConstants.verifyResetCode,
@@ -113,7 +181,6 @@ class VerifyController extends GetxController {
         stackTrace: e.stackTrace,
       );
 
-      // Check if response has success data despite error status
       if (e.responseData is Map<String, dynamic>) {
         final data = e.responseData as Map<String, dynamic>;
         final success = data['success'] as bool? ?? false;
@@ -174,8 +241,60 @@ class VerifyController extends GetxController {
       return;
     }
 
-    _logger.i('Resending verification code to: ${email.value}');
+    _logger.i('Resending verification code to: ${email.value} (mode: $_mode)');
 
+    if (isAccountActivation) {
+      await _resendAccountActivationCode();
+    } else {
+      await _resendPasswordResetCode();
+    }
+  }
+
+  /// Resend for account activation: POST /auth/new-verification-link
+  Future<void> _resendAccountActivationCode() async {
+    try {
+      final response = await _apiService.post(
+        ApiConstants.newVerificationLink,
+        data: {'email': email.value},
+        validateStatus: false,
+      );
+
+      _logger.d(
+        'Resend activation code response - Status: ${response.statusCode}, Data: ${response.data}',
+      );
+
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        final success = data['success'] as bool? ?? false;
+        final message = data['message'] as String? ?? 'Verification code sent';
+
+        if (success) {
+          _logger.i('Activation code resent successfully');
+          ToastMessageHelper.showToastMessage(message, title: 'Success');
+          startResendTimer();
+        } else {
+          _logger.w('Resend activation code failed: $message');
+          ToastMessageHelper.showToastMessage(message, title: 'Error');
+        }
+      }
+    } on ServerException catch (e) {
+      _logger.e('ServerException during resend activation code', error: e, stackTrace: e.stackTrace);
+      ToastMessageHelper.showToastMessage('Failed to resend code. Please try again.', title: 'Error');
+    } on TimeoutException catch (_) {
+      ToastMessageHelper.showToastMessage('Request timed out. Please try again.', title: 'Error');
+    } on NoInternetException catch (_) {
+      ToastMessageHelper.showToastMessage(
+        'No internet connection. Please check your network and try again.',
+        title: 'Error',
+      );
+    } catch (e, stackTrace) {
+      _logger.e('Exception during resend activation code', error: e, stackTrace: stackTrace);
+      ToastMessageHelper.showToastMessage('Failed to resend code. Please try again.', title: 'Error');
+    }
+  }
+
+  /// Resend for password reset: POST /auth/forgot-password
+  Future<void> _resendPasswordResetCode() async {
     try {
       final response = await _apiService.post(
         ApiConstants.forgetPassword,
@@ -208,16 +327,13 @@ class VerifyController extends GetxController {
         stackTrace: e.stackTrace,
       );
 
-      // Check if response has success data despite error status
       if (e.responseData is Map<String, dynamic>) {
         final data = e.responseData as Map<String, dynamic>;
         final success = data['success'] as bool? ?? false;
         final message = data['message'] as String? ?? 'Verification code sent';
 
         if (success) {
-          _logger.i(
-            'Verification code resent successfully (despite error status)',
-          );
+          _logger.i('Verification code resent successfully (despite error status)');
           ToastMessageHelper.showToastMessage(message, title: 'Success');
           startResendTimer();
           return;

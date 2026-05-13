@@ -121,8 +121,11 @@ class SignUpController extends GetxController {
         
         await Future.delayed(const Duration(milliseconds: 100));
         if (!context.mounted) return;
-        _logger.i('Navigating to sign in screen');
-        context.go(AppRoutes.signInScreen);
+        _logger.i('Navigating to verify screen for account activation');
+        context.pushNamed(
+          AppRoutes.accountVerifyScreen,
+          queryParameters: {'email': emailController.text.trim()},
+        );
       } else {
         _logger.w('Registration failed: $message');
         ToastMessageHelper.showToastMessage(

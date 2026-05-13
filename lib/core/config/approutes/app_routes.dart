@@ -82,6 +82,7 @@ import '../../../features/volunteer/presentation/volunteer_task-details_screen.d
 import '../../../features/volunteer/presentation/task_form_screen.dart';
 import '../../../features/volunteer/presentation/checkin_history_screen.dart';
 import '../../../features/video_conference/presentation/widgets/live_session_screen.dart';
+import '../../../features/video_conference/presentation/widgets/zego_conference_screen.dart';
 import '../../../features/organizer_messaging/presentation/widgets/organizer_conversations_screen.dart';
 import '../../../features/attendees/presentation/widgets/view/resources_screen.dart' as resources_view;
 import '../../../features/organizer_messaging/presentation/widgets/organizer_chat_screen.dart';
@@ -106,6 +107,9 @@ class AppRoutes {
   static const String forgetPasswordScreen = ApiConstants.forgetPassword;
   static const String verifyScreen = ApiConstants.verifyResetCode;
   static const String resetPasswordScreen = ApiConstants.resetPassword;
+
+  // Account verification route (post-registration)
+  static const String accountVerifyScreen = "/auth/account-verify";
 
   static const String eventsScreen = "/eventsScreen";
   static const String eventsDetailsScreen = "/eventsDetailsScreen";
@@ -173,6 +177,7 @@ class AppRoutes {
   static const String reportIssueScreen = "/reportIssueScreen";
   static const String checkHistoryScreen = "/checkHistoryScreen";
   static const String liveSessionScreen = "/liveSessionScreen";
+  static const String zegoConferenceScreen = "/zegoConferenceScreen";
   static const String organizerConversationsScreen =
       "/organizerConversationsScreen";
   static const String organizerChatScreen = "/organizerChatScreen";
@@ -223,6 +228,7 @@ class AppRoutes {
         AppRoutes.forgetPasswordScreen,
         AppRoutes.verifyScreen,
         AppRoutes.resetPasswordScreen,
+        AppRoutes.accountVerifyScreen,
       };
 
       final currentPath = state.matchedLocation;
@@ -356,7 +362,14 @@ class AppRoutes {
       GoRoute(
         path: liveMeetingScreen,
         name: liveMeetingScreen,
-        builder: (context, state) => LiveMeetingScreen(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return LiveMeetingScreen(
+            sessionIndex: extra?['sessionIndex'] as int? ?? 0,
+            sessionTitle: extra?['sessionTitle'] as String? ??
+                'Sample session live discussion',
+          );
+        },
       ),
 
       GoRoute(
@@ -635,6 +648,21 @@ class AppRoutes {
         builder: (context, state) => const LiveSessionScreen(),
       ),
       GoRoute(
+        path: zegoConferenceScreen,
+        name: zegoConferenceScreen,
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          return ZegoConferenceScreen(
+            appId: extra['appId'] as int,
+            token: extra['token'] as String,
+            roomId: extra['roomId'] as String,
+            userId: extra['userId'] as String,
+            userName: extra['userName'] as String,
+            role: extra['role'] as String? ?? 'ATTENDEE',
+          );
+        },
+      ),
+      GoRoute(
         path: organizerConversationsScreen,
         name: organizerConversationsScreen,
         builder: (context, state) => const OrganizerConversationsScreen(),
@@ -810,6 +838,11 @@ class AppRoutes {
         path: resetPasswordScreen,
         name: resetPasswordScreen,
         builder: (context, state) => ResetPasswordScreen(),
+      ),
+      GoRoute(
+        path: accountVerifyScreen,
+        name: accountVerifyScreen,
+        builder: (context, state) => const VerifyScreen(mode: VerifyMode.accountActivation),
       ),
     ],
   );
