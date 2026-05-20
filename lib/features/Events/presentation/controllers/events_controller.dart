@@ -207,6 +207,11 @@ class EventsController extends GetxController {
       isInvitedLoading.value = true;
       invitedError.value = '';
 
+      // Load my events first so we can cross-check registration status
+      if (activeMyEvents.isEmpty) {
+        await loadMyEvents();
+      }
+
       // Get all invitations across all events
       final invitations = await _invitationService.getMyInvitations('');
 

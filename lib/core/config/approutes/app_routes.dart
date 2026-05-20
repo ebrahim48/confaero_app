@@ -524,8 +524,11 @@ class AppRoutes {
       GoRoute(
         path: speakarProfileScreen,
         name: speakarProfileScreen,
-        builder: (context, state) =>
-            SpeakerProfileScreen(speakerId: state.extra as String? ?? ''),
+        builder: (context, state) {
+          final speakerId = state.extra as String? ?? '';
+          final sessionIdx = state.uri.queryParameters['sessionIdx'];
+          return SpeakerProfileScreen(speakerId: speakerId, sessionIdx: sessionIdx);
+        },
       ),
       GoRoute(
         path: eventSpekarScreen,

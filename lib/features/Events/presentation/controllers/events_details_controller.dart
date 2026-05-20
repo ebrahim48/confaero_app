@@ -145,6 +145,16 @@ class EventDetailsController extends GetxController {
           .replaceAll('Exception:', '')
           .trim();
 
+      // "Already registered" means they're in the event — treat as success
+      if (rawMsg.toLowerCase().contains('already registered') ||
+          rawMsg.toLowerCase().contains('already register')) {
+        registrationStatus.value = 'VERIFIED';
+        await SessionController.to.setEvent(eventId, title: currentEvent?.title ?? '');
+        await loadEvent(eventId);
+        // Don't auto-navigate — let the user click "Join Now"
+        return;
+      }
+
       String userFriendlyMsg;
       if (rawMsg.toLowerCase().contains('price')) {
         userFriendlyMsg = 'This event has incomplete pricing setup. Please contact the organizer.';
@@ -171,15 +181,27 @@ class EventDetailsController extends GetxController {
     try {
       isJoining.value = true;
       errorMessage.value = '';
-      final joinData = await _repository.joinEvent(eventId);
-      // Update role from event registration if available
-      if (joinData != null) {
-        final eventRole = (joinData['role'] ?? joinData['activeRole']) as String?;
-        if (eventRole != null && eventRole.trim().isNotEmpty) {
-          await RoleController.to.setRole(eventRole.trim());
+
+      // Ensure session is set before navigating
+      await SessionController.to.setEvent(
+        eventId,
+        title: currentEvent?.title ?? '',
+      );
+
+      try {
+        final joinData = await _repository.joinEvent(eventId);
+        if (joinData != null) {
+          final eventRole =
+              (joinData['role'] ?? joinData['activeRole']) as String?;
+          if (eventRole != null && eventRole.trim().isNotEmpty) {
+            await RoleController.to.setRole(eventRole.trim());
+          }
         }
+      } catch (_) {
+        // joinEvent API may fail if already joined — session is already set,
+        // so we can safely navigate regardless
       }
-      await SessionController.to.setEvent(eventId, title: currentEvent?.title ?? '');
+
       if (context.mounted) {
         context.goNamed(AppRoutes.mainNavigationScreen);
       }

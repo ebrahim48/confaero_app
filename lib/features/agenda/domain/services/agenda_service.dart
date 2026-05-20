@@ -127,4 +127,42 @@ class AgendaService {
     }
     return null;
   }
+
+  /// GET /organizer-sessions/event/:eventId/speakers/search?email=...
+  Future<Map<String, dynamic>?> searchSpeakerByEmail(
+    String eventId,
+    String email,
+  ) async {
+    await _checkConnectivity();
+    _logger.i('Searching speaker by email: $email');
+    final response = await _apiService.get(
+      '${ApiConstants.searchSpeakerByEmail}/$eventId/speakers/search',
+      queryParameters: {'email': email},
+    );
+    if (response.data is Map<String, dynamic>) {
+      final resData = response.data as Map<String, dynamic>;
+      if (resData['success'] == true && resData['data'] != null) {
+        return resData['data'] as Map<String, dynamic>;
+      }
+    }
+    return null;
+  }
+  Future<Map<String, dynamic>> addSpeaker(String eventId, String sessionIdx, String speakerId) async {
+    await _checkConnectivity();
+    _logger.i('Adding speaker $speakerId to session $sessionIdx');
+    final response = await _apiService.post(
+      '${ApiConstants.addSpeaker}/$eventId/agenda/$sessionIdx/speakers/$speakerId',
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// DELETE /organizer-sessions/events/:eventId/agenda/:sessionIdx/speakers/:speakerId
+  Future<Map<String, dynamic>> removeSpeaker(String eventId, String sessionIdx, String speakerId) async {
+    await _checkConnectivity();
+    _logger.i('Removing speaker $speakerId from session $sessionIdx');
+    final response = await _apiService.delete(
+      '${ApiConstants.removeSpeaker}/$eventId/agenda/$sessionIdx/speakers/$speakerId',
+    );
+    return response.data as Map<String, dynamic>;
+  }
 }

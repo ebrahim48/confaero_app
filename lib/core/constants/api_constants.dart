@@ -205,10 +205,10 @@ class ApiConstants {
   // static const String createSession = '/organizer-sessions/events';
   // static const String updateSession = '/organizer-sessions/events';
   // static const String deleteSession = '/organizer-sessions/events';
-  static const String addSpeaker =
-      '/organizer-sessions/events'; // POST /:id/agenda/:idx/speakers/:speakerId
-  static const String removeSpeaker =
-      '/organizer-sessions/events'; // DELETE /:id/agenda/:idx/speakers/:speakerId
+
+  static const String addSpeaker = '/organizer-sessions/events'; // POST /:id/agenda/:idx/speakers/:speakerId
+  static const String removeSpeaker = '/organizer-sessions/events'; // DELETE /:id/agenda/:idx/speakers/:speakerId
+
   static const String searchSpeakerByEmail =
       '/organizer-sessions/event'; // GET /:eventId/speakers/search
 
@@ -340,4 +340,7 @@ class ApiConstants {
   //--------------------------App Content-------------------------------
   // REMOVED: appContent create endpoint no longer in backend API
   // static const String createAppContent = '/appContent/create';
+
+
+  static const String getAppContent = '/appContent'; //  //  | "ORGANIZER_GUIDELINE"//   | "TERMS_CONDITION"//   | "PRIVACY_POLICY"
 }

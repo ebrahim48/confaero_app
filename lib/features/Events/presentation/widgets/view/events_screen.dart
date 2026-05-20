@@ -306,20 +306,37 @@ class _EventsScreenState extends State<EventsScreen>
           textAlign: TextAlign.start,
           bottom: 12.h,
         ),
-        ...events.map((e) => Padding(
-          padding: EdgeInsets.only(bottom: 8.h),
-          child: EventCard(
-            imageUrl: e.bannerImageUrl ?? '',
-            isNetworkImage:
-            e.bannerImageUrl != null && e.bannerImageUrl!.isNotEmpty,
-            title: e.title,
-            date: e.formattedDateRange,
-            location: e.location,
-            isRegistered: false,
-            onRegisterTap: () => controller.registerEvent(context, e.id, title: e.title),
-            onCardTap: () => controller.openEventDetails(context, e.id, title: e.title),
-          ),
-        )),
+        ...events.map((e) {
+          // Check if already registered in myEvents
+          final myEvent = controller.activeMyEvents
+              .where((m) => m.event.id == e.id)
+              .firstOrNull;
+          final isRegistered = myEvent != null;
+          final status = myEvent?.status ?? '';
+
+          return Padding(
+            padding: EdgeInsets.only(bottom: 8.h),
+            child: EventCard(
+              imageUrl: e.bannerImageUrl ?? '',
+              isNetworkImage:
+                  e.bannerImageUrl != null && e.bannerImageUrl!.isNotEmpty,
+              title: e.title,
+              date: e.formattedDateRange,
+              location: e.location,
+              isRegistered: isRegistered,
+              registrationStatus: status,
+              onRegisterTap: isRegistered
+                  ? null
+                  : () => controller.registerEvent(context, e.id, title: e.title),
+              onCardTap: () => controller.openEventDetails(
+                context,
+                e.id,
+                title: e.title,
+                registrationStatus: status,
+              ),
+            ),
+          );
+        }),
         SizedBox(height: 24.h),
       ],
     );

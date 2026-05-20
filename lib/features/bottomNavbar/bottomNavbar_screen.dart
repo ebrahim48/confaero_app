@@ -146,9 +146,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       case 'ABSTRACT_REVIEWER':
         return {
           'screens': [
-            const ContentHomeScreen(),   // Home - Abstract reviewer dashboard
-            const AgendaScreen(),        // Agenda
-            const AbstractsListScreen(), // Content - Authors & submissions list
+            HomeScreen(eventId: eventId), // Home - full event home
+            const AgendaScreen(),         // Agenda
+            const ContentHomeScreen(),    // Content - reviewer dashboard with stats
             const CommunityScreen(),
             const MessageScreen(),
           ],
@@ -159,9 +159,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       case 'TRACK_CHAIR':
         return {
           'screens': [
-            const ReviewerDashboardScreen(), // Home - Reviewer dashboard
+            HomeScreen(eventId: eventId), // Home - full event home
             const AgendaScreen(),
-            const ReviewerDashboardScreen(), // Content
+            const ContentHomeScreen(),    // Content - Reviewer dashboard with stats
             const CommunityScreen(),
             const MessageScreen(),
           ],
