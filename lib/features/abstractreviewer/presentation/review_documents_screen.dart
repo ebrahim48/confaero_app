@@ -264,23 +264,28 @@ class _ReviewReportSheet extends StatelessWidget {
 
             Obx(() => SizedBox(
               width: double.infinity,
-              height: 50.h,
               child: ElevatedButton(
                 onPressed: controller.isSubmitting.value
                     ? null
                     : () => controller.submitReview(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor32A69A,
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.r)),
                 ),
                 child: controller.isSubmitting.value
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      )
                     : Text('Submit',
-                    style: TextStyle(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white)),
+                        style: TextStyle(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white)),
               ),
             )),
             SizedBox(height: 8.h),

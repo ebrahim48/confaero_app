@@ -2,6 +2,7 @@ import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/controllers/role_controller.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../domain/services/agenda_service.dart';
 import 'package:confaero_app/core/helpers/toast_message_helper.dart';
@@ -16,12 +17,20 @@ class AgendaDetailsController extends GetxController {
   final RxList<Map<String, dynamic>> speakerProfiles = <Map<String, dynamic>>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isLiked = false.obs;
+  final RxBool isAddingSpeaker = false.obs;
+  final RxBool isRemovingSpeaker = false.obs;
+  final RxBool isSearchingSpeaker = false.obs;
+  final Rxn<Map<String, dynamic>> speakerSearchResult = Rxn();
+  final RxString speakerSearchError = ''.obs;
 
   String get currentEventId => SessionController.to.eventId;
 
   String get sessionTitle =>
       (sessionDetails['session'] as Map<String, dynamic>?)?['title']?.toString() ??
       'Session Details';
+
+  bool get isTrackChair =>
+      RoleController.to.activeRole.value.toUpperCase() == 'TRACK_CHAIR';
 
   @override
   void onInit() {
@@ -99,6 +108,67 @@ class AgendaDetailsController extends GetxController {
   }
 
   void openSpeakerDetails(BuildContext context, String speakerId) {
-    context.pushNamed(AppRoutes.speakarProfileScreen, extra: speakerId);
+    context.pushNamed(
+      AppRoutes.speakarProfileScreen,
+      extra: speakerId,
+      queryParameters: {'sessionIdx': sessionIdx},
+    );
+  }
+
+  Future<void> searchSpeaker(String email) async {
+    if (email.trim().isEmpty) {
+      speakerSearchResult.value = null;
+      speakerSearchError.value = '';
+      return;
+    }
+    isSearchingSpeaker.value = true;
+    speakerSearchError.value = '';
+    speakerSearchResult.value = null;
+    try {
+      final result = await _agendaService.searchSpeakerByEmail(
+        currentEventId,
+        email.trim(),
+      );
+      speakerSearchResult.value = result;
+      if (result == null) speakerSearchError.value = 'No speaker found';
+    } catch (e) {
+      speakerSearchError.value = 'No speaker found';
+    } finally {
+      isSearchingSpeaker.value = false;
+    }
+  }
+
+  void clearSpeakerSearch() {
+    speakerSearchResult.value = null;
+    speakerSearchError.value = '';
+    isSearchingSpeaker.value = false;
+  }
+
+  Future<void> addSpeaker(String speakerId) async {
+    if (speakerId.isEmpty) return;
+    isAddingSpeaker.value = true;
+    try {
+      await _agendaService.addSpeaker(currentEventId, sessionIdx, speakerId);
+      ToastMessageHelper.showToastMessage('Speaker assigned successfully', title: 'Success');
+      await loadSessionDetails(); // refresh
+    } catch (e) {
+      ToastMessageHelper.showToastMessage('Failed to assign speaker', title: 'Error');
+    } finally {
+      isAddingSpeaker.value = false;
+    }
+  }
+
+  Future<void> removeSpeaker(String speakerId) async {
+    if (speakerId.isEmpty) return;
+    isRemovingSpeaker.value = true;
+    try {
+      await _agendaService.removeSpeaker(currentEventId, sessionIdx, speakerId);
+      ToastMessageHelper.showToastMessage('Speaker removed successfully', title: 'Success');
+      await loadSessionDetails(); // refresh
+    } catch (e) {
+      ToastMessageHelper.showToastMessage('Failed to remove speaker', title: 'Error');
+    } finally {
+      isRemovingSpeaker.value = false;
+    }
   }
 }

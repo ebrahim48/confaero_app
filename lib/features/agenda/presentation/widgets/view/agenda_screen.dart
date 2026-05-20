@@ -181,7 +181,7 @@ class AgendaScreen extends StatelessWidget {
                               onTap: () {
                                 context.pushNamed(
                                   AppRoutes.agendaDetailsScreen,
-                                  extra: session.idx.toString(),
+                                  extra: session.sessionIndex.toString(),
                                 );
                               },
                             ),

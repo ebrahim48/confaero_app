@@ -1,6 +1,7 @@
 class SessionModel {
   final String id;
-  final int idx;
+  final int idx;        // array position (used for getSessionDetails)
+  final int sessionIndex; // API's sessionIndex field (used for addSpeaker/removeSpeaker)
   final String title;
   final String description;
   final String startTime;
@@ -13,6 +14,7 @@ class SessionModel {
   SessionModel({
     required this.id,
     required this.idx,
+    required this.sessionIndex,
     required this.title,
     required this.description,
     required this.startTime,
@@ -45,6 +47,7 @@ class SessionModel {
     return SessionModel(
       id: json['_id']?.toString() ?? '',
       idx: idx,
+      sessionIndex: (json['sessionIndex'] as num?)?.toInt() ?? idx,
       title: json['title']?.toString() ?? '',
       description: json['details']?.toString() ?? '',
       startTime: startTime,

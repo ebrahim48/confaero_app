@@ -522,9 +522,38 @@ class _PosterReviewPanel extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 14.h),
+
+                // Reason field — required by API
+                Text('Review Reason *',
+                    style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textColor252525)),
+                SizedBox(height: 6.h),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(color: AppColors.borderColorD2D2D2),
+                  ),
+                  child: TextField(
+                    controller: controller.posterReasonController,
+                    maxLines: 2,
+                    style: TextStyle(
+                        fontSize: 12.sp, color: AppColors.textColor252525),
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12.w, vertical: 10.h),
+                      hintText: 'Enter review reason (required)',
+                      hintStyle: TextStyle(
+                          fontSize: 12.sp, color: AppColors.textColor7E7F7E),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10.h),
+
                 Obx(() => SizedBox(
                       width: double.infinity,
-                      height: 46.h,
                       child: ElevatedButton(
                         onPressed: controller.isSubmitting.value
                             ? null
@@ -532,12 +561,17 @@ class _PosterReviewPanel extends StatelessWidget {
                                 context, attachmentId),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryColor32A69A,
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.r)),
                         ),
                         child: controller.isSubmitting.value
-                            ? const CircularProgressIndicator(
-                                color: Colors.white)
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white),
+                              )
                             : Text('Submit Review',
                                 style: TextStyle(
                                     fontSize: 14.sp,

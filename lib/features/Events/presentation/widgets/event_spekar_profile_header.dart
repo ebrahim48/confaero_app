@@ -7,7 +7,7 @@ class EventSpekarProfileHeader extends StatelessWidget {
   final String name;
   final String company;
   final String role;
-  final String sessions;
+  final dynamic sessions;
   final bool isBookmarked;
   final VoidCallback onBookmarkTap;
 
@@ -21,6 +21,12 @@ class EventSpekarProfileHeader extends StatelessWidget {
     required this.isBookmarked,
     required this.onBookmarkTap,
   });
+
+  String _sessionsLabel(dynamic sessions) {
+    if (sessions == null) return '';
+    if (sessions is List) return '${sessions.length} session${sessions.length == 1 ? '' : 's'}';
+    return sessions.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +116,7 @@ class EventSpekarProfileHeader extends StatelessWidget {
             SizedBox(width: 12.w),
             // Sessions
             CustomText(
-              text: sessions,
+              text: _sessionsLabel(sessions),
               fontsize: 12.sp,
               color: const Color(0xff757575),
             ),

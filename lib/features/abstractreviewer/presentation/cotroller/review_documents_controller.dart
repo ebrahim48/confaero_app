@@ -18,6 +18,7 @@ class ReviewDocumentsController extends GetxController {
   // Review bottom sheet
   final reviewType = 'Reject'.obs;
   final TextEditingController reasonController = TextEditingController();
+  final TextEditingController posterReasonController = TextEditingController();
   final List<String> reviewTypes = ['Reject', 'Revise', 'Approve'];
   final isSubmitting = false.obs;
   String? _currentAttachmentId;
@@ -93,10 +94,29 @@ class ReviewDocumentsController extends GetxController {
   }
 
   Future<void> submitPosterReview(BuildContext context, String attachmentId) async {
+    final reason = posterReasonController.text.trim();
+    if (reason.isEmpty) {
+      Get.snackbar(
+        'Required',
+        'Please enter a review reason before submitting.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade700,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
     try {
       isSubmitting.value = true;
-      final scores = posterScores.map((k, v) => MapEntry(k, v.toInt()));
-      await _service.reviewPosterImage(attachmentId, {'scores': scores});
+      final scores = Map<String, int>.fromEntries(
+        posterScores.entries.map((e) => MapEntry(e.key, e.value.toInt())),
+      );
+      final payload = <String, dynamic>{
+        'reason': reason,
+        ...scores.map((k, v) => MapEntry(k, v)),
+      };
+      await _service.reviewPosterImage(attachmentId, payload);
+      posterReasonController.clear();
       if (context.mounted) Navigator.of(context).pop();
       await loadSubmissions();
     } catch (_) {
@@ -126,6 +146,7 @@ class ReviewDocumentsController extends GetxController {
   @override
   void onClose() {
     reasonController.dispose();
+    posterReasonController.dispose();
     super.onClose();
   }
 }

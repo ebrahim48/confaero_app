@@ -30,6 +30,11 @@ class EventSpekarDetailsScreen extends StatelessWidget {
               child: Obx(() {
                 final attendee = controller.attendeeDetails;
 
+                // Show loader while data is being fetched
+                if (controller.isLoading.value && attendee.isEmpty) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
                 return Column(
                   children: [
                     // Banner Image
@@ -54,12 +59,12 @@ class EventSpekarDetailsScreen extends StatelessWidget {
                           children: [
                             // Profile Header Widget
                             EventSpekarProfileHeader(
-                              imagePath: 'assets/images/sampleprofile.png',
-                              name: attendee['name'],
-                              company: attendee['company'],
-                              role: attendee['role'],
+                              imagePath: attendee['profileImage']?.toString() ?? 'assets/images/sampleprofile.png',
+                              name: attendee['name']?.toString() ?? '',
+                              company: attendee['company']?.toString() ?? '',
+                              role: attendee['role']?.toString() ?? '',
                               sessions: attendee['sessions'],
-                              isBookmarked: attendee['isBookmarked'],
+                              isBookmarked: attendee['isBookmarked'] as bool? ?? false,
                               onBookmarkTap: () => controller.toggleBookmark(),
                             ),
                             SizedBox(height: 24.h),
@@ -73,9 +78,9 @@ class EventSpekarDetailsScreen extends StatelessWidget {
 
                             // Contact Info Widget
                             EventSpekarContactInfo(
-                              email: attendee['email'],
-                              phone: attendee['phone'],
-                              location: attendee['location'],
+                              email: attendee['email']?.toString() ?? '',
+                              phone: attendee['phone']?.toString() ?? '',
+                              location: attendee['location']?.toString() ?? '',
                             ),
                             SizedBox(height: 32.h),
 
