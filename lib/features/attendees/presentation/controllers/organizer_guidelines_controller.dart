@@ -14,6 +14,7 @@ class OrganizerGuidelinesController extends GetxController {
   final isLoading = false.obs;
   final title = ''.obs;
   final content = ''.obs;
+  final imageUrl = ''.obs;
   final errorMessage = ''.obs;
 
   @override
@@ -43,6 +44,7 @@ class OrganizerGuidelinesController extends GetxController {
           final data = resData['data'] as Map<String, dynamic>;
           title.value = data['title']?.toString() ?? 'Organizer Guidelines';
           content.value = data['content']?.toString() ?? '';
+          imageUrl.value = data['imageUrl']?.toString() ?? '';
           _logger.i('Organizer guidelines loaded successfully');
         }
       }

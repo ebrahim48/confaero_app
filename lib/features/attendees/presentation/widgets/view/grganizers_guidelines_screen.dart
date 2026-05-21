@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -126,16 +127,8 @@ class OrganizserGuidelinesScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Static banner image
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12.r),
-                        child: Image.asset(
-                          'assets/images/myevents.png',
-                          width: double.infinity,
-                          height: 200.h,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
+                      // Banner image from API
+                      Obx(() => _buildBannerImage(controller.imageUrl.value)),
                       SizedBox(height: 20.h),
 
                       // Dynamic HTML content from API
@@ -206,6 +199,47 @@ class OrganizserGuidelinesScreen extends StatelessWidget {
             }),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBannerImage(String url) {
+    if (url.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12.r),
+        child: CachedNetworkImage(
+          imageUrl: url,
+          width: double.infinity,
+          height: 200.h,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => Container(
+            width: double.infinity,
+            height: 200.h,
+            color: const Color(0xffF0F0F0),
+            child: Center(
+              child: CircularProgressIndicator(
+                  color: AppColors.primaryColor32A69A),
+            ),
+          ),
+          errorWidget: (_, __, ___) => ClipRRect(
+            borderRadius: BorderRadius.circular(12.r),
+            child: Image.asset(
+              'assets/images/myevents.png',
+              width: double.infinity,
+              height: 200.h,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12.r),
+      child: Image.asset(
+        'assets/images/myevents.png',
+        width: double.infinity,
+        height: 200.h,
+        fit: BoxFit.cover,
       ),
     );
   }

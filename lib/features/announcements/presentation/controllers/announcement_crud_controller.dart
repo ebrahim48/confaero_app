@@ -72,7 +72,7 @@ class AnnouncementCrudController extends GetxController {
 
   Future<void> updateAnnouncement(AnnouncementModel item) async {
     titleController.text = item.title;
-    contentController.text = item.content;
+    contentController.text = item.description;
 
     final confirmed = await Get.dialog<bool>(
       AlertDialog(

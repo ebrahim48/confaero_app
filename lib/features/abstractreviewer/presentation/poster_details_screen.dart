@@ -187,13 +187,13 @@ class PosterDetailScreen extends StatelessWidget {
                                       MainAxisAlignment.center,
                                   children: [
                                     Icon(Icons.close,
-                                        size: 16.sp, color: Colors.red),
+                                        size: 16.sp, color: Colors.black),
                                     SizedBox(width: 4.w),
                                     Text('Reject',
                                         style: TextStyle(
                                             fontSize: 13.sp,
                                             fontWeight: FontWeight.w500,
-                                            color: Colors.red)),
+                                            color: Colors.black)),
                                   ],
                                 ),
                               ),
@@ -235,12 +235,12 @@ class PosterDetailScreen extends StatelessWidget {
               onTap: () => _showFlagDialog(context, controller),
               child: Row(
                 children: [
-                  Icon(Icons.flag_outlined, size: 16.sp, color: Colors.red),
+                  Icon(Icons.flag_outlined, size: 16.sp, color: Colors.black),
                   SizedBox(width: 6.w),
                   Text('Flag for Admin',
                       style: TextStyle(
                           fontSize: 13.sp,
-                          color: Colors.red,
+                          color: Colors.black,
                           fontWeight: FontWeight.w500)),
                 ],
               ),
@@ -320,6 +320,8 @@ class PosterDetailScreen extends StatelessWidget {
                 child: TextFormField(
                   controller: reasonCtrl,
                   maxLines: 3,
+                  style: TextStyle(
+                      fontSize: 13.sp, color: AppColors.textColor252525),
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.all(12.w),
@@ -332,7 +334,6 @@ class PosterDetailScreen extends StatelessWidget {
               SizedBox(height: 16.h),
               Obx(() => SizedBox(
                     width: double.infinity,
-                    height: 46.h,
                     child: ElevatedButton(
                       onPressed: controller.isSubmitting.value
                           ? null
@@ -340,6 +341,9 @@ class PosterDetailScreen extends StatelessWidget {
                               sheetCtx, attachmentId, reasonCtrl.text.trim()),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 50),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10.r)),
                       ),
@@ -413,6 +417,8 @@ class PosterDetailScreen extends StatelessWidget {
                 child: TextFormField(
                   controller: reasonCtrl,
                   maxLines: 3,
+                  style: TextStyle(
+                      fontSize: 13.sp, color: AppColors.textColor252525),
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.all(12.w),
@@ -425,7 +431,6 @@ class PosterDetailScreen extends StatelessWidget {
               SizedBox(height: 16.h),
               SizedBox(
                 width: double.infinity,
-                height: 46.h,
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(sheetCtx).pop();
@@ -434,6 +439,9 @@ class PosterDetailScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 50),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.r)),
                   ),
@@ -499,12 +507,12 @@ class _PosterReviewPanel extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
             child: Column(
               children: [
-                _radioRow('Originality / innovation', 'originality', controller),
-                _radioRow('Scientific rigor:', 'scientific', controller),
-                _radioRow('Clarity of message:', 'clarity', controller),
-                _sliderRow('Visual design & layout:', 'visual', controller),
+                _sliderRow('Originality / innovation', 'originality', controller),
+                _sliderRow('Scientific rigor', 'scientificRigor', controller),
+                _sliderRow('Clarity of message', 'clarity', controller),
+                _sliderRow('Visual design & layout', 'visualDesign', controller),
                 _sliderRow('Impact / significance', 'impact', controller),
-                _sliderRow('Presenter interaction', 'presenter', controller),
+                _sliderRow('Presentation', 'presentation', controller),
                 SizedBox(height: 6.h),
                 Row(
                   children: [
@@ -519,38 +527,15 @@ class _PosterReviewPanel extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 10.sp,
                             color: AppColors.textColor7E7F7E)),
+                    SizedBox(width: 8.w),
+                    Obx(() => Switch(
+                          value: controller.posterOverall.value,
+                          onChanged: (v) => controller.posterOverall.value = v,
+                          activeColor: AppColors.primaryColor32A69A,
+                        )),
                   ],
                 ),
-                SizedBox(height: 14.h),
-
-                // Reason field — required by API
-                Text('Review Reason *',
-                    style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textColor252525)),
                 SizedBox(height: 6.h),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(color: AppColors.borderColorD2D2D2),
-                  ),
-                  child: TextField(
-                    controller: controller.posterReasonController,
-                    maxLines: 2,
-                    style: TextStyle(
-                        fontSize: 12.sp, color: AppColors.textColor252525),
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12.w, vertical: 10.h),
-                      hintText: 'Enter review reason (required)',
-                      hintStyle: TextStyle(
-                          fontSize: 12.sp, color: AppColors.textColor7E7F7E),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 10.h),
 
                 Obx(() => SizedBox(
                       width: double.infinity,
@@ -561,6 +546,7 @@ class _PosterReviewPanel extends StatelessWidget {
                                 context, attachmentId),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryColor32A69A,
+                          foregroundColor: Colors.white,
                           padding: EdgeInsets.symmetric(vertical: 14.h),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.r)),
@@ -583,34 +569,6 @@ class _PosterReviewPanel extends StatelessWidget {
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _radioRow(
-      String label, String key, ReviewDocumentsController ctrl) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 6.h),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(label,
-                style: TextStyle(
-                    fontSize: 12.sp, color: AppColors.textColor252525)),
-          ),
-          Obx(() => Text(
-                '${ctrl.posterScores[key]?.toInt() ?? 0}/10',
-                style:
-                    TextStyle(fontSize: 12.sp, color: AppColors.textColor7E7F7E),
-              )),
-          SizedBox(width: 8.w),
-          Obx(() => Radio<double>(
-                value: 0,
-                groupValue: ctrl.posterScores[key],
-                onChanged: (v) => ctrl.updateScore(key, v ?? 0),
-                activeColor: AppColors.primaryColor32A69A,
-              )),
         ],
       ),
     );

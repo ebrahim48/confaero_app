@@ -192,7 +192,7 @@ class _AnnouncementCard extends StatelessWidget {
           children: [
             const SizedBox(height: 4),
             Text(
-              item.content,
+              item.description,
               style: const TextStyle(color: Colors.white70, fontSize: 13),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
