@@ -18,7 +18,6 @@ class ReviewDocumentsController extends GetxController {
   // Review bottom sheet
   final reviewType = 'Reject'.obs;
   final TextEditingController reasonController = TextEditingController();
-  final TextEditingController posterReasonController = TextEditingController();
   final List<String> reviewTypes = ['Reject', 'Revise', 'Approve'];
   final isSubmitting = false.obs;
   String? _currentAttachmentId;
@@ -26,12 +25,13 @@ class ReviewDocumentsController extends GetxController {
   // Poster scoring
   final posterScores = <String, double>{
     'originality': 0,
-    'scientific': 0,
+    'scientificRigor': 0,
     'clarity': 0,
-    'visual': 0,
+    'visualDesign': 0,
     'impact': 0,
-    'presenter': 0,
+    'presentation': 0,
   }.obs;
+  final posterOverall = false.obs;
 
   void updateScore(String key, double val) => posterScores[key] = val;
 
@@ -94,29 +94,16 @@ class ReviewDocumentsController extends GetxController {
   }
 
   Future<void> submitPosterReview(BuildContext context, String attachmentId) async {
-    final reason = posterReasonController.text.trim();
-    if (reason.isEmpty) {
-      Get.snackbar(
-        'Required',
-        'Please enter a review reason before submitting.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade50,
-        colorText: Colors.red.shade700,
-        margin: const EdgeInsets.all(16),
-      );
-      return;
-    }
     try {
       isSubmitting.value = true;
       final scores = Map<String, int>.fromEntries(
         posterScores.entries.map((e) => MapEntry(e.key, e.value.toInt())),
       );
       final payload = <String, dynamic>{
-        'reason': reason,
         ...scores.map((k, v) => MapEntry(k, v)),
+        'overall': posterOverall.value,
       };
       await _service.reviewPosterImage(attachmentId, payload);
-      posterReasonController.clear();
       if (context.mounted) Navigator.of(context).pop();
       await loadSubmissions();
     } catch (_) {
@@ -146,7 +133,6 @@ class ReviewDocumentsController extends GetxController {
   @override
   void onClose() {
     reasonController.dispose();
-    posterReasonController.dispose();
     super.onClose();
   }
 }
