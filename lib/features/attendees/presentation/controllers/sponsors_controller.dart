@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+﻿import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../sponsors/domain/services/sponsor_service.dart';
@@ -28,13 +28,8 @@ class SponsorsController extends GetxController {
       
       // Show message if no sponsors available
       if (fetched.isEmpty) {
-        ToastMessageHelper.showToastMessage(
-          'Sponsors information coming soon. Check back later!',
-          title: 'Info',
-        );
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Sponsors information coming soon. Check back later!', title: 'Info');
     } finally {
       isLoading.value = false;
     }

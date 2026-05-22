@@ -1,4 +1,4 @@
-import 'package:confaero_app/core/config/approutes/app_routes.dart';
+﻿import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
@@ -52,18 +52,10 @@ class FloorMapController extends GetxController {
       
       // Show message if no floor maps available
       if (floorMaps.isEmpty) {
-        ToastMessageHelper.showToastMessage(
-          'Floor maps coming soon. Check back later!',
-          title: 'Info',
-        );
       }
     } catch (e) {
       errorMessage.value =
           e.toString().replaceAll('Exception: ', '').replaceAll('Exception:', '');
-      ToastMessageHelper.showToastMessage(
-        'Floor maps coming soon. Check back later!',
-        title: 'Info',
-      );
     } finally {
       isLoading.value = false;
     }
@@ -96,7 +88,6 @@ class FloorMapController extends GetxController {
     matrix.setEntry(0, 0, newScale); // Scale X
     matrix.setEntry(1, 1, newScale); // Scale Y
     transformationController.value = matrix;
-    ToastMessageHelper.showToastMessage('Zoomed in', title: 'Zoom');
   }
 
   void zoomOut() {
@@ -107,14 +98,12 @@ class FloorMapController extends GetxController {
     matrix.setEntry(0, 0, newScale); // Scale X
     matrix.setEntry(1, 1, newScale); // Scale Y
     transformationController.value = matrix;
-    ToastMessageHelper.showToastMessage('Zoomed out', title: 'Zoom');
   }
 
   void recenter() {
     scale.value = 1.0;
     showAllArea.value = false;
     transformationController.value = Matrix4.identity();
-    ToastMessageHelper.showToastMessage('Map recentered', title: 'View');
   }
 
   void toggleShowAllArea() {
@@ -124,10 +113,6 @@ class FloorMapController extends GetxController {
     matrix.setEntry(0, 0, scale.value);
     matrix.setEntry(1, 1, scale.value);
     transformationController.value = matrix;
-    ToastMessageHelper.showToastMessage(
-      showAllArea.value ? 'Showing all area' : 'Back to normal view',
-      title: 'View',
-    );
   }
 
   @override

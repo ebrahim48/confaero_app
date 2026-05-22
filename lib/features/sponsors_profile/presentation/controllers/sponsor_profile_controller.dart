@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -169,13 +169,8 @@ class SponsorProfileController extends GetxController {
         if (result['data'] != null) _applyProfile(result['data'] as Map<String, dynamic>);
         hasProfile.value = true;
         if (context.mounted) Navigator.of(context).pop();
-        ToastMessageHelper.showToastMessage('Sponsor profile created!', title: 'Success');
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage(
-        e.toString().replaceAll('Exception: ', '').trim(),
-        title: 'Error',
-      );
     } finally {
       isSaving.value = false;
     }
@@ -198,13 +193,8 @@ class SponsorProfileController extends GetxController {
       if (result['success'] == true) {
         if (result['data'] != null) _applyProfile(result['data'] as Map<String, dynamic>);
         if (context.mounted) Navigator.of(context).pop();
-        ToastMessageHelper.showToastMessage('Profile updated successfully!', title: 'Success');
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage(
-        e.toString().replaceAll('Exception: ', '').trim(),
-        title: 'Error',
-      );
     } finally {
       isSaving.value = false;
     }

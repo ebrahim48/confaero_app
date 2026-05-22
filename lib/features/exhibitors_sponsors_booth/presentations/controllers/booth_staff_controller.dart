@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/controllers/session_controller.dart';
@@ -62,12 +62,9 @@ class BoothStaffController extends GetxController {
   Future<void> addMember() async {
     final email = emailController.text.trim();
     if (email.isEmpty) {
-      ToastMessageHelper.showToastMessage('Please enter an email address',
-          title: 'Error');
       return;
     }
     if (eventId.isEmpty) {
-      ToastMessageHelper.showToastMessage('No event selected', title: 'Error');
       return;
     }
 
@@ -77,12 +74,9 @@ class BoothStaffController extends GetxController {
       if (res['success'] == true) {
         emailController.clear();
         Navigator.pop(Get.context!);
-        ToastMessageHelper.showToastMessage('Member added successfully',
-            title: 'Success');
         await loadStaff();
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to add member', title: 'Error');
     } finally {
       isAdding.value = false;
     }

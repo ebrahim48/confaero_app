@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,7 +10,6 @@ import '../../../../core/services/socket_service.dart';
 import '../../data/models/message_model.dart' as msgModel;
 import '../../domain/services/message_service.dart';
 import 'message_controller.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 import 'package:confaero_app/features/auth/data/repositories/auth_repository.dart';
 
 class ChatMessage {
@@ -234,7 +233,6 @@ class MessageChatController extends GetxController {
       // Mark unread messages as seen (fire-and-forget, don't block UI)
       unawaited(_markUnreadMessagesAsSeen(data));
     } catch (_) {
-      ToastMessageHelper.showToastMessage('Failed to load messages', title: 'Error');
     } finally {
       isLoading.value = false;
       _isFetchingMessages = false;
@@ -364,7 +362,6 @@ class MessageChatController extends GetxController {
     } catch (_) {
       messages.remove(optimistic);
       messages.refresh();
-      ToastMessageHelper.showToastMessage('Failed to send message', title: 'Error');
     } finally {
       isSending.value = false;
     }
@@ -405,7 +402,6 @@ class MessageChatController extends GetxController {
     } catch (_) {
       messages.remove(optimistic);
       messages.refresh();
-      ToastMessageHelper.showToastMessage('Failed to send attachment', title: 'Error');
     }
   }
 

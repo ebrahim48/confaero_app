@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/helpers/toast_message_helper.dart';
 
@@ -24,10 +24,6 @@ class OrganizerAttendeeController extends GetxController {
 
   Future<void> loadRegistrations() async {
     // REMOVED: getAllRegistrations endpoint no longer available in backend API
-    ToastMessageHelper.showToastMessage(
-      'Attendee management not available',
-      title: 'Info',
-    );
   }
 
   void searchRegistrations(String query) {
@@ -56,17 +52,9 @@ class OrganizerAttendeeController extends GetxController {
 
   Future<void> viewAttendee(String attendeeId) async {
     // REMOVED: endpoint no longer available in backend API
-    ToastMessageHelper.showToastMessage(
-      'Attendee details not available',
-      title: 'Info',
-    );
   }
 
   Future<void> removeAttendee(String attendeeId, String name) async {
     // REMOVED: endpoint no longer available in backend API
-    ToastMessageHelper.showToastMessage(
-      'Attendee removal not available',
-      title: 'Info',
-    );
   }
 }

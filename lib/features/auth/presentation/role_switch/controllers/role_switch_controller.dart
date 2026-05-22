@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+﻿import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
@@ -8,7 +8,6 @@ import '../../../../../core/helpers/logger_helper.dart';
 import '../../../../../core/helpers/prefs_helper.dart';
 import '../../../../../core/controllers/role_controller.dart';
 import '../../../../auth/data/repositories/auth_repository.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class RoleSwitchController extends GetxController {
   final AuthRepository _authRepository = Get.find<AuthRepository>();
@@ -61,10 +60,6 @@ class RoleSwitchController extends GetxController {
       _logger.d('Available roles: $availableRoles, Active: ${activeRole}');
     } catch (e) {
       _logger.e('Failed to fetch roles: $e');
-      ToastMessageHelper.showToastMessage(
-        'Failed to load roles',
-        title: 'Error',
-      );
     } finally {
       isLoadingRoles.value = false;
     }
@@ -96,10 +91,6 @@ class RoleSwitchController extends GetxController {
           }
         }
 
-        ToastMessageHelper.showToastMessage(
-          'Switched to ${formatRoleName(role)}',
-          title: 'Success',
-        );
 
         // Navigate to main screen so the new role takes effect
         // The MainNavigationScreen will rebuild with the new role UI
@@ -108,14 +99,9 @@ class RoleSwitchController extends GetxController {
         }
       } else {
         final message = response['message'] as String? ?? 'Failed to switch role';
-        ToastMessageHelper.showToastMessage(message, title: 'Error');
       }
     } catch (e) {
       _logger.e('Failed to switch role: $e');
-      ToastMessageHelper.showToastMessage(
-        'Failed to switch role',
-        title: 'Error',
-      );
     } finally {
       isSwitching.value = false;
     }

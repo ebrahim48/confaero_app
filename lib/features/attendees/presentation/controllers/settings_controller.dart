@@ -1,11 +1,10 @@
-import 'package:confaero_app/core/helpers/logger_helper.dart';
+﻿import 'package:confaero_app/core/helpers/logger_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/approutes/app_routes.dart';
 import '../../../auth/data/repositories/auth_repository.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class SettingsController extends GetxController {
   final AuthRepository _authRepository = Get.find<AuthRepository>();
@@ -22,7 +21,6 @@ class SettingsController extends GetxController {
       _logger.d('Notification updated: $value');
     } catch (e) {
       notificationEnabled.value = !value; // Revert on failure
-      ToastMessageHelper.showToastMessage('Failed to update notification settings', title: 'Error');
       _logger.e('Failed to toggle notification: $e');
     }
   }

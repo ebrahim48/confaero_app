@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,7 +10,6 @@ import '../../../profile/data/models/profile_model.dart';
 import '../../../profile/domain/services/profile_service.dart';
 import '../widgets/view/affiliation_form_screen.dart';
 import '../widgets/view/all_forms_screen.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class MyProfileController extends GetxController {
   final ProfileService _profileService = Get.find<ProfileService>();
@@ -88,7 +87,6 @@ class MyProfileController extends GetxController {
       }
     } catch (e) {
       _logger.e('Failed to load profile data: $e');
-      ToastMessageHelper.showToastMessage('Failed to load profile details', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -282,10 +280,8 @@ class MyProfileController extends GetxController {
       pendingResumeFile.value = null;
       pendingResumeName.value = '';
 
-      ToastMessageHelper.showToastMessage('Profile saved successfully', title: 'Success');
     } catch (e) {
       _logger.e('Failed to save profile: $e');
-      ToastMessageHelper.showToastMessage('Failed to save profile', title: 'Error');
     } finally {
       isSaving.value = false;
     }

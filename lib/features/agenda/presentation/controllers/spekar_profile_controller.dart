@@ -1,7 +1,6 @@
-import 'package:get/get.dart';
+﻿import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../domain/services/agenda_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class SpeakerProfileController extends GetxController {
   final AgendaService _agendaService = Get.find<AgendaService>();
@@ -62,7 +61,6 @@ class SpeakerProfileController extends GetxController {
         speaker.value = data;
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load speaker details', title: 'Error');
     } finally {
       isLoading(false);
     }
@@ -116,7 +114,6 @@ class SpeakerProfileController extends GetxController {
     if (url != null && url.isNotEmpty) {
       // TODO: url_launcher
     } else {
-      ToastMessageHelper.showToastMessage('LinkedIn profile not available', title: 'Not Available');
     }
   }
 
@@ -126,12 +123,10 @@ class SpeakerProfileController extends GetxController {
     if (url != null && url.isNotEmpty) {
       // TODO: url_launcher
     } else {
-      ToastMessageHelper.showToastMessage('Website not available', title: 'Not Available');
     }
   }
 
   void contractSpeaker() {
-    ToastMessageHelper.showToastMessage('Contact not available', title: 'Not Available');
   }
 
   void goToSessionDetails(Map<String, dynamic> session) {

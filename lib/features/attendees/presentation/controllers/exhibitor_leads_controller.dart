@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/qr_service.dart';
@@ -36,7 +36,6 @@ class ExhibitorLeadsController extends GetxController {
       final data = await _qrService.getExhibitorLeads(boothId);
       leads.assignAll(data);
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load leads', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -93,10 +92,8 @@ class ExhibitorLeadsController extends GetxController {
     isSaving.value = true;
     try {
       await _qrService.addLeadNote(leadId, noteController.text.trim());
-      ToastMessageHelper.showToastMessage('Note saved', title: 'Success');
       await loadLeads();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to save note', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -139,10 +136,8 @@ class ExhibitorLeadsController extends GetxController {
     isSaving.value = true;
     try {
       await _qrService.tagLead(leadId, tags);
-      ToastMessageHelper.showToastMessage('Tags saved', title: 'Success');
       await loadLeads();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to save tags', title: 'Error');
     } finally {
       isSaving.value = false;
     }

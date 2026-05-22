@@ -1,10 +1,9 @@
-import 'package:flutter/cupertino.dart';
+﻿import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/services/poster_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class EventPosterDetailsController extends GetxController {
   final PosterService _posterService = Get.find<PosterService>();
@@ -76,7 +75,6 @@ class EventPosterDetailsController extends GetxController {
         }
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load poster details', title: 'Error');
     } finally {
       isLoading.value = false;
     }

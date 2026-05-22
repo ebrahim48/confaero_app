@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -50,8 +50,6 @@ class VideoConferenceController extends GetxController {
             .toList();
       }
     } catch (_) {
-      ToastMessageHelper.showToastMessage('Failed to load sessions',
-          title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -62,11 +60,8 @@ class VideoConferenceController extends GetxController {
     loadingIndex.value = sessionIndex;
     try {
       await _service.startSession(_eventId, sessionIndex);
-      ToastMessageHelper.showToastMessage('Session started', title: 'Success');
       await loadSessions();
     } catch (_) {
-      ToastMessageHelper.showToastMessage('Failed to start session',
-          title: 'Error');
     } finally {
       loadingIndex.value = null;
     }
@@ -80,19 +75,11 @@ class VideoConferenceController extends GetxController {
     final micStatus = await Permission.microphone.request();
 
     if (camStatus.isPermanentlyDenied || micStatus.isPermanentlyDenied) {
-      ToastMessageHelper.showToastMessage(
-        'Camera and microphone access is required. Please enable them in Settings.',
-        title: 'Permission Required',
-      );
       await openAppSettings();
       return;
     }
 
     if (camStatus.isDenied || micStatus.isDenied) {
-      ToastMessageHelper.showToastMessage(
-        'Camera and microphone permissions are required to join the session.',
-        title: 'Permission Denied',
-      );
       return;
     }
 
@@ -115,8 +102,6 @@ class VideoConferenceController extends GetxController {
       final userName = await PrefsHelper.getString(AppConstants.name);
 
       if (zegoToken.value.isEmpty || zegoRoomId.value.isEmpty || zegoAppId.value == 0) {
-        ToastMessageHelper.showToastMessage('Invalid session credentials',
-            title: 'Error');
         return;
       }
 
@@ -137,8 +122,6 @@ class VideoConferenceController extends GetxController {
       loadingIndex.value = null;
       // ignore: avoid_print
       print('JOIN SESSION ERROR: $e\n$s');
-      ToastMessageHelper.showToastMessage('Failed to join session: $e',
-          title: 'Error');
     }
   }
 
@@ -168,11 +151,8 @@ class VideoConferenceController extends GetxController {
     loadingIndex.value = sessionIndex;
     try {
       await _service.endSession(_eventId, sessionIndex);
-      ToastMessageHelper.showToastMessage('Session ended', title: 'Success');
       await loadSessions();
     } catch (_) {
-      ToastMessageHelper.showToastMessage('Failed to end session',
-          title: 'Error');
     } finally {
       loadingIndex.value = null;
     }

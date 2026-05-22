@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../connection/data/models/connection_model.dart';
 import '../../../connection/domain/services/connection_service.dart';
 import '../../../message/presentation/widgets/view/message_chat_screen.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class ConnectionListController extends GetxController {
   final ConnectionService _connectionService = Get.find<ConnectionService>();
@@ -43,7 +42,6 @@ class ConnectionListController extends GetxController {
       bookmarkedCount.value = result['bookmarked'] as int? ?? 0;
       filteredConnections.value = connections;
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load connections', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -75,7 +73,6 @@ class ConnectionListController extends GetxController {
       connections.refresh();
       filteredConnections.refresh();
       bookmarkedCount.value = connections.where((c) => c.isBookmarked).length;
-      ToastMessageHelper.showToastMessage('Could not update bookmark', title: 'Error');
     }
   }
 
@@ -94,12 +91,10 @@ class ConnectionListController extends GetxController {
 
   Future<void> sendMail(String? email) async {
     if (email == null || email.isEmpty) {
-      ToastMessageHelper.showToastMessage('Email not available', title: 'Info');
       return;
     }
     final uri = Uri.parse('mailto:$email');
     if (!await launchUrl(uri)) {
-      ToastMessageHelper.showToastMessage('Could not open mail app', title: 'Error');
     }
   }
 

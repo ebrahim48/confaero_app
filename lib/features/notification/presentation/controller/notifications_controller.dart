@@ -1,9 +1,8 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/services/socket_service.dart';
 import '../../../connection/domain/services/connection_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 // Notification Model
 class NotificationItem {
@@ -98,7 +97,6 @@ class NotificationsController extends GetxController {
 
       filteredNotifications.value = notifications;
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Could not load connection requests', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -107,11 +105,9 @@ class NotificationsController extends GetxController {
   Future<void> acceptConnection(String requestId) async {
     try {
       await _connectionService.acceptRequest(requestId);
-      ToastMessageHelper.showToastMessage('Connection request accepted!', title: 'Success');
       // Refresh the list after accepting
       loadNotifications();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to accept request: $e', title: 'Error');
     }
   }
 
@@ -149,7 +145,6 @@ class NotificationsController extends GetxController {
     notifications.removeWhere((n) => n.id == id);
     filteredNotifications.removeWhere((n) => n.id == id);
 
-    ToastMessageHelper.showToastMessage('Notification removed', title: 'Deleted');
   }
 
   // Refresh notifications

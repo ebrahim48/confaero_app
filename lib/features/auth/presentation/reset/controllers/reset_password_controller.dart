@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
@@ -68,10 +68,6 @@ class ResetPasswordController extends GetxController {
     }
 
     if (!await _connectivityService.checkConnectivity()) {
-      ToastMessageHelper.showToastMessage(
-        "No internet connection. Please check your network and try again.",
-        title: 'Error',
-      );
       return;
     }
 
@@ -102,7 +98,6 @@ class ResetPasswordController extends GetxController {
 
         if (success) {
           _logger.i('Password reset successful, navigating to sign in');
-          ToastMessageHelper.showToastMessage(message, title: 'Success');
           context.go(AppRoutes.signInScreen);
         } else {
           _logger.w('Password reset failed: $message');
@@ -112,12 +107,10 @@ class ResetPasswordController extends GetxController {
           if (errorMessage.toLowerCase().contains('expire')) {
             errorMessage = "Your reset link has expired. Please request a new one.";
             _logger.w('Token expired, redirecting to forget password');
-            ToastMessageHelper.showToastMessage(errorMessage, title: 'Error');
             Future.delayed(const Duration(seconds: 2), () {
               context.go(AppRoutes.forgetPasswordScreen);
             });
           } else {
-            ToastMessageHelper.showToastMessage(errorMessage, title: 'Error');
           }
         }
       }
@@ -133,7 +126,6 @@ class ResetPasswordController extends GetxController {
 
         if (success) {
           _logger.i('Password reset successful (despite error status)');
-          ToastMessageHelper.showToastMessage(message, title: 'Success');
           context.go(AppRoutes.signInScreen);
           return;
         }
@@ -143,17 +135,9 @@ class ResetPasswordController extends GetxController {
     } on TimeoutException catch (_) {
       isLoading.value = false;
       _logger.w('Password reset timeout');
-      ToastMessageHelper.showToastMessage(
-        'Request timed out. Please try again.',
-        title: 'Error',
-      );
     } on NoInternetException catch (_) {
       isLoading.value = false;
       _logger.w('Password reset failed: No internet connection');
-      ToastMessageHelper.showToastMessage(
-        'No internet connection. Please check your network and try again.',
-        title: 'Error',
-      );
     } catch (e, stackTrace) {
       isLoading.value = false;
       _logger.e('Exception during password reset', error: e, stackTrace: stackTrace);
@@ -166,19 +150,15 @@ class ResetPasswordController extends GetxController {
     
     if (error.contains('expire') || error.contains('expired') || error.contains('invalid token')) {
       errorMessage = "Your reset link has expired. Please request a new one.";
-      ToastMessageHelper.showToastMessage(errorMessage, title: 'Error');
       Future.delayed(const Duration(seconds: 2), () {
         context.go(AppRoutes.forgetPasswordScreen);
       });
     } else if (error.contains('no internet')) {
       errorMessage = "No internet connection. Please check your network and try again.";
-      ToastMessageHelper.showToastMessage(errorMessage, title: 'Error');
     } else if (error.contains('timeout')) {
       errorMessage = "Request timed out. Please try again.";
-      ToastMessageHelper.showToastMessage(errorMessage, title: 'Error');
     } else {
       errorMessage = "Password reset failed. Please try again.";
-      ToastMessageHelper.showToastMessage(errorMessage, title: 'Error');
     }
   }
 }

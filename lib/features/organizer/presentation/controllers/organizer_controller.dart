@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/services/organizer_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class OrganizerController extends GetxController {
   final OrganizerService _service = Get.find<OrganizerService>();

@@ -1,11 +1,10 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../documents/data/models/document_model.dart';
 import '../../../documents/domain/services/document_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class DocumentsController extends GetxController {
   final DocumentService _service = Get.find<DocumentService>();
@@ -37,7 +36,6 @@ class DocumentsController extends GetxController {
       final docs = await _service.getPublicDocuments(currentEventId);
       allDocuments.assignAll(docs);
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load documents', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -51,7 +49,6 @@ class DocumentsController extends GetxController {
           await _service.getDocumentDetails(currentEventId, documentId);
       documentDetails.value = details;
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load document details', title: 'Error');
     } finally {
       isLoadingDetails.value = false;
     }
@@ -78,7 +75,6 @@ class DocumentsController extends GetxController {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      ToastMessageHelper.showToastMessage('Could not open the document', title: 'Error');
     }
   }
 

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
@@ -62,18 +62,10 @@ class VerifyController extends GetxController {
 
   Future<void> verifyCode(BuildContext context) async {
     if (pinController.text.length != 6) {
-      ToastMessageHelper.showToastMessage(
-        "Please enter a 6-digit verification code",
-        title: 'Error',
-      );
       return;
     }
 
     if (!await _connectivityService.checkConnectivity()) {
-      ToastMessageHelper.showToastMessage(
-        "No internet connection. Please check your network and try again.",
-        title: 'Error',
-      );
       return;
     }
 
@@ -110,31 +102,22 @@ class VerifyController extends GetxController {
 
         if (success) {
           _logger.i('Account verified, navigating to sign in');
-          ToastMessageHelper.showToastMessage(message, title: 'Success');
           if (!context.mounted) return;
           context.go(AppRoutes.signInScreen);
         } else {
           _logger.w('Account verification failed: $message');
-          ToastMessageHelper.showToastMessage(message, title: 'Error');
         }
       }
     } on ServerException catch (e) {
       isLoading.value = false;
       _logger.e('ServerException during account verification', error: e, stackTrace: e.stackTrace);
-      ToastMessageHelper.showToastMessage(e.message, title: 'Error');
     } on TimeoutException catch (_) {
       isLoading.value = false;
-      ToastMessageHelper.showToastMessage('Request timed out. Please try again.', title: 'Error');
     } on NoInternetException catch (_) {
       isLoading.value = false;
-      ToastMessageHelper.showToastMessage(
-        'No internet connection. Please check your network and try again.',
-        title: 'Error',
-      );
     } catch (e, stackTrace) {
       isLoading.value = false;
       _logger.e('Exception during account verification', error: e, stackTrace: stackTrace);
-      ToastMessageHelper.showToastMessage('Verification failed. Please try again.', title: 'Error');
     }
   }
 
@@ -163,14 +146,12 @@ class VerifyController extends GetxController {
         if (success && resetData != null) {
           final resetToken = resetData['resetToken'] as String? ?? '';
           _logger.i('Code verified successfully, navigating to reset password');
-          ToastMessageHelper.showToastMessage(message, title: 'Success');
           context.pushNamed(
             AppRoutes.resetPasswordScreen,
             queryParameters: {'email': email.value, 'token': resetToken},
           );
         } else {
           _logger.w('Code verification failed: $message');
-          ToastMessageHelper.showToastMessage(message, title: 'Error');
         }
       }
     } on ServerException catch (e) {
@@ -191,7 +172,6 @@ class VerifyController extends GetxController {
         if (success && resetData != null) {
           final resetToken = resetData['resetToken'] as String? ?? '';
           _logger.i('Code verified successfully (despite error status)');
-          ToastMessageHelper.showToastMessage(message, title: 'Success');
           context.pushNamed(
             AppRoutes.resetPasswordScreen,
             queryParameters: {'email': email.value, 'token': resetToken},
@@ -200,31 +180,18 @@ class VerifyController extends GetxController {
         }
       }
 
-      ToastMessageHelper.showToastMessage(e.message, title: 'Error');
     } on TimeoutException catch (_) {
       isLoading.value = false;
       _logger.w('Code verification timeout');
-      ToastMessageHelper.showToastMessage(
-        'Request timed out. Please try again.',
-        title: 'Error',
-      );
     } on NoInternetException catch (_) {
       isLoading.value = false;
       _logger.w('Code verification failed: No internet connection');
-      ToastMessageHelper.showToastMessage(
-        'No internet connection. Please check your network and try again.',
-        title: 'Error',
-      );
     } catch (e, stackTrace) {
       isLoading.value = false;
       _logger.e(
         'Exception during code verification',
         error: e,
         stackTrace: stackTrace,
-      );
-      ToastMessageHelper.showToastMessage(
-        'Verification failed. Please try again.',
-        title: 'Error',
       );
     }
   }
@@ -234,10 +201,6 @@ class VerifyController extends GetxController {
 
     if (!await _connectivityService.checkConnectivity()) {
       _logger.w('Resend code failed: No internet connection');
-      ToastMessageHelper.showToastMessage(
-        "No internet connection. Please check your network and try again.",
-        title: 'Error',
-      );
       return;
     }
 
@@ -270,26 +233,17 @@ class VerifyController extends GetxController {
 
         if (success) {
           _logger.i('Activation code resent successfully');
-          ToastMessageHelper.showToastMessage(message, title: 'Success');
           startResendTimer();
         } else {
           _logger.w('Resend activation code failed: $message');
-          ToastMessageHelper.showToastMessage(message, title: 'Error');
         }
       }
     } on ServerException catch (e) {
       _logger.e('ServerException during resend activation code', error: e, stackTrace: e.stackTrace);
-      ToastMessageHelper.showToastMessage('Failed to resend code. Please try again.', title: 'Error');
     } on TimeoutException catch (_) {
-      ToastMessageHelper.showToastMessage('Request timed out. Please try again.', title: 'Error');
     } on NoInternetException catch (_) {
-      ToastMessageHelper.showToastMessage(
-        'No internet connection. Please check your network and try again.',
-        title: 'Error',
-      );
     } catch (e, stackTrace) {
       _logger.e('Exception during resend activation code', error: e, stackTrace: stackTrace);
-      ToastMessageHelper.showToastMessage('Failed to resend code. Please try again.', title: 'Error');
     }
   }
 
@@ -313,11 +267,9 @@ class VerifyController extends GetxController {
 
         if (success) {
           _logger.i('Verification code resent successfully');
-          ToastMessageHelper.showToastMessage(message, title: 'Success');
           startResendTimer();
         } else {
           _logger.w('Resend code failed: $message');
-          ToastMessageHelper.showToastMessage(message, title: 'Error');
         }
       }
     } on ServerException catch (e) {
@@ -334,37 +286,20 @@ class VerifyController extends GetxController {
 
         if (success) {
           _logger.i('Verification code resent successfully (despite error status)');
-          ToastMessageHelper.showToastMessage(message, title: 'Success');
           startResendTimer();
           return;
         }
       }
 
-      ToastMessageHelper.showToastMessage(
-        'Failed to resend code. Please try again.',
-        title: 'Error',
-      );
     } on TimeoutException catch (_) {
       _logger.w('Resend code timeout');
-      ToastMessageHelper.showToastMessage(
-        'Request timed out. Please try again.',
-        title: 'Error',
-      );
     } on NoInternetException catch (_) {
       _logger.w('Resend code failed: No internet connection');
-      ToastMessageHelper.showToastMessage(
-        'No internet connection. Please check your network and try again.',
-        title: 'Error',
-      );
     } catch (e, stackTrace) {
       _logger.e(
         'Exception during resend code',
         error: e,
         stackTrace: stackTrace,
-      );
-      ToastMessageHelper.showToastMessage(
-        'Failed to resend code. Please try again.',
-        title: 'Error',
       );
     }
   }

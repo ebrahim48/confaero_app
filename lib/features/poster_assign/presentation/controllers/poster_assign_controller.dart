@@ -1,8 +1,7 @@
-import 'package:get/get.dart';
+﻿import 'package:get/get.dart';
 
 import '../../../../core/services/poster_assign_service.dart';
 import '../../../../core/services/reviewer_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class PosterAssignController extends GetxController {
   final PosterAssignService _service = Get.find<PosterAssignService>();
@@ -35,7 +34,6 @@ class PosterAssignController extends GetxController {
       _parseList(results[1], assigned);
       _parseList(results[2], reported);
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load posters', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -54,29 +52,23 @@ class PosterAssignController extends GetxController {
   Future<void> assignPoster(Map<String, dynamic> data) async {
     try {
       await _service.assignPoster(currentEventId, data);
-      ToastMessageHelper.showToastMessage('Poster assigned', title: 'Success');
       loadAll();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to assign poster', title: 'Error');
     }
   }
 
   Future<void> reassignPoster(Map<String, dynamic> data) async {
     try {
       await _service.reassignPoster(currentEventId, data);
-      ToastMessageHelper.showToastMessage('Poster reassigned', title: 'Success');
       loadAll();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to reassign poster', title: 'Error');
     }
   }
 
   Future<void> sendReminder(String assignmentId) async {
     try {
       await _service.sendReminder(assignmentId);
-      ToastMessageHelper.showToastMessage('Reminder sent', title: 'Success');
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to send reminder', title: 'Error');
     }
   }
 
@@ -84,10 +76,8 @@ class PosterAssignController extends GetxController {
     try {
       await _reviewerService.reviewPosterImage(attachmentId, data);
       Get.back();
-      ToastMessageHelper.showToastMessage('Review submitted', title: 'Success');
       loadAll();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to submit review', title: 'Error');
     }
   }
 
@@ -107,7 +97,6 @@ class PosterAssignController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Search failed', title: 'Error');
     }
   }
 
@@ -121,7 +110,6 @@ class PosterAssignController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Search failed', title: 'Error');
     }
   }
 }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
@@ -96,20 +96,11 @@ class SpeakerHomeController extends GetxController {
         eventId,
       );
       if (response['success'] == true) {
-        ToastMessageHelper.showToastMessage(
-          'Session invitation accepted!',
-          title: 'Success',
-        );
         await loadSpeakerData();
       } else {
-        ToastMessageHelper.showToastMessage(
-          response['message'] as String? ?? 'Failed to accept invitation',
-          title: 'Error',
-        );
       }
     } catch (e) {
       _logger.e('Failed to accept invitation: $e');
-      ToastMessageHelper.showToastMessage('Failed to accept invitation', title: 'Error');
     } finally {
       isProcessing.value = false;
     }
@@ -123,20 +114,11 @@ class SpeakerHomeController extends GetxController {
         eventId,
       );
       if (response['success'] == true) {
-        ToastMessageHelper.showToastMessage(
-          'Session invitation rejected',
-          title: 'Info',
-        );
         await loadSpeakerData();
       } else {
-        ToastMessageHelper.showToastMessage(
-          response['message'] as String? ?? 'Failed to reject invitation',
-          title: 'Error',
-        );
       }
     } catch (e) {
       _logger.e('Failed to reject invitation: $e');
-      ToastMessageHelper.showToastMessage('Failed to reject invitation', title: 'Error');
     } finally {
       isProcessing.value = false;
     }

@@ -1,11 +1,10 @@
-import 'package:confaero_app/core/config/approutes/app_routes.dart';
+﻿import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/controllers/role_controller.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../domain/services/agenda_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class AgendaDetailsController extends GetxController {
   final AgendaService _agendaService = Get.find<AgendaService>();
@@ -49,7 +48,6 @@ class AgendaDetailsController extends GetxController {
         await _loadSpeakerProfiles(data['speakers'] as List? ?? []);
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load session details', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -149,10 +147,8 @@ class AgendaDetailsController extends GetxController {
     isAddingSpeaker.value = true;
     try {
       await _agendaService.addSpeaker(currentEventId, sessionIdx, speakerId);
-      ToastMessageHelper.showToastMessage('Speaker assigned successfully', title: 'Success');
       await loadSessionDetails(); // refresh
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to assign speaker', title: 'Error');
     } finally {
       isAddingSpeaker.value = false;
     }
@@ -163,10 +159,8 @@ class AgendaDetailsController extends GetxController {
     isRemovingSpeaker.value = true;
     try {
       await _agendaService.removeSpeaker(currentEventId, sessionIdx, speakerId);
-      ToastMessageHelper.showToastMessage('Speaker removed successfully', title: 'Success');
       await loadSessionDetails(); // refresh
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to remove speaker', title: 'Error');
     } finally {
       isRemovingSpeaker.value = false;
     }
