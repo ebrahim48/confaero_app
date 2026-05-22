@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
@@ -404,10 +404,6 @@ class MyJobsController extends GetxController {
       }
     } catch (e) {
       _logger.e('Failed to load jobs: $e');
-      ToastMessageHelper.showToastMessage(
-        'Failed to load jobs',
-        title: 'Error',
-      );
     } finally {
       isLoading.value = false;
     }
@@ -438,17 +434,9 @@ class MyJobsController extends GetxController {
     try {
       await _jobService.deleteJob(jobId);
 
-      ToastMessageHelper.showToastMessage(
-        'Job deleted successfully',
-        title: 'Success',
-      );
       await loadMyJobs();
     } catch (e) {
       _logger.e('Failed to delete job: $e');
-      ToastMessageHelper.showToastMessage(
-        'Failed to delete job',
-        title: 'Error',
-      );
     }
   }
 }

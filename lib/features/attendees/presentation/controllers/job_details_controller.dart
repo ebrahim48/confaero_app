@@ -1,7 +1,6 @@
-import 'package:get/get.dart';
+﻿import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/services/job_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 // Job Details Model
 class JobDetails {
@@ -105,7 +104,6 @@ class JobDetailsController extends GetxController {
         jobDetails.value = JobDetails.fromJson(data);
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load job details', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -115,12 +113,10 @@ class JobDetailsController extends GetxController {
   Future<void> applyForJob() async {
     final link = jobDetails.value?.applyLink ?? '';
     if (link.isEmpty) {
-      ToastMessageHelper.showToastMessage('No apply link available', title: 'Info');
       return;
     }
     final uri = Uri.tryParse(link);
     if (uri == null || !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      ToastMessageHelper.showToastMessage('Could not open apply link', title: 'Error');
     }
   }
 }

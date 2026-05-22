@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+﻿import 'package:get/get.dart';
 
 import '../../../../core/config/approutes/app_routes.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -37,7 +37,6 @@ class LiveMeetingController extends GetxController {
     final hasSelection = pollOptions.any((selected) => selected);
 
     if (!hasSelection) {
-      ToastMessageHelper.showToastMessage('Please select at least one option', title: 'Error');
       return;
     }
 
@@ -54,9 +53,7 @@ class LiveMeetingController extends GetxController {
         selectedOptionIndex: selectedIndices.first,
       );
 
-      ToastMessageHelper.showToastMessage('Your vote has been submitted', title: 'Success');
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to submit vote', title: 'Error');
     }
   }
 
@@ -77,8 +74,6 @@ class LiveMeetingController extends GetxController {
       final role = data?['role']?.toString() ?? 'ATTENDEE';
 
       if (token.isEmpty || roomId.isEmpty || appId == 0) {
-        ToastMessageHelper.showToastMessage('Invalid session credentials',
-            title: 'Error');
         return;
       }
 
@@ -101,8 +96,6 @@ class LiveMeetingController extends GetxController {
     } catch (e, s) {
       // ignore: avoid_print
       print('JOIN SESSION ERROR: $e\n$s');
-      ToastMessageHelper.showToastMessage('Failed to join session: $e',
-          title: 'Error');
     } finally {
       isJoining.value = false;
     }

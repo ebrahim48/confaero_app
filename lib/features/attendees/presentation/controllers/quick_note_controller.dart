@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../notes/domain/services/note_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class QuickNotesController extends GetxController {
   final NoteService _noteService = Get.find<NoteService>();
@@ -39,7 +38,6 @@ class QuickNotesController extends GetxController {
             };
           }).toList();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load notes', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -74,7 +72,6 @@ class QuickNotesController extends GetxController {
   void deleteNote(String id) {
     notes.removeWhere((note) => note['id'] == id);
 
-    ToastMessageHelper.showToastMessage('Note deleted successfully!', title: 'Deleted');
   }
 
   // Get formatted date

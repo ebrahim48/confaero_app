@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:get/get.dart';
 
@@ -110,10 +110,6 @@ class EventLiveController extends GetxController {
         final poll = LivePoll.fromJson(data);
         polls.add(poll);
         activePoll.value = poll;
-        ToastMessageHelper.showToastMessage(
-          'New poll: ${poll.question}',
-          title: '📊 Poll',
-        );
       } catch (e) {
         _logger.e('Failed to parse poll: $e');
       }
@@ -135,10 +131,6 @@ class EventLiveController extends GetxController {
       _logger.d('Session ended: $data');
       isSessionActive.value = false;
       hasJoinedSession.value = false;
-      ToastMessageHelper.showToastMessage(
-        'The live session has ended',
-        title: '🏁 Session Ended',
-      );
     });
 
     // Force mute (speaker muted all)
@@ -147,15 +139,7 @@ class EventLiveController extends GetxController {
       isMutedBySpeaker.value = true;
       try {
         final msg = SpeakerControlMessage.fromJson(data);
-        ToastMessageHelper.showToastMessage(
-          msg.message,
-          title: '🔇 Muted',
-        );
       } catch (e) {
-        ToastMessageHelper.showToastMessage(
-          'You have been muted by the speaker',
-          title: '🔇 Muted',
-        );
       }
     });
 
@@ -165,15 +149,7 @@ class EventLiveController extends GetxController {
       isMutedBySpeaker.value = false;
       try {
         final msg = SpeakerControlMessage.fromJson(data);
-        ToastMessageHelper.showToastMessage(
-          msg.message,
-          title: '🔊 Unmuted',
-        );
       } catch (e) {
-        ToastMessageHelper.showToastMessage(
-          'You can now unmute your microphone',
-          title: '🔊 Unmuted',
-        );
       }
     });
 
@@ -215,10 +191,6 @@ class EventLiveController extends GetxController {
       _logger.i('Joined live session: $sessionIndex');
     } catch (e) {
       _logger.e('Failed to join session: $e');
-      ToastMessageHelper.showToastMessage(
-        'Failed to join live session',
-        title: 'Error',
-      );
     }
   }
 
@@ -234,10 +206,6 @@ class EventLiveController extends GetxController {
   /// End the current session (SPEAKER ONLY).
   void endSession() {
     if (!isSpeaker) {
-      ToastMessageHelper.showToastMessage(
-        'Only speakers can end sessions',
-        title: '⚠️ Permission Denied',
-      );
       return;
     }
 
@@ -248,17 +216,9 @@ class EventLiveController extends GetxController {
       if (success) {
         isSessionActive.value = false;
         hasJoinedSession.value = false;
-        ToastMessageHelper.showToastMessage(
-          'Session ended',
-          title: '🏁 Success',
-        );
       }
     } catch (e) {
       _logger.e('Failed to end session: $e');
-      ToastMessageHelper.showToastMessage(
-        'Failed to end session',
-        title: 'Error',
-      );
     }
   }
 
@@ -269,18 +229,10 @@ class EventLiveController extends GetxController {
     final text = customMessage ?? messageInput.value;
 
     if (text.trim().isEmpty) {
-      ToastMessageHelper.showToastMessage(
-        'Message cannot be empty',
-        title: '⚠️ Warning',
-      );
       return;
     }
 
     if (!hasJoinedSession.value) {
-      ToastMessageHelper.showToastMessage(
-        'Please join a session first',
-        title: '⚠️ Warning',
-      );
       return;
     }
 
@@ -294,17 +246,9 @@ class EventLiveController extends GetxController {
         messageInput.value = '';
         _logger.d('Live message sent: $text');
       } else {
-        ToastMessageHelper.showToastMessage(
-          'Failed to send message',
-          title: 'Error',
-        );
       }
     } catch (e) {
       _logger.e('Failed to send live message: $e');
-      ToastMessageHelper.showToastMessage(
-        'Failed to send message',
-        title: 'Error',
-      );
     }
   }
 
@@ -321,18 +265,10 @@ class EventLiveController extends GetxController {
     required List<String> options,
   }) {
     if (!isSpeaker) {
-      ToastMessageHelper.showToastMessage(
-        'Only speakers can create polls',
-        title: '⚠️ Permission Denied',
-      );
       return;
     }
 
     if (question.trim().isEmpty || options.length < 2) {
-      ToastMessageHelper.showToastMessage(
-        'Poll must have a question and at least 2 options',
-        title: '⚠️ Warning',
-      );
       return;
     }
 
@@ -344,17 +280,9 @@ class EventLiveController extends GetxController {
       );
 
       if (success) {
-        ToastMessageHelper.showToastMessage(
-          'Poll created successfully',
-          title: '📊 Success',
-        );
       }
     } catch (e) {
       _logger.e('Failed to create poll: $e');
-      ToastMessageHelper.showToastMessage(
-        'Failed to create poll',
-        title: 'Error',
-      );
     }
   }
 
@@ -364,10 +292,6 @@ class EventLiveController extends GetxController {
     required int optionIndex,
   }) {
     if (!hasJoinedSession.value) {
-      ToastMessageHelper.showToastMessage(
-        'Please join a session first',
-        title: '⚠️ Warning',
-      );
       return;
     }
 
@@ -378,10 +302,6 @@ class EventLiveController extends GetxController {
     );
 
     if (poll.hasVoted) {
-      ToastMessageHelper.showToastMessage(
-        'You have already voted on this poll',
-        title: '⚠️ Already Voted',
-      );
       return;
     }
 
@@ -399,10 +319,6 @@ class EventLiveController extends GetxController {
       }
     } catch (e) {
       _logger.e('Failed to vote on poll: $e');
-      ToastMessageHelper.showToastMessage(
-        'Failed to submit vote',
-        title: 'Error',
-      );
     }
   }
 
@@ -446,10 +362,6 @@ class EventLiveController extends GetxController {
   /// Mute all attendees (SPEAKER ONLY).
   void muteAllAttendees() {
     if (!isSpeaker) {
-      ToastMessageHelper.showToastMessage(
-        'Only speakers can mute attendees',
-        title: '⚠️ Permission Denied',
-      );
       return;
     }
 
@@ -458,27 +370,15 @@ class EventLiveController extends GetxController {
         sessionIndex: currentSessionIndex.value,
       );
       if (success) {
-        ToastMessageHelper.showToastMessage(
-          'All attendees muted',
-          title: '🔇 Success',
-        );
       }
     } catch (e) {
       _logger.e('Failed to mute attendees: $e');
-      ToastMessageHelper.showToastMessage(
-        'Failed to mute attendees',
-        title: 'Error',
-      );
     }
   }
 
   /// Unmute all attendees (SPEAKER ONLY).
   void unmuteAllAttendees() {
     if (!isSpeaker) {
-      ToastMessageHelper.showToastMessage(
-        'Only speakers can unmute attendees',
-        title: '⚠️ Permission Denied',
-      );
       return;
     }
 
@@ -487,17 +387,9 @@ class EventLiveController extends GetxController {
         sessionIndex: currentSessionIndex.value,
       );
       if (success) {
-        ToastMessageHelper.showToastMessage(
-          'All attendees unmuted',
-          title: '🔊 Success',
-        );
       }
     } catch (e) {
       _logger.e('Failed to unmute attendees: $e');
-      ToastMessageHelper.showToastMessage(
-        'Failed to unmute attendees',
-        title: 'Error',
-      );
     }
   }
 

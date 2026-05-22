@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/helpers/toast_message_helper.dart';
 import '../../data/models/announcement_model.dart';
@@ -39,7 +39,6 @@ class AnnouncementCrudController extends GetxController {
       final data = await _service.getAnnouncements(eventId);
       announcements.assignAll(data);
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load announcements', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -49,7 +48,6 @@ class AnnouncementCrudController extends GetxController {
     final title = titleController.text.trim();
     final content = contentController.text.trim();
     if (title.isEmpty || content.isEmpty) {
-      ToastMessageHelper.showToastMessage('Title and content are required', title: 'Validation');
       return;
     }
     isSaving.value = true;
@@ -61,10 +59,8 @@ class AnnouncementCrudController extends GetxController {
       );
       titleController.clear();
       contentController.clear();
-      ToastMessageHelper.showToastMessage('Announcement created', title: 'Success');
       await loadAnnouncements();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to create announcement', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -117,10 +113,8 @@ class AnnouncementCrudController extends GetxController {
       );
       titleController.clear();
       contentController.clear();
-      ToastMessageHelper.showToastMessage('Announcement updated', title: 'Success');
       await loadAnnouncements();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to update announcement', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -147,10 +141,8 @@ class AnnouncementCrudController extends GetxController {
 
     try {
       await _service.deleteAnnouncement(item.id, eventId);
-      ToastMessageHelper.showToastMessage('Announcement deleted', title: 'Deleted');
       await loadAnnouncements();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to delete announcement', title: 'Error');
     }
   }
 }

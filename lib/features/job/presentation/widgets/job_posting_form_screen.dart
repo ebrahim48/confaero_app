@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -444,10 +444,6 @@ class JobPostingFormController extends GetxController {
       }
     } catch (_) {
       // Image picker might not be initialized
-      ToastMessageHelper.showToastMessage(
-        'Image picker not available',
-        title: 'Info',
-      );
     }
   }
 
@@ -472,10 +468,6 @@ class JobPostingFormController extends GetxController {
     }
 
     if (expireDate.value == null) {
-      ToastMessageHelper.showToastMessage(
-        'Please select expire date',
-        title: 'Info',
-      );
       return;
     }
 
@@ -501,21 +493,12 @@ class JobPostingFormController extends GetxController {
       final response = await _jobService.createJob(jobData);
 
       if (response['success'] == true) {
-        ToastMessageHelper.showToastMessage(
-          'Job posted successfully! Pending approval.',
-          title: 'Success',
-        );
         Get.back();
       } else {
         final message = response['message'] as String? ?? 'Failed to post job';
-        ToastMessageHelper.showToastMessage(message, title: 'Error');
       }
     } catch (e) {
       _logger.e('Failed to post job: $e');
-      ToastMessageHelper.showToastMessage(
-        'Failed to post job',
-        title: 'Error',
-      );
     } finally {
       isSubmitting.value = false;
     }

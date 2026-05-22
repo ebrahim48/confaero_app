@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/services/booth_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class BoothManagementController extends GetxController {
   final BoothService _service = Get.find<BoothService>();
@@ -50,7 +49,6 @@ class BoothManagementController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load booths', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -59,20 +57,16 @@ class BoothManagementController extends GetxController {
   Future<void> acceptBooth(String boothId) async {
     try {
       await _service.acceptBooth(boothId);
-      ToastMessageHelper.showToastMessage('Booth accepted', title: 'Success');
       loadOrganizerBooths();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to accept booth', title: 'Error');
     }
   }
 
   Future<void> cancelBooth(String boothId) async {
     try {
       await _service.cancelBooth(boothId);
-      ToastMessageHelper.showToastMessage('Booth cancelled', title: 'Success');
       loadOrganizerBooths();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to cancel booth', title: 'Error');
     }
   }
 
@@ -100,7 +94,6 @@ class BoothManagementController extends GetxController {
         } catch (_) {}
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load booth', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -113,9 +106,7 @@ class BoothManagementController extends GetxController {
         'name': boothNameController.text,
         'description': boothDescController.text,
       });
-      ToastMessageHelper.showToastMessage('Booth updated', title: 'Success');
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to update booth', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -124,15 +115,12 @@ class BoothManagementController extends GetxController {
   Future<void> addStaff(String email) async {
     try {
       await _service.addBoothStaff(currentEventId, email);
-      ToastMessageHelper.showToastMessage('Staff added', title: 'Success');
       loadMyBooth();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to add staff', title: 'Error');
     }
   }
 
   Future<void> removeStaff(String staffId) async {
     staffMembers.removeWhere((s) => s['_id'] == staffId);
-    ToastMessageHelper.showToastMessage('Staff removed', title: 'Success');
   }
 }

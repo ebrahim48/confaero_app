@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+﻿import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/booth_service.dart';
@@ -31,7 +31,6 @@ class ExhibitorController extends GetxController {
         booths.assignAll(list);
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load exhibitors_sponsors_booth', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -46,7 +45,6 @@ class ExhibitorController extends GetxController {
             BoothModel.fromJson(res['data'] as Map<String, dynamic>);
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load exhibitor details', title: 'Error');
     } finally {
       isDetailLoading.value = false;
     }

@@ -1,10 +1,9 @@
-import 'package:confaero_app/core/config/approutes/app_routes.dart';
+﻿import 'package:confaero_app/core/config/approutes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../../core/services/qr_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class CheckInOutController extends GetxController {
   final QrService _qrService = Get.find<QrService>();
@@ -76,9 +75,7 @@ class CheckInOutController extends GetxController {
       // Send scan result to API
       try {
         await _qrService.scanQR(result, currentEventId);
-        ToastMessageHelper.showToastMessage('Attendee scanned successfully!', title: 'Success');
       } catch (e) {
-        ToastMessageHelper.showToastMessage('Failed to process scan', title: 'Error');
       }
     }
   }
@@ -92,7 +89,6 @@ class CheckInOutController extends GetxController {
       emailController.clear();
       messageController.clear();
 
-      ToastMessageHelper.showToastMessage('Your message has been sent successfully!', title: 'Success');
 
       Get.back();
     }

@@ -1,4 +1,4 @@
-// lib/features/resources/controllers/resources_controller.dart
+﻿// lib/features/resources/controllers/resources_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
@@ -56,7 +56,6 @@ class ResourcesController extends GetxController {
       pollsList.assignAll(pollData);
     } catch (e) {
       if (!e.toString().contains('404')) {
-        ToastMessageHelper.showToastMessage('Failed to load resources', title: 'Error');
       }
       qaList.clear();
       pollsList.clear();
@@ -76,10 +75,8 @@ class ResourcesController extends GetxController {
         eventId: currentEventId,
         selectedOptionIndex: selectedOptionIndex,
       );
-      ToastMessageHelper.showToastMessage('Vote submitted successfully!', title: 'Success');
       await fetchData();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to submit vote', title: 'Error');
     }
   }
 
@@ -107,11 +104,9 @@ class ResourcesController extends GetxController {
 
   Future<void> submitSurvey() async {
     if (selectedRating.value == 0) {
-      ToastMessageHelper.showToastMessage('Please select a rating', title: 'Error');
       return;
     }
     if (selectedOption.value.isEmpty) {
-      ToastMessageHelper.showToastMessage('Please answer all questions', title: 'Error');
       return;
     }
     final suggestion = suggestionController.text.trim();
@@ -125,12 +120,10 @@ class ResourcesController extends GetxController {
         payload['suggestion'] = suggestion;
       }
       await _service.submitSurvey(currentEventId, payload);
-      ToastMessageHelper.showToastMessage('Survey submitted successfully!', title: 'Success');
       selectedRating.value = 0;
       selectedOption.value = '';
       suggestionController.clear();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to submit survey', title: 'Error');
     } finally {
       isSurveyLoading.value = false;
     }

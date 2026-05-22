@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+﻿import 'package:get/get.dart';
 
 import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/reviewer_service.dart';
@@ -35,7 +35,6 @@ class ReviewerController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load dashboard', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -52,7 +51,6 @@ class ReviewerController extends GetxController {
                 .toList();
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load submissions', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -61,36 +59,28 @@ class ReviewerController extends GetxController {
   Future<void> approveAttachment(String id) async {
     try {
       await _service.approveAttachment(id);
-      ToastMessageHelper.showToastMessage('Attachment approved', title: 'Success');
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to approve', title: 'Error');
     }
   }
 
   Future<void> rejectAttachment(String id) async {
     try {
       await _service.rejectAttachment(id);
-      ToastMessageHelper.showToastMessage('Attachment rejected', title: 'Success');
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to reject', title: 'Error');
     }
   }
 
   Future<void> requestRevision(String id) async {
     try {
       await _service.reviseAttachment(id);
-      ToastMessageHelper.showToastMessage('Revision requested', title: 'Success');
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to request revision', title: 'Error');
     }
   }
 
   Future<void> flagToAdmin(String id) async {
     try {
       await _service.flagToAdmin(id);
-      ToastMessageHelper.showToastMessage('Flagged to admin', title: 'Success');
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to flag', title: 'Error');
     }
   }
 
@@ -104,7 +94,6 @@ class ReviewerController extends GetxController {
       final response = await _service.getAttachmentDetails(attachmentId);
       attachmentDetail.value = response['data'] as Map<String, dynamic>?;
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load attachment details', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -116,9 +105,7 @@ class ReviewerController extends GetxController {
   ) async {
     try {
       await _service.reviewPosterImage(attachmentId, data);
-      ToastMessageHelper.showToastMessage('Image review submitted', title: 'Success');
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to submit image review', title: 'Error');
     }
   }
 }

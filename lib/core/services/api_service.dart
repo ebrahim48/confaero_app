@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+﻿import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:go_router/go_router.dart';
@@ -217,7 +217,6 @@ class ApiService {
 
     // Show toast in debug mode only to avoid spamming users during development
     if (kDebugMode) {
-      ToastMessageHelper.showToastMessage(errorMessage, title: title);
     }
   }
 

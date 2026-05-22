@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
@@ -266,10 +266,8 @@ class _RemoveSpeakerButtonState extends State<_RemoveSpeakerButton> {
       final agendaService = Get.find<AgendaService>();
       final eventId = SessionController.to.eventId;
       await agendaService.removeSpeaker(eventId, widget.sessionIdx, widget.speakerId);
-      ToastMessageHelper.showToastMessage('Speaker removed successfully', title: 'Success');
       if (context.mounted) Navigator.of(context).pop(); // go back to session details
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to remove speaker', title: 'Error');
     } finally {
       if (mounted) setState(() => _isRemoving = false);
     }

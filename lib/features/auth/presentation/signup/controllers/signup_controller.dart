@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
@@ -128,10 +128,6 @@ class SignUpController extends GetxController {
         );
       } else {
         _logger.w('Registration failed: $message');
-        ToastMessageHelper.showToastMessage(
-          message,
-          title: '',
-        );
       }
     } on ServerException catch (e) {
       isLoading.value = false;
@@ -145,10 +141,6 @@ class SignUpController extends GetxController {
         errorMessage = "This email is already registered. Please sign in instead.";
       }
 
-      ToastMessageHelper.showToastMessage(
-        errorMessage,
-        title: '',
-      );
     } catch (e) {
       isLoading.value = false;
       _logger.e('Exception during registration', error: e);
@@ -167,10 +159,6 @@ class SignUpController extends GetxController {
         errorMessage = "Registration failed. Please try again.";
       }
 
-      ToastMessageHelper.showToastMessage(
-        errorMessage,
-        title: '',
-      );
     }
   }
 

@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../connection/domain/services/connection_service.dart';
 import '../../../message/presentation/widgets/view/message_chat_screen.dart';
 import '../../domain/services/attendee_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class AttendeeDetailsController extends GetxController {
   final AttendeeService _attendeeService = Get.find<AttendeeService>();
@@ -65,14 +64,9 @@ class AttendeeDetailsController extends GetxController {
 
     try {
       await _attendeeService.bookmarkAttendee(SessionController.to.eventId, bookmarkId);
-      ToastMessageHelper.showToastMessage(
-        (!prev) ? 'Added to bookmarks' : 'Removed from bookmarks',
-        title: 'Bookmark',
-      );
     } catch (_) {
       attendeeDetails['isBookmarked'] = prev;
       attendeeDetails.refresh();
-      ToastMessageHelper.showToastMessage('Could not update bookmark', title: 'Error');
     }
   }
 
@@ -81,7 +75,6 @@ class AttendeeDetailsController extends GetxController {
     final id = attendeeDetails['id']?.toString() ?? '';
     final receiverId = accountId.isNotEmpty ? accountId : id;
     if (receiverId.isEmpty) {
-      ToastMessageHelper.showToastMessage('Unable to message: ID not available', title: 'Error');
       return;
     }
     Navigator.push(
@@ -99,26 +92,23 @@ class AttendeeDetailsController extends GetxController {
   Future<void> sendMail() async {
     final email = attendeeDetails['email']?.toString() ?? '';
     if (email.isEmpty) {
-      ToastMessageHelper.showToastMessage('Email not available', title: 'Info');
       return;
     }
-    await launchUrl(Uri.parse('mailto:$email'));
+    final uri = Uri.parse('mailto:$email');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+    }
   }
 
   Future<void> requestToConnect(String eventId, String receiverId) async {
     if (receiverId.isEmpty) {
-      ToastMessageHelper.showToastMessage('Unable to send request: ID not available', title: 'Error');
       return;
     }
     isRequesting.value = true;
     try {
       await _connectionService.sendRequest(eventId, receiverId: receiverId);
-      ToastMessageHelper.showToastMessage('Connection request sent!', title: 'Success');
     } catch (e) {
       if (!e.toString().contains('404')) {
-        ToastMessageHelper.showToastMessage('Failed to send request', title: 'Error');
       } else {
-        ToastMessageHelper.showToastMessage('Connection feature coming soon!', title: 'Info');
       }
     } finally {
       isRequesting.value = false;

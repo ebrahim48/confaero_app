@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/helpers/toast_message_helper.dart';
 
@@ -22,23 +22,11 @@ class VerifiedEmailController extends GetxController {
 
   Future<void> loadEmails() async {
     // REMOVED: verifyEmail endpoints no longer available in backend API
-    ToastMessageHelper.showToastMessage(
-      'Email verification not available',
-      title: 'Info',
-    );
   }
 
   Future<void> addEmails() async {
-    ToastMessageHelper.showToastMessage(
-      'Email verification not available',
-      title: 'Info',
-    );
   }
 
   Future<void> deleteEmail(String emailId, String emailAddress) async {
-    ToastMessageHelper.showToastMessage(
-      'Email verification not available',
-      title: 'Info',
-    );
   }
 }

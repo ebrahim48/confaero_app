@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 /// Controller for organizer messaging.
 /// NOTE: messageOrganizer endpoints have been removed from backend API.
@@ -31,10 +30,6 @@ class OrganizerMessagingController extends GetxController {
 
   Future<void> loadConversations() async {
     // REMOVED: messageOrganizer endpoints no longer in backend API
-    ToastMessageHelper.showToastMessage(
-      'Organizer messaging not available',
-      title: 'Info',
-    );
   }
 
   Future<void> loadMessages(String conversationId) async {

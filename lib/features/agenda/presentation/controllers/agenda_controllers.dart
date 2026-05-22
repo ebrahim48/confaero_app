@@ -1,85 +1,67 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/controllers/session_controller.dart';
-import '../../../../core/helpers/toast_message_helper.dart';
 import '../../domain/services/agenda_service.dart';
 import '../../data/models/session_model.dart';
 
 class AgendaController extends GetxController {
   final AgendaService _agendaService = Get.find<AgendaService>();
 
-  // Loading states
   final RxBool isLoading = false.obs;
 
-  // Current Event ID — reads from global session state
   String get currentEventId => SessionController.to.eventId;
 
-  // Selected tab (0 = All Sessions, 1 = My Agenda)
   final RxInt selectedTab = 0.obs;
-
-  // Selected month/year
   final RxString selectedMonth = 'JUL 2026'.obs;
-
-  // Selected day
   final RxInt selectedDay = 3.obs;
-
-  // Selected full date
   final Rx<DateTime> selectedDate = DateTime(2026, 7, 3).obs;
-
-  // Week days - dynamically generated based on selected date
   final RxList<Map<String, dynamic>> weekDays = <Map<String, dynamic>>[].obs;
+
+  final RxList<SessionModel> allSessions = <SessionModel>[].obs;
+  final RxList<SessionModel> myAgendaSessions = <SessionModel>[].obs;
+
+  RxList<SessionModel> get currentSessions =>
+      selectedTab.value == 0 ? allSessions : myAgendaSessions;
 
   @override
   void onInit() {
     super.onInit();
     _generateWeekDays(selectedDate.value);
-    _fetchSessions();
+
+    // Fetch immediately if eventId is already available, otherwise wait for it
+    if (currentEventId.isNotEmpty) {
+      _fetchSessions();
+    } else {
+      ever(SessionController.to.eventIdRx, (String id) {
+        if (id.isNotEmpty && allSessions.isEmpty) {
+          _fetchSessions();
+        }
+      });
+    }
   }
 
   Future<void> _fetchSessions() async {
+    final eventId = currentEventId;
+    if (eventId.isEmpty) return;
     isLoading.value = true;
     try {
-      final all = await _agendaService.getEventAgenda(currentEventId);
+      final all = await _agendaService.getEventAgenda(eventId);
       allSessions.assignAll(all);
 
-      final bookmarked = await _agendaService.getMyAgenda(currentEventId);
+      final bookmarked = await _agendaService.getMyAgenda(eventId);
       myAgendaSessions.assignAll(bookmarked);
-      
-      // Show message if no sessions available
-      if (all.isEmpty && myAgendaSessions.isEmpty) {
-        ToastMessageHelper.showToastMessage(
-          'Agenda sessions coming soon. Check back later!',
-          title: 'Info',
-        );
-      }
-    } catch (e) {
-      ToastMessageHelper.showToastMessage('Agenda sessions coming soon. Check back later!', title: 'Info');
+    } catch (_) {
     } finally {
       isLoading.value = false;
     }
   }
 
-  // All sessions (Image 1 - All Sessions Tab)
-  final RxList<SessionModel> allSessions = <SessionModel>[].obs;
+  Future<void> refresh() => _fetchSessions();
 
-  // My Agenda sessions (Image 2 - My Agenda Tab)
-  final RxList<SessionModel> myAgendaSessions = <SessionModel>[].obs;
+  void changeTab(int index) => selectedTab.value = index;
 
-  // Get current sessions based on selected tab
-  RxList<SessionModel> get currentSessions {
-    return selectedTab.value == 0 ? allSessions : myAgendaSessions;
-  }
-
-  // Change tab
-  void changeTab(int index) {
-    selectedTab.value = index;
-  }
-
-  // Change day
   void changeDay(int day) {
     selectedDay.value = day;
-
-    // Update the full selected date
     selectedDate.value = DateTime(
       selectedDate.value.year,
       selectedDate.value.month,
@@ -87,92 +69,56 @@ class AgendaController extends GetxController {
     );
   }
 
-  // Handle calendar date selection
   void onCalendarDateSelected(DateTime date) {
     selectedDate.value = date;
     selectedDay.value = date.day;
-
-    // Update month string
     selectedMonth.value = _formatMonthYear(date);
-
-    // Generate new week days based on selected date
     _generateWeekDays(date);
   }
 
-  // Generate week days around selected date
   void _generateWeekDays(DateTime date) {
     weekDays.clear();
-
-    // Find Monday of the week containing the selected date
-    final dayOfWeek = date.weekday; // Monday = 1, Sunday = 7
-    final monday = date.subtract(Duration(days: dayOfWeek - 1));
-
-    // Generate 6 days starting from Monday
+    final monday = date.subtract(Duration(days: date.weekday - 1));
     for (int i = 0; i < 6; i++) {
-      final currentDay = monday.add(Duration(days: i));
+      final d = monday.add(Duration(days: i));
       weekDays.add({
-        'day': _getDayName(currentDay.weekday),
-        'date': currentDay.day,
-        'fullDate': currentDay,
+        'day': _getDayName(d.weekday),
+        'date': d.day,
+        'fullDate': d,
       });
     }
   }
 
-  // Get day name from weekday number
   String _getDayName(int weekday) {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return days[weekday - 1];
   }
 
-  // Format DateTime to "MMM YYYY" format
   String _formatMonthYear(DateTime date) {
-    const months = [
-      'JAN',
-      'FEB',
-      'MAR',
-      'APR',
-      'MAY',
-      'JUN',
-      'JUL',
-      'AUG',
-      'SEP',
-      'OCT',
-      'NOV',
-      'DEC',
-    ];
+    const months = ['JAN','FEB','MAR','APR','MAY','JUN',
+                    'JUL','AUG','SEP','OCT','NOV','DEC'];
     return '${months[date.month - 1]} ${date.year}';
   }
 
-  // Toggle favorite (Like)
   Future<void> toggleFavorite(int index) async {
     final session = currentSessions[index];
     try {
       await _agendaService.toggleSessionLike(currentEventId, session.idx.toString());
       await _fetchSessions();
-    } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to toggle like', title: 'Error');
-    }
+    } catch (_) {}
   }
 
-  // Add session to my agenda (Bookmark)
   Future<void> addToMyAgenda(SessionModel session) async {
     try {
       await _agendaService.bookmarkSession(currentEventId, session.idx.toString());
-      ToastMessageHelper.showToastMessage('Added to your agenda', title: 'Success');
       await _fetchSessions();
-    } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to add to agenda', title: 'Error');
-    }
+    } catch (_) {}
   }
 
-  // Remove session from my agenda
   Future<void> removeFromMyAgenda(SessionModel session) async {
     try {
       await _agendaService.removeBookmarkSession(currentEventId, session.idx.toString());
-      ToastMessageHelper.showToastMessage('Removed from your agenda', title: 'Success');
       await _fetchSessions();
-    } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to remove from agenda', title: 'Error');
-    }
+    } catch (_) {}
   }
 }

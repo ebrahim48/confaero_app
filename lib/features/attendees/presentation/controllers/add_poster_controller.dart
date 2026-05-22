@@ -1,4 +1,4 @@
-import 'package:file_picker/file_picker.dart';
+﻿import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 
@@ -103,10 +103,8 @@ class AddPosterController extends GetxController {
       if (url.isNotEmpty) {
         bannerUrl.value = url;
       } else {
-        ToastMessageHelper.showToastMessage('Failed to get banner URL', title: 'Error');
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Banner upload failed', title: 'Error');
     } finally {
       isBannerUploading.value = false;
     }
@@ -139,10 +137,8 @@ class AddPosterController extends GetxController {
           'icon': type == 'pdf' ? Icons.picture_as_pdf : Icons.image,
         });
       } else {
-        ToastMessageHelper.showToastMessage('Failed to get attachment URL', title: 'Error');
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Attachment upload failed', title: 'Error');
     } finally {
       isAttachmentUploading.value = false;
     }

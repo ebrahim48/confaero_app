@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
@@ -56,10 +56,6 @@ class ForgetPasswordController extends GetxController {
 
     // Check internet connectivity
     if (!await _connectivityService.checkConnectivity()) {
-      ToastMessageHelper.showToastMessage(
-        "No internet connection. Please check your network and try again.",
-        title: 'Error',
-      );
       return;
     }
 
@@ -86,14 +82,12 @@ class ForgetPasswordController extends GetxController {
 
         if (success) {
           _logger.i('Password reset code sent successfully to: $email');
-          ToastMessageHelper.showToastMessage(message, title: 'Success');
           context.pushNamed(
             AppRoutes.verifyScreen,
             queryParameters: {'email': email},
           );
         } else {
           _logger.w('Password reset failed: $message');
-          ToastMessageHelper.showToastMessage(message, title: 'Error');
         }
       }
     } on ServerException catch (e) {
@@ -108,7 +102,6 @@ class ForgetPasswordController extends GetxController {
 
         if (success) {
           _logger.i('Password reset code sent successfully (despite error status)');
-          ToastMessageHelper.showToastMessage(message, title: 'Success');
           context.pushNamed(
             AppRoutes.verifyScreen,
             queryParameters: {'email': email},
@@ -121,17 +114,9 @@ class ForgetPasswordController extends GetxController {
     } on TimeoutException catch (_) {
       isLoading.value = false;
       _logger.w('Send reset code timeout');
-      ToastMessageHelper.showToastMessage(
-        'Request timed out. Please try again.',
-        title: 'Error',
-      );
     } on NoInternetException catch (_) {
       isLoading.value = false;
       _logger.w('Send reset code failed: No internet connection');
-      ToastMessageHelper.showToastMessage(
-        'No internet connection. Please check your network and try again.',
-        title: 'Error',
-      );
     } catch (e, stackTrace) {
       isLoading.value = false;
       _logger.e('Exception during send reset code', error: e, stackTrace: stackTrace);
@@ -152,6 +137,5 @@ class ForgetPasswordController extends GetxController {
       errorMessage = "Failed to send verification code. Please try again.";
     }
     
-    ToastMessageHelper.showToastMessage(errorMessage, title: 'Error');
   }
 }

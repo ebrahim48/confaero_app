@@ -58,15 +58,12 @@ class EventSpekarCard extends StatelessWidget {
             Row(
               children: [
                 // Avatar
-                Container(
-                  width: 45.w,
-                  height: 45.h,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.r),
-                    image: DecorationImage(
-                      image: AssetImage(imagePath),
-                      fit: BoxFit.cover,
-                    ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.r),
+                  child: SizedBox(
+                    width: 45.w,
+                    height: 45.h,
+                    child: _buildAvatar(),
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -110,7 +107,6 @@ class EventSpekarCard extends StatelessWidget {
             // Role and Sessions
             Row(
               children: [
-                // Role Badge
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
@@ -124,8 +120,6 @@ class EventSpekarCard extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: 8.w),
-
-                // Sessions
                 Icon(
                   Icons.calendar_today_outlined,
                   size: 14.sp,
@@ -142,10 +136,7 @@ class EventSpekarCard extends StatelessWidget {
             SizedBox(height: 12.h),
 
             // Divider
-            Container(
-              height: 0.5.h,
-              color: const Color(0xff9E9E9E),
-            ),
+            Container(height: 0.5.h, color: const Color(0xff9E9E9E)),
             SizedBox(height: 12.h),
 
             // Action Buttons
@@ -165,11 +156,7 @@ class EventSpekarCard extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.chat_bubble_outline,
-                            size: 16.sp,
-                            color: const Color(0xff252525),
-                          ),
+                          Icon(Icons.chat_bubble_outline, size: 16.sp, color: const Color(0xff252525)),
                           SizedBox(width: 6.w),
                           CustomText(
                             text: 'Say Hi',
@@ -197,11 +184,7 @@ class EventSpekarCard extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.mail_outline,
-                            size: 16.sp,
-                            color: const Color(0xff252525),
-                          ),
+                          Icon(Icons.mail_outline, size: 16.sp, color: const Color(0xff252525)),
                           SizedBox(width: 6.w),
                           CustomText(
                             text: 'Send Mail',
@@ -221,4 +204,25 @@ class EventSpekarCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildAvatar() {
+    final isNetwork = imagePath.startsWith('http://') || imagePath.startsWith('https://');
+    if (isNetwork) {
+      return Image.network(
+        imagePath,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _placeholder(),
+      );
+    }
+    return Image.asset(
+      imagePath,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _placeholder(),
+    );
+  }
+
+  Widget _placeholder() => Container(
+        color: const Color(0xffD7EAE8),
+        child: const Icon(Icons.person, color: Color(0xff32A69A)),
+      );
 }

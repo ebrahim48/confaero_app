@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/helpers/toast_message_helper.dart';
@@ -50,7 +50,6 @@ class SponsorDashboardController extends GetxController {
         }
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to load dashboard', title: 'Error');
     } finally {
       isLoading.value = false;
     }
@@ -58,7 +57,6 @@ class SponsorDashboardController extends GetxController {
 
   Future<void> createSponsor() async {
     if (nameController.text.isEmpty) {
-      ToastMessageHelper.showToastMessage('Please enter sponsor name', title: 'Error');
       return;
     }
     try {
@@ -72,10 +70,8 @@ class SponsorDashboardController extends GetxController {
       });
       _clearForm();
       Get.back();
-      ToastMessageHelper.showToastMessage('Sponsor created', title: 'Success');
       loadDashboard();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to create sponsor', title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -84,20 +80,16 @@ class SponsorDashboardController extends GetxController {
   Future<void> approveSponsor(String sponsorId) async {
     try {
       await _service.approveSponsor(sponsorId);
-      ToastMessageHelper.showToastMessage('Sponsor approved', title: 'Success');
       loadDashboard();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to approve sponsor', title: 'Error');
     }
   }
 
   Future<void> rejectSponsor(String sponsorId) async {
     try {
       await _service.rejectSponsor(sponsorId);
-      ToastMessageHelper.showToastMessage('Sponsor rejected', title: 'Success');
       loadDashboard();
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to reject sponsor', title: 'Error');
     }
   }
 

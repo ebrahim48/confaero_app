@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -101,14 +101,12 @@ class EventDetailsController extends GetxController {
     if (isPaidEvent && price <= 0) {
       const msg = 'This event has incomplete pricing setup. Please contact the organizer.';
       errorMessage.value = msg;
-      ToastMessageHelper.showToastMessage(msg, title: 'Registration Failed');
       return;
     }
 
     if (isPaidEvent && price > 0) {
       const msg = 'This event requires payment. Online payment integration is coming soon. Please contact the organizer to register.';
       errorMessage.value = msg;
-      ToastMessageHelper.showToastMessage(msg, title: 'Payment Required');
       return;
     }
 
@@ -125,12 +123,6 @@ class EventDetailsController extends GetxController {
         if (eventRole != null && eventRole.trim().isNotEmpty) {
           await RoleController.to.setRole(eventRole.trim());
         }
-        ToastMessageHelper.showToastMessage(
-          status == 'VERIFIED'
-              ? 'Successfully registered!'
-              : 'Registration submitted. Status: $status',
-          title: 'Success',
-        );
         // Set session and connect socket ONLY after successful registration
         await SessionController.to.setEvent(eventId, title: currentEvent?.title ?? '');
         await loadEvent(eventId);
@@ -167,7 +159,6 @@ class EventDetailsController extends GetxController {
       }
 
       errorMessage.value = userFriendlyMsg;
-      ToastMessageHelper.showToastMessage(userFriendlyMsg, title: 'Error');
     } finally {
       isRegistering.value = false;
     }

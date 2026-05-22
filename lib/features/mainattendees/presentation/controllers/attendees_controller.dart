@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -8,7 +8,6 @@ import '../../../connection/domain/services/connection_service.dart';
 import '../../../message/presentation/widgets/view/message_chat_screen.dart';
 import '../../domain/services/attendee_service.dart';
 import '../../data/models/attendee_model.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class AttendeesController extends GetxController {
   final AttendeeService _attendeeService = Get.find<AttendeeService>();
@@ -122,7 +121,6 @@ class AttendeesController extends GetxController {
       attendee.isBookmarked = prev;
       attendees.refresh();
       filteredAttendees.refresh();
-      ToastMessageHelper.showToastMessage('Failed to update bookmark', title: 'Error');
     }
   }
 
@@ -141,12 +139,10 @@ class AttendeesController extends GetxController {
 
   Future<void> sendMail(String? email) async {
     if (email == null || email.isEmpty) {
-      ToastMessageHelper.showToastMessage('Email not available', title: 'Info');
       return;
     }
     final uri = Uri.parse('mailto:$email');
-    if (!await launchUrl(uri)) {
-      ToastMessageHelper.showToastMessage('Could not open mail app', title: 'Error');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
     }
   }
 

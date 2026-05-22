@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/controllers/session_controller.dart';
@@ -174,12 +174,8 @@ class BoothController extends GetxController {
         await _loadBooth();
         await _loadAnalytics();
         Navigator.pop(Get.context!);
-        ToastMessageHelper.showToastMessage('Booth created successfully',
-            title: 'Success');
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to create booth',
-          title: 'Error');
     } finally {
       isSaving.value = false;
     }
@@ -205,12 +201,8 @@ class BoothController extends GetxController {
       if (res['success'] == true) {
         await _loadBooth();
         Navigator.pop(Get.context!);
-        ToastMessageHelper.showToastMessage('Booth updated successfully',
-            title: 'Success');
       }
     } catch (e) {
-      ToastMessageHelper.showToastMessage('Failed to update booth',
-          title: 'Error');
     } finally {
       isSaving.value = false;
     }

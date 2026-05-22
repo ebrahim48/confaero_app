@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -8,7 +8,6 @@ import '../../../../core/helpers/prefs_helper.dart';
 import '../../../../core/services/socket_service.dart';
 import '../../domain/models/message_model.dart';
 import '../../domain/services/message_service.dart';
-import 'package:confaero_app/core/helpers/toast_message_helper.dart';
 
 class MessageController extends GetxController {
   final MessageService _messageService = Get.find<MessageService>();
