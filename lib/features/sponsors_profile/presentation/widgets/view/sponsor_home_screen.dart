@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
-
 import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../controllers/sponsor_profile_controller.dart';
@@ -71,10 +70,20 @@ class _SponsorHomeScreenState extends State<SponsorHomeScreen> {
                         ],
                       ),
                     ),
-                    Icon(Icons.notifications_outlined,
-                        size: 22.sp, color: AppColors.textColor424242),
+                    GestureDetector(
+                      onTap: () => context.pushNamed(
+                          AppRoutes.notificationsScreen),
+                      child: Icon(Icons.notifications_outlined,
+                          size: 22.sp, color: AppColors.textColor424242),
+                    ),
                     SizedBox(width: 14.w),
-                    Icon(Icons.menu, size: 22.sp, color: AppColors.textColor424242),
+                    GestureDetector(
+                      onTap: () => Get.find<GlobalKey<ScaffoldState>>()
+                          .currentState
+                          ?.openDrawer(),
+                      child: Icon(Icons.menu,
+                          size: 22.sp, color: AppColors.textColor424242),
+                    ),
                   ],
                 ),
                 SizedBox(height: 20.h),

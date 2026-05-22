@@ -96,13 +96,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       case 'SPEAKER':
         return {
           'screens': [
-            const SpeakerHomeScreen(), // Home - Speaker dashboard with invitations
+            HomeScreen(eventId: eventId), // Home - same as attendee home
             const AgendaScreen(), // Agenda
             const AttendeesScreen(), // Attendees
             const CommunityScreen(),
             const MessageScreen(),
           ],
-          'useRoleBasedNav': false, // Use default nav for speaker
+          'useRoleBasedNav': false,
         };
 
       case 'VOLUNTEER':
@@ -134,11 +134,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       case 'SPONSOR':
         return {
           'screens': [
-            const SponsorHomeScreen(), // Home
-            const AgendaScreen(), // Agenda
-            const SponsorHomeScreen(), // Booth (profile)
-            const LeadManagementScreen(), // Lead
-            const MessageScreen(),
+            HomeScreen(eventId: eventId), // Home
+            const AgendaScreen(),         // Agenda
+            const SponsorHomeScreen(),    // Sponsor Profile
+            const CommunityScreen(),      // Community
+            const MessageScreen(),        // Messages
           ],
           'useRoleBasedNav': true,
         };

@@ -75,6 +75,7 @@ import '../../../features/sponsor_dashboard/presentation/widgets/sponsor_dashboa
 import '../../../features/sponsor_dashboard/presentation/widgets/sponsor_form_screen.dart';
 import '../../../features/poster_assign/presentation/widgets/poster_assign_screen.dart';
 import '../../../features/reviewer/presentation/widgets/reviewer_dashboard_screen.dart';
+import '../../../features/speakers/presentation/widgets/speaker_home_screen.dart';
 import '../../../features/sponsors_profile/presentation/widgets/view/sponsor_home_screen.dart';
 import '../../../features/sponsors_profile/presentation/widgets/view/sponsor_profile_screen.dart';
 import '../../../features/volunteer/presentation/volunteer_report_issue_screen.dart';
@@ -203,6 +204,7 @@ class AppRoutes {
   static const String leadManagementScreen = "/leadManagementScreen";
   static const String sponsorHomeScreen = "/sponsorHomeScreen";
   static const String sponsorProfileScreen = "/sponsorProfileScreen";
+  static const String speakerLiveSessionsScreen = "/speakerLiveSessionsScreen";
 
 
 
@@ -761,6 +763,11 @@ class AppRoutes {
         path: sponsorHomeScreen,
         name: sponsorHomeScreen,
         builder: (context, state) => const SponsorHomeScreen(),
+      ),
+      GoRoute(
+        path: speakerLiveSessionsScreen,
+        name: speakerLiveSessionsScreen,
+        builder: (context, state) => const SpeakerHomeScreen(),
       ),
       GoRoute(
         path: sponsorProfileScreen,

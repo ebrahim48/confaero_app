@@ -145,21 +145,24 @@ class SponsorLogoPicker extends StatelessWidget {
   }
 
   Widget _buildImage() {
-    if (pickedFile != null) {
-      return Image.file(pickedFile!, fit: BoxFit.cover, width: double.infinity);
+    Widget fallback() => Icon(Icons.broken_image_outlined, size: 40.sp, color: AppColors.iconColorAEAEAE);
+
+    if (pickedFile != null && pickedFile!.existsSync()) {
+      return Image.file(pickedFile!, fit: BoxFit.cover, width: double.infinity,
+          errorBuilder: (_, __, ___) => fallback());
     }
     if (logoPath.startsWith('http')) {
       return Image.network(
         logoPath,
         fit: BoxFit.cover,
         width: double.infinity,
-        errorBuilder: (_, __, ___) =>
-            Icon(Icons.broken_image_outlined, size: 40.sp, color: AppColors.iconColorAEAEAE),
+        errorBuilder: (_, __, ___) => fallback(),
       );
     }
-    if (logoPath.isNotEmpty) {
-      return Image.file(File(logoPath), fit: BoxFit.cover, width: double.infinity);
+    if (logoPath.isNotEmpty && File(logoPath).existsSync()) {
+      return Image.file(File(logoPath), fit: BoxFit.cover, width: double.infinity,
+          errorBuilder: (_, __, ___) => fallback());
     }
-    return Icon(Icons.broken_image_outlined, size: 40.sp, color: AppColors.iconColorAEAEAE);
+    return fallback();
   }
 }

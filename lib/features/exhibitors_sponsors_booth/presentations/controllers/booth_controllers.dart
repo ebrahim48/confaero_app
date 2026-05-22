@@ -2,7 +2,6 @@
 import 'package:get/get.dart';
 
 import '../../../../core/controllers/session_controller.dart';
-import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/booth_service.dart';
 import '../../data/models/booth_model.dart';
 

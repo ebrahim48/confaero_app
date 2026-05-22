@@ -15,7 +15,7 @@ import '../../../../core/config/approutes/app_routes.dart';
 /// - VOLUNTEER: Home, Tasks, QR Scan, Community, Messages
 /// - ORGANIZER: Home, Agenda, Attendees, Community, Messages
 /// - EXHIBITOR: Home, Agenda, Booth, Lead, Messages
-/// - SPONSOR: Home, Agenda, Booth, Lead, Messages
+/// - SPONSOR: Home, Agenda, Profile, Community, Messages
 /// - ABSTRACT_REVIEWER: Home, Agenda, Content, Community, Messages
 /// - REVIEWER: Home, Agenda, Content, Community, Messages
 /// - TRACK_CHAIR: Home, Agenda, Content, Community, Messages
@@ -175,8 +175,16 @@ class RoleBasedBottomNav extends StatelessWidget {
           {'icon': 'chat', 'label': 'Messages', 'iconType': 'icon'},
         ];
 
-      case 'EXHIBITOR':
       case 'SPONSOR':
+        return [
+          {'icon': 'home', 'label': 'Home', 'iconType': 'icon'},
+          {'icon': 'calendar', 'label': 'Agenda', 'iconType': 'icon'},
+          {'icon': 'people', 'label': 'Profile', 'iconType': 'icon'},
+          {'icon': 'community', 'label': 'Community', 'iconType': 'icon'},
+          {'icon': 'chat', 'label': 'Messages', 'iconType': 'icon'},
+        ];
+
+      case 'EXHIBITOR':
       case 'BOOTH_STUFF':
       case 'BOOTH_STAFF':
       case 'STAFF':

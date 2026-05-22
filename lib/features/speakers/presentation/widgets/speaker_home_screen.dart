@@ -91,19 +91,24 @@ class SpeakerHomeScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              // Hamburger menu icon
-              GestureDetector(
-                onTap: () => scaffoldKey.currentState?.openDrawer(),
-                child: Icon(
-                  Icons.menu,
-                  color: Colors.white,
-                  size: 28.w,
-                ),
-              ),
+              // Back button if pushed from sidebar, menu icon if embedded
+              Builder(builder: (ctx) {
+                final canPop = Navigator.of(ctx).canPop();
+                return GestureDetector(
+                  onTap: canPop
+                      ? () => Navigator.of(ctx).pop()
+                      : () => scaffoldKey.currentState?.openDrawer(),
+                  child: Icon(
+                    canPop ? Icons.arrow_back : Icons.menu,
+                    color: Colors.white,
+                    size: 28.w,
+                  ),
+                );
+              }),
               SizedBox(width: 16.w),
               Expanded(
                 child: CustomText(
-                  text: 'Hello Speaker!',
+                  text: 'Live Sessions',
                   fontsize: 24.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
