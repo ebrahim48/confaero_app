@@ -31,7 +31,9 @@
       "Bash(grep -v \"^$\")",
       "Bash(dir \"C:\\\\Users\\\\ebu\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\hosted\\\\pub.dev\" /b)",
       "Bash(findstr zego *)",
-      "Bash(grep -v \".dart:.*import\\\\|//.*//\")"
+      "Bash(grep -v \".dart:.*import\\\\|//.*//\")",
+      "Read(//mnt/c/Users/ebu/StudioProjects/**)",
+      "Bash(/mnt/c/Users/ebu/fvm/default/bin/flutter analyze *)"
     ]
   }
 }

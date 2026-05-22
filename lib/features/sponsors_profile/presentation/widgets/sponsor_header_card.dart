@@ -198,21 +198,24 @@ class SponsorHeaderCard extends StatelessWidget {
   }
 
   Widget _buildLogo() {
-    if (pickedFile != null) {
-      return Image.file(pickedFile!, fit: BoxFit.contain);
+    Widget placeholder() => Image.asset('assets/images/booth.png', fit: BoxFit.contain);
+
+    if (pickedFile != null && pickedFile!.existsSync()) {
+      return Image.file(pickedFile!, fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => placeholder());
     }
     if (logoPath.startsWith('http')) {
       return Image.network(
         logoPath,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) =>
-            Image.asset('assets/images/booth.png', fit: BoxFit.contain),
+        errorBuilder: (_, __, ___) => placeholder(),
       );
     }
-    if (logoPath.isNotEmpty) {
-      return Image.file(File(logoPath), fit: BoxFit.contain);
+    if (logoPath.isNotEmpty && File(logoPath).existsSync()) {
+      return Image.file(File(logoPath), fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => placeholder());
     }
-    return Image.asset('assets/images/booth.png', fit: BoxFit.contain);
+    return placeholder();
   }
 
   String _statusLabel(String s) {

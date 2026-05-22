@@ -84,8 +84,13 @@ class _BoothScreenState extends State<BoothScreen> {
                     Icon(Icons.notifications_outlined,
                         size: 22.sp, color: AppColors.textColor424242),
                     SizedBox(width: 14.w),
-                    Icon(Icons.menu,
-                        size: 22.sp, color: AppColors.textColor424242),
+                    GestureDetector(
+                      onTap: () => Get.find<GlobalKey<ScaffoldState>>()
+                          .currentState
+                          ?.openDrawer(),
+                      child: Icon(Icons.menu,
+                          size: 22.sp, color: AppColors.textColor424242),
+                    ),
                   ],
                 ),
                 SizedBox(height: 20.h),

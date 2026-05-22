@@ -41,6 +41,12 @@ class SpeakerSidebarDrawer extends StatelessWidget {
         route: AppRoutes.eventsScreen,
       ),
       SidebarMenuItem(
+        icon: 'assets/icons/speakers.svg',
+        label: 'Live Sessions',
+        route: AppRoutes.speakerLiveSessionsScreen,
+        fallbackIcon: Icons.videocam_outlined,
+      ),
+      SidebarMenuItem(
         icon: 'assets/icons/qrcode.svg',
         label: 'Contact & QR',
         route: AppRoutes.contactQrScreen,
