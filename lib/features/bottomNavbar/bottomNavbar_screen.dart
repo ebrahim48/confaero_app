@@ -108,7 +108,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       case 'VOLUNTEER':
         return {
           'screens': [
-            const VolunteerHomeScreen(), // Home
+            HomeScreen(eventId: eventId), // Home
             const VolunteerDashboardScreen(), // Tasks
             const VolunteerQRScanScreen(), // QR Scan
             const CommunityScreen(), // Community
