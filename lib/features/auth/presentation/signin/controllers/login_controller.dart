@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/exceptions/app_exceptions.dart';
@@ -201,10 +203,104 @@ class SignInController extends GetxController {
     }
   }
 
-  void signInWithGoogle() async {
+  Future<void> signInWithGoogle(BuildContext context) async {
+    clearErrors();
     isLoading.value = true;
-    await Future.delayed(const Duration(seconds: 2));
-    isLoading.value = false;
+
+    try {
+      final googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        isLoading.value = false;
+        return; // user cancelled
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      final firebaseIdToken = await userCredential.user?.getIdToken(true);
+
+      if (firebaseIdToken == null) throw Exception('Failed to get Firebase ID token');
+
+      _logger.i('Firebase ID token obtained, contacting backend');
+
+      final response = await _authRepository.googleSignIn(idToken: firebaseIdToken);
+      isLoading.value = false;
+
+      final success = response['success'] as bool? ?? false;
+      final data = response['data'] as Map<String, dynamic>?;
+
+      if (success && data != null) {
+        final accessToken = data['accessToken'] as String? ?? '';
+        final refreshToken = data['refreshToken'] as String? ?? '';
+        final roleRaw =
+            (data['activeRole'] ?? data['role'] ?? data['userRole']) as String?;
+        final activeRole =
+            (roleRaw?.trim().isNotEmpty == true)
+                ? roleRaw!.trim().toUpperCase()
+                : 'ATTENDEE';
+
+        await PrefsHelper.setString(AppConstants.bearerToken, accessToken);
+        await PrefsHelper.setString(AppConstants.refreshToken, refreshToken);
+        await PrefsHelper.setString(AppConstants.userRole, activeRole);
+        await PrefsHelper.setBool(AppConstants.isLogged, true);
+        await PrefsHelper.setString(AppConstants.email, googleUser.email);
+
+        final resolvedRole = await _resolveActualRole(activeRole, accessToken);
+        Get.find<RoleController>().setRole(resolvedRole);
+        await Get.find<SessionController>().clearEvent();
+
+        if (AppConstants.DEMO_MODE) {
+          Get.find<SessionController>().setEvent(
+            AppConstants.DEMO_EVENT_ID,
+            title: AppConstants.DEMO_EVENT_TITLE,
+          );
+        }
+
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (!context.mounted) return;
+        _logger.i('Google sign-in successful, navigating to events screen');
+        context.go(AppRoutes.eventsScreen);
+      } else {
+        final message = response['message'] as String? ?? 'Google sign-in failed';
+        _logger.w('Google sign-in failed: $message');
+        serverError.value = message;
+      }
+    } on NoInternetException catch (e) {
+      isLoading.value = false;
+      _logger.e('No internet during Google sign-in', error: e);
+      serverError.value = "No internet connection. Please check your network.";
+    } on TimeoutException catch (e) {
+      isLoading.value = false;
+      _logger.e('Timeout during Google sign-in', error: e);
+      serverError.value = "Request timed out. Please try again.";
+    } on ServerException catch (e) {
+      isLoading.value = false;
+      _logger.e('ServerException during Google sign-in', error: e);
+      serverError.value =
+          e.message.isNotEmpty ? e.message : "Google sign-in failed. Please try again.";
+    } catch (e) {
+      isLoading.value = false;
+      _logger.e('Exception during Google sign-in', error: e);
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('cancelled') ||
+          msg.contains('canceled') ||
+          msg.contains('sign_in_canceled')) {
+        // user dismissed — no error
+      } else if (msg.contains('network') ||
+          msg.contains('socket') ||
+          msg.contains('no internet')) {
+        serverError.value = "Unable to connect. Please check your network.";
+      } else if (msg.contains('timeout')) {
+        serverError.value = "Request timed out. Please try again.";
+      } else {
+        serverError.value = "Google sign-in failed. Please try again.";
+      }
+    }
   }
 
   /// Fetches the user's actual roles from the server.

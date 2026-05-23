@@ -15,6 +15,39 @@ class AuthRepository {
   }) : _connectivityService = connectivityService,
        _apiService = apiService;
 
+  //*-------------- Google Sign In ----------------//
+  Future<Map<String, dynamic>> googleSignIn({required String idToken}) async {
+    try {
+      final isConnected = await _connectivityService.checkConnectivity();
+      if (!isConnected) {
+        _logger.w('Google sign-in failed: No internet connection');
+        throw Exception('No internet connection');
+      }
+
+      _logger.i('Sending Google sign-in request to backend');
+
+      final response = await _apiService.post(
+        ApiConstants.googleSignIn,
+        data: {'idToken': idToken},
+      );
+
+      _logger.d('Google Sign-In Response Status: ${response.statusCode}');
+      _logger.d('Google Sign-In Response Data: ${response.data}');
+
+      if (response.data != null) {
+        return response.data as Map<String, dynamic>;
+      } else {
+        return {
+          'success': false,
+          'message': response.statusCode == 200 ? 'Success' : 'Request failed',
+        };
+      }
+    } catch (e) {
+      _logger.e('Google Sign-In Error: $e');
+      rethrow;
+    }
+  }
+
   //*-------------- Register----------------//
   /// Request Body:
   /// {

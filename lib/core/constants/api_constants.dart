@@ -12,6 +12,7 @@ class ApiConstants {
   static Map<String, String> headers = {'Content-Type': 'application/json'};
 
   //---------------------------Auth-----------------------------
+  static const String googleSignIn = '/auth/google';
   static const String register = '/auth/register';
   static const String login = '/auth/login';
   static const String refreshTokenApi = '/auth/refresh-token';
