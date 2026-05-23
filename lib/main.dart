@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:device_preview/device_preview.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -8,12 +9,15 @@ import 'core/config/approutes/app_routes.dart';
 import 'core/config/appthemes/app_themes.dart';
 import 'core/di/dependency_injection.dart';
 import 'core/helpers/network_connection.dart';
+import 'firebase_options.dart';
 import 'presentations/controller/theme_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   PlatformDispatcher.instance.onAccessibilityFeaturesChanged = () {};
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Initialize dependency injection
   DependencyInjection.init();

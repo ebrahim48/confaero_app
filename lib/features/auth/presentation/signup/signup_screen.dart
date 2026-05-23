@@ -197,7 +197,7 @@ class _SignUpScreenState extends State<SignUpScreen>
 
               // Google Sign In Button
               GoogleSignInButton(
-                onTap: controller.signUpWithGoogle,
+                onTap: () => controller.signUpWithGoogle(context),
               ),
 
               SizedBox(height: 40.h),

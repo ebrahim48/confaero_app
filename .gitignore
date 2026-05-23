@@ -45,6 +45,14 @@ app.*.map.json
 # FVM Version Cache
 .fvm/
 
+# Firebase — contains sensitive keys, generate locally via `flutterfire configure`
+lib/firebase_options.dart
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# Claude Code memory
+.claude/
+
 # Temporary files (screenshots, testing, etc.)
 /temp/
 
