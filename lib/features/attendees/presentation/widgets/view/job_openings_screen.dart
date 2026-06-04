@@ -6,7 +6,9 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../../../core/constants/app_colors.dart';
+import '../../../../../core/controllers/role_controller.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
+import '../../../../job/presentation/widgets/post_a_job_screen.dart';
 import '../../controllers/job_openings_controller.dart';
 import '../filter_chip_widget.dart';
 import '../job_cards_widget.dart';
@@ -22,6 +24,13 @@ class JobOpeningsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
+      floatingActionButton: Obx(() {
+        final role = RoleController.to.activeRole.value;
+        if (role == 'SPONSOR' || role == 'EXHIBITOR') {
+          return _BuildAddFab();
+        }
+        return const SizedBox.shrink();
+      }),
       body: Column(
         children: [
           // Header
@@ -217,6 +226,47 @@ class JobOpeningsScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _BuildAddFab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final result = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(builder: (_) => const PostAJobScreen()),
+        );
+        if (result == true) {
+          Get.find<JobOpeningsController>().refreshJobs();
+        }
+      },
+      child: Container(
+        width: 50.w,
+        height: 50.h,
+        decoration: BoxDecoration(
+          color: const Color(0xff5BB8AE),
+          shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xffD2D2D2), width: 1),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x3321676033),
+              blurRadius: 8,
+              offset: Offset(2, 5),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: Center(
+          child: Icon(
+            Icons.add,
+            size: 32.sp,
+            color: const Color(0xffF6F6F6),
+          ),
+        ),
       ),
     );
   }

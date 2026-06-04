@@ -19,6 +19,7 @@ class SignInController extends GetxController {
 
   final signInFormKey = GlobalKey<FormState>();
   final isLoading = false.obs;
+  final isGoogleLoading = false.obs;
   final selectedTab = 0.obs;
 
   final emailError = RxnString();
@@ -205,12 +206,12 @@ class SignInController extends GetxController {
 
   Future<void> signInWithGoogle(BuildContext context) async {
     clearErrors();
-    isLoading.value = true;
+    isGoogleLoading.value = true;
 
     try {
       final googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) {
-        isLoading.value = false;
+        isGoogleLoading.value = false;
         return; // user cancelled
       }
 
@@ -229,7 +230,7 @@ class SignInController extends GetxController {
       _logger.i('Firebase ID token obtained, contacting backend');
 
       final response = await _authRepository.googleSignIn(idToken: firebaseIdToken);
-      isLoading.value = false;
+      isGoogleLoading.value = false;
 
       final success = response['success'] as bool? ?? false;
       final data = response['data'] as Map<String, dynamic>?;
@@ -271,20 +272,20 @@ class SignInController extends GetxController {
         serverError.value = message;
       }
     } on NoInternetException catch (e) {
-      isLoading.value = false;
+      isGoogleLoading.value = false;
       _logger.e('No internet during Google sign-in', error: e);
       serverError.value = "No internet connection. Please check your network.";
     } on TimeoutException catch (e) {
-      isLoading.value = false;
+      isGoogleLoading.value = false;
       _logger.e('Timeout during Google sign-in', error: e);
       serverError.value = "Request timed out. Please try again.";
     } on ServerException catch (e) {
-      isLoading.value = false;
+      isGoogleLoading.value = false;
       _logger.e('ServerException during Google sign-in', error: e);
       serverError.value =
           e.message.isNotEmpty ? e.message : "Google sign-in failed. Please try again.";
     } catch (e) {
-      isLoading.value = false;
+      isGoogleLoading.value = false;
       _logger.e('Exception during Google sign-in', error: e);
       final msg = e.toString().toLowerCase();
       if (msg.contains('cancelled') ||

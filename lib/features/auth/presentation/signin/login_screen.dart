@@ -242,9 +242,10 @@ class _SignInScreenState extends State<SignInScreen>
               SizedBox(height: 24.h),
 
               // Google Sign In Button
-              GoogleSignInButton(
+              Obx(() => GoogleSignInButton(
                 onTap: () => controller.signInWithGoogle(context),
-              ),
+                isLoading: controller.isGoogleLoading.value,
+              )),
 
               SizedBox(height: 40.h),
             ],

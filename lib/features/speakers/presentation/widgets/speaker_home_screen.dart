@@ -20,9 +20,10 @@ class SpeakerHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(SpeakerHomeController());
-    final scaffoldKey = Get.find<GlobalKey<ScaffoldState>>();
+    final scaffoldKey = Get.put(GlobalKey<ScaffoldState>());
 
     return Scaffold(
+      key: scaffoldKey,
       backgroundColor: AppColors.backgroundColor,
       body: Obx(() {
         if (controller.isLoading.value &&

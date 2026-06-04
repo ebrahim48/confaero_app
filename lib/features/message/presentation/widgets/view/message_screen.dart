@@ -51,6 +51,7 @@ class MessageScreen extends StatelessWidget {
                     child: TextField(
                       controller: controller.searchController,
                       onChanged: controller.searchMessages,
+                      style: TextStyle(fontSize: 13.sp, color: Colors.black),
                       decoration: InputDecoration(
                         hintText: 'Search conversations',
                         hintStyle: TextStyle(fontSize: 13.sp, color: AppColors.textColor7E7F7E),

@@ -179,6 +179,7 @@ class ApiConstants {
   static const String getJobs = '/job';
   static const String getJobDetails = '/job'; // append /:id
 
+
   //--------------------------Invitations---------------------------
   static const String getMyInvitations =
       '/invitation/my-invitations'; // append /:eventId

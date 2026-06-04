@@ -53,5 +53,16 @@
 	<string>This app needs permission to save photos.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs microphone access for live video conferences and recording.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.734273410223-10viik2lqpiss97fg883c95s9bjjdnb5</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
