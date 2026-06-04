@@ -52,9 +52,13 @@ class VolunteerSidebarController extends GetxController {
     await PrefsHelper.remove(AppConstants.userRole);
     await PrefsHelper.setBool(AppConstants.isLogged, false);
     await Get.find<RoleController>().clearRole();
-    Get.find<SessionController>().clearEvent();
+    await Get.find<SessionController>().clearEvent();
+
+    // Delete all non-permanent controllers so the next user gets a clean state.
+    Get.deleteAll();
+
     if (context.mounted) {
-      context.pushNamed(AppRoutes.signInScreen);
+      context.go(AppRoutes.signInScreen);
     }
   }
 }

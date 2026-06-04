@@ -144,26 +144,21 @@ class SidebarController extends GetxController {
 
   // Logout
   Future<void> logout(BuildContext context) async {
-
-    await PrefsHelper.remove(AppConstants.bearerToken);
-    await PrefsHelper.setBool(AppConstants.isLogged, false);
-
-    // Clear role from RoleController
-    await Get.find<RoleController>().clearRole();
-
-    // Clear tokens and user data from prefs
     await PrefsHelper.remove(AppConstants.bearerToken);
     await PrefsHelper.remove(AppConstants.refreshToken);
     await PrefsHelper.remove(AppConstants.userRole);
     await PrefsHelper.setBool(AppConstants.isLogged, false);
 
-    // Clear session event
-    Get.find<SessionController>().clearEvent();
+    await Get.find<RoleController>().clearRole();
+    await Get.find<SessionController>().clearEvent();
 
-    // Navigate to sign in screen
+    // Delete all non-permanent controllers so the next user gets a clean state.
+    // Services are fenix:true and will recreate on demand; permanent controllers
+    // (SessionController, RoleController, SocketService) are not affected.
+    Get.deleteAll();
 
     if (context.mounted) {
-      context.pushNamed(AppRoutes.signInScreen);
+      context.go(AppRoutes.signInScreen);
     }
   }
 }
