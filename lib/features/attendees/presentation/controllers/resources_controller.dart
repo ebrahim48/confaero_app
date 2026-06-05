@@ -1,5 +1,4 @@
-﻿// lib/features/resources/controllers/resources_controller.dart
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
 import '../../../../core/helpers/toast_message_helper.dart';
@@ -14,19 +13,15 @@ class ResourcesController extends GetxController {
 
   String get currentEventId => SessionController.to.eventId;
 
-  // Selected tab index (0 = Q&A, 1 = Polls, 2 = Survey)
   final RxInt selectedTabIndex = 0.obs;
 
-  // Q&A List
   final RxList<QnAModel> qaList = <QnAModel>[].obs;
   final RxSet<String> expandedQaIds = <String>{}.obs;
   final TextEditingController questionController = TextEditingController();
 
-  // Polls List
   final RxList<PollModel> pollsList = <PollModel>[].obs;
   final RxMap<String, List<bool>> pollSelectedOptions = <String, List<bool>>{}.obs;
 
-  // Survey related
   final RxInt selectedRating = 0.obs;
   final RxString selectedOption = ''.obs;
   final TextEditingController suggestionController = TextEditingController();
@@ -66,6 +61,22 @@ class ResourcesController extends GetxController {
 
   Future<void> refreshData() async {
     await fetchData();
+  }
+
+  Future<bool> submitQuestion(String question) async {
+    if (question.trim().isEmpty) return false;
+    isSubmitting.value = true;
+    try {
+      await _service.submitQuestion(currentEventId, question.trim());
+      ToastMessageHelper.showToastMessage('Question submitted successfully!');
+      await fetchData();
+      return true;
+    } catch (e) {
+      ToastMessageHelper.showToastMessage('Failed to submit question. Please try again.', title: 'Error');
+      return false;
+    } finally {
+      isSubmitting.value = false;
+    }
   }
 
   Future<void> submitPollVote(String pollId, int selectedOptionIndex) async {

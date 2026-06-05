@@ -7,11 +7,11 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/helpers/toast_message_helper.dart';
-import '../../../../core/helpers/logger_helper.dart';
-import '../../../../core/services/job_service.dart';
-import '../../../../presentations/widgets/custom_text.dart';
+import '../../../../../core/constants/app_colors.dart';
+import '../../../../../core/helpers/toast_message_helper.dart';
+import '../../../../../core/helpers/logger_helper.dart';
+import '../../../../../core/services/job_service.dart';
+import '../../../../../presentations/widgets/custom_text.dart';
 
 class PostAJobScreen extends StatefulWidget {
   const PostAJobScreen({super.key});
@@ -77,6 +77,7 @@ class _PostAJobScreenState extends State<PostAJobScreen> {
                     fontsize: 13.sp,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textColor252525,
+                    textAlign: TextAlign.start,
                   ),
                   SizedBox(height: 8.h),
                   GestureDetector(
@@ -192,6 +193,7 @@ class _PostAJobScreenState extends State<PostAJobScreen> {
                     fontsize: 15.sp,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textColor252525,
+                    textAlign: TextAlign.start,
                   ),
                   SizedBox(height: 12.h),
 
@@ -296,6 +298,7 @@ class _PostAJobScreenState extends State<PostAJobScreen> {
                     fontsize: 13.sp,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textColor252525,
+                    textAlign: TextAlign.start,
                   ),
                   SizedBox(height: 10.h),
 
@@ -322,6 +325,7 @@ class _PostAJobScreenState extends State<PostAJobScreen> {
                     fontsize: 13.sp,
                     fontWeight: FontWeight.w400,
                     color: AppColors.textColor7E7F7E,
+                    textAlign: TextAlign.start,
                   ),
                   SizedBox(height: 6.h),
                   Row(
@@ -772,6 +776,7 @@ class _DropdownField extends StatelessWidget {
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
+          dropdownColor: Colors.white,
           hint: Text(
             hint,
             style: TextStyle(

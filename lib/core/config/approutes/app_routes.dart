@@ -7,8 +7,8 @@ import 'package:confaero_app/features/attendees/presentation/widgets/view/event_
 import 'package:confaero_app/features/attendees/presentation/widgets/view/floormap_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/home_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/job_details_screen.dart';
-import 'package:confaero_app/features/job/presentation/widgets/job_posting_form_screen.dart';
-import 'package:confaero_app/features/job/presentation/widgets/my_jobs_screen.dart';
+import 'package:confaero_app/features/job/presentation/widgets/view/job_posting_form_screen.dart';
+import 'package:confaero_app/features/job/presentation/widgets/view/my_jobs_screen.dart';
 import 'package:confaero_app/features/attendees/presentation/widgets/view/new_event_proposal_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signin/login_screen.dart';
 import 'package:confaero_app/features/auth/presentation/signup/signup_screen.dart';
