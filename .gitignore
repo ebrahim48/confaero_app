@@ -53,6 +53,9 @@ ios/Runner/GoogleService-Info.plist
 # Claude Code memory
 .claude/
 
+# Kiro IDE
+.kiro/
+
 # Temporary files (screenshots, testing, etc.)
 /temp/
 

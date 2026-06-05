@@ -18,10 +18,10 @@ class ResourcesScreen extends StatelessWidget {
   const ResourcesScreen({super.key});
 
   void _showAskQuestionDialog(BuildContext context, ResourcesController controller) {
+    final TextEditingController questionCtrl = TextEditingController();
     showDialog(
       context: context,
-      builder: (context) {
-        final TextEditingController questionCtrl = TextEditingController();
+      builder: (ctx) {
         return AlertDialog(
           title: CustomText(
             text: 'Ask a Question',
@@ -39,27 +39,40 @@ class ResourcesScreen extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(ctx),
               child: CustomText(
                 text: 'Cancel',
                 fontsize: 14.sp,
                 color: const Color(0xff757575),
               ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                // TODO: Implement submit question API call
-                Navigator.pop(context);
-              },
+            Obx(() => ElevatedButton(
+              onPressed: controller.isSubmitting.value
+                  ? null
+                  : () async {
+                      final text = questionCtrl.text.trim();
+                      if (text.isEmpty) return;
+                      final success = await controller.submitQuestion(text);
+                      if (success && ctx.mounted) Navigator.pop(ctx);
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xff32A69A),
               ),
-              child: CustomText(
-                text: 'Submit',
-                fontsize: 14.sp,
-                color: Colors.white,
-              ),
-            ),
+              child: controller.isSubmitting.value
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : CustomText(
+                      text: 'Submit',
+                      fontsize: 14.sp,
+                      color: Colors.white,
+                    ),
+            )),
           ],
         );
       },

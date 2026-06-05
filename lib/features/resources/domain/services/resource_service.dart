@@ -98,6 +98,17 @@ class ResourceService {
     );
   }
 
+  // --- Attendee Q&A ---
+
+  Future<void> submitQuestion(String eventId, String question) async {
+    await _checkConnectivity();
+    _logger.i('Submitting question for event: $eventId');
+    await _apiService.post(
+      '${ApiConstants.createQnA}/$eventId',
+      data: {'question': question},
+    );
+  }
+
   // --- Organizer Q&A CRUD ---
 
   Future<Map<String, dynamic>> createQnA(
