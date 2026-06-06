@@ -129,7 +129,7 @@ class SignInController extends GetxController {
         await Get.find<SessionController>().clearEvent();
 
         if (AppConstants.DEMO_MODE) {
-          Get.find<SessionController>().setEvent(
+          await Get.find<SessionController>().setEvent(
             AppConstants.DEMO_EVENT_ID,
             title: AppConstants.DEMO_EVENT_TITLE,
           );
@@ -256,7 +256,7 @@ class SignInController extends GetxController {
         await Get.find<SessionController>().clearEvent();
 
         if (AppConstants.DEMO_MODE) {
-          Get.find<SessionController>().setEvent(
+          await Get.find<SessionController>().setEvent(
             AppConstants.DEMO_EVENT_ID,
             title: AppConstants.DEMO_EVENT_TITLE,
           );

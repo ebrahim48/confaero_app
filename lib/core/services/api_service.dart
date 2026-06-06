@@ -41,8 +41,8 @@ class ApiService {
 
           if (kDebugMode) {
             print('┌─────────────────────────────────────────');
-            print('│ REQUEST[${options.method}] => ${options.path}');
-            print('│ Headers: ${options.headers}');
+            print('│ REQUEST[${options.method}] => ${options.baseUrl}${options.path}');
+            print('│ Auth: ${options.headers['Authorization'] != null ? 'Bearer ***' : 'NONE'}');
             if (options.data != null) {
               print('│ Body: ${options.data}');
             }
@@ -97,8 +97,22 @@ class ApiService {
           final isJwtExpired = serverMessage.contains('jwt expired') ||
               serverMessage.contains('token expired');
 
-          final isAuthError =
-              (statusCode == 401) || (statusCode == 500 && isJwtExpired);
+          // Backend returns 404 "Route not found" on protected routes when the
+          // token is missing or expired (auth middleware hides the route instead
+          // of returning 401). Treat this as an auth error so we retry with a
+          // refreshed token. Skip on retried requests to prevent infinite loops.
+          // Exclude /resource/ paths — they may genuinely return 404 when the
+          // event has no data yet, and should NOT trigger an auth retry loop.
+          final isRetry = requestOptions.extra['isRetry'] == true;
+          final isResourcePath = requestOptions.path.contains('/resource/');
+          final isHidden404 = !isRetry &&
+              !isResourcePath &&
+              statusCode == 404 &&
+              serverMessage.contains('route is not found');
+
+          final isAuthError = (statusCode == 401) ||
+              (statusCode == 500 && isJwtExpired) ||
+              isHidden404;
 
           if (isAuthError && !isRefreshCall) {
             try {
@@ -113,7 +127,9 @@ class ApiService {
                   contentType: requestOptions.contentType,
                   sendTimeout: requestOptions.sendTimeout,
                   receiveTimeout: requestOptions.receiveTimeout,
-                  extra: requestOptions.extra,
+                  extra: Map<String, dynamic>.from(
+                    requestOptions.extra,
+                  )..['isRetry'] = true,
                   followRedirects: requestOptions.followRedirects,
                   listFormat: requestOptions.listFormat,
                   maxRedirects: requestOptions.maxRedirects,
@@ -150,25 +166,29 @@ class ApiService {
 
   /// Show user-friendly error toast based on error type
   void _showErrorToast(DioException error) {
-    // Don't show toast for 401 (handled by token refresh)
+    // Don't show toast for 401 or hidden-auth 404 (handled by token refresh)
     if (error.response?.statusCode == 401) return;
+    final errData = error.response?.data;
+    final errMsg = (errData is Map ? errData['message'] : null)
+            ?.toString()
+            .toLowerCase() ??
+        '';
+    if (error.response?.statusCode == 404 &&
+        errMsg.contains('route is not found')) return;
 
-    // Suppress toasts for endpoints that might not be implemented yet
+    // Suppress toasts for endpoints that handle errors in their own UI
     final path = error.requestOptions.path;
     final suppressedPaths = [
-      '/resource/event/qna/',
-      '/resource/event/poll/',
-      '/resource/poll/',
-      '/resource/survey/',
       '/eventAttendee/events/',
       '/connection/request/',
       '/booth/me',
       '/booth/analytics',
       '/exhibitor/performance',
+      '/resource/',
     ];
-    
+
     if (suppressedPaths.any((suppressed) => path.contains(suppressed))) {
-      return; // Don't show toast for these endpoints
+      return;
     }
 
     String errorMessage = 'Something went wrong';

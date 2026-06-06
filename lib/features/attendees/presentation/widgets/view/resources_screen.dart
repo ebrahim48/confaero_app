@@ -14,74 +14,30 @@ import '../resources_tab_widget.dart';
 import '../survey_radio_option.dart';
 import '../survey_star_rating_widgets.dart';
 
-class ResourcesScreen extends StatelessWidget {
+class ResourcesScreen extends StatefulWidget {
   const ResourcesScreen({super.key});
 
-  void _showAskQuestionDialog(BuildContext context, ResourcesController controller) {
-    final TextEditingController questionCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: CustomText(
-            text: 'Ask a Question',
-            fontsize: 18.sp,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xff252525),
-          ),
-          content: TextField(
-            controller: questionCtrl,
-            maxLines: 4,
-            decoration: const InputDecoration(
-              hintText: 'Type your question here...',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: CustomText(
-                text: 'Cancel',
-                fontsize: 14.sp,
-                color: const Color(0xff757575),
-              ),
-            ),
-            Obx(() => ElevatedButton(
-              onPressed: controller.isSubmitting.value
-                  ? null
-                  : () async {
-                      final text = questionCtrl.text.trim();
-                      if (text.isEmpty) return;
-                      final success = await controller.submitQuestion(text);
-                      if (success && ctx.mounted) Navigator.pop(ctx);
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xff32A69A),
-              ),
-              child: controller.isSubmitting.value
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : CustomText(
-                      text: 'Submit',
-                      fontsize: 14.sp,
-                      color: Colors.white,
-                    ),
-            )),
-          ],
-        );
-      },
-    );
+  @override
+  State<ResourcesScreen> createState() => _ResourcesScreenState();
+}
+
+class _ResourcesScreenState extends State<ResourcesScreen> {
+  late ResourcesController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    final alreadyExists = Get.isRegistered<ResourcesController>();
+    controller = Get.put(ResourcesController());
+    if (alreadyExists) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) controller.fetchData();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final ResourcesController controller = Get.put(ResourcesController());
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -165,7 +121,7 @@ class ResourcesScreen extends StatelessWidget {
                                     ),
                                     SizedBox(height: 8.h),
                                     CustomText(
-                                      text: 'Be the first to ask a question!',
+                                      text: 'Questions will appear here',
                                       fontsize: 14.sp,
                                       color: const Color(0xff9E9E9E),
                                     ),
@@ -187,14 +143,6 @@ class ResourcesScreen extends StatelessWidget {
                                   );
                                 },
                               ),
-                      ),
-                      // Ask Question Button
-                      Padding(
-                        padding: EdgeInsets.all(24.w),
-                        child: CustomButton(
-                          title: 'Ask a Question',
-                          onpress: () => _showAskQuestionDialog(context, controller),
-                        ),
                       ),
                     ],
                   ),

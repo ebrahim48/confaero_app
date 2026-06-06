@@ -83,23 +83,23 @@ class EventLiveService {
     return response.data as Map<String, dynamic>;
   }
 
-  /// POST /resource/poll/:id/:eventId/submit
+  /// POST /resource/poll/:pollId/:optionId/submit
   ///
-  /// Submits a vote for a poll (typically done via socket).
+  /// Submits a vote for a poll.
   Future<Map<String, dynamic>> submitPollVote({
     required String pollId,
-    required String eventId,
+    required String optionId,
     required int optionIndex,
   }) async {
     await _checkConnectivity();
-    _logger.i('Submitting vote for poll: $pollId');
+    _logger.i('Submitting vote for poll: $pollId, option: $optionId');
 
     final payload = {
-      'optionIndex': optionIndex,
+      'selectedOptionIndex': optionIndex,
     };
 
     final response = await _apiService.post(
-      '${ApiConstants.submitPollVote}/$pollId/$eventId/submit',
+      '${ApiConstants.submitPollVote}/$pollId/$optionId/submit',
       data: payload,
     );
 

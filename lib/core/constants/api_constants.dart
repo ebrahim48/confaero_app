@@ -123,7 +123,8 @@ class ApiConstants {
 
   static const String getEventQnA = '/resource/event/qna'; // append /:eventId
   static const String getEventPolls = '/resource/event/poll'; // append /:eventId
-  static const String submitPollVote = '/resource/poll'; // append /:id/:eventId/submit
+  static const String getEventSurvey = '/resource/event/survey'; // append /:eventId
+  static const String submitPollVote = '/resource/poll'; // append /:pollId/:optionId/submit
 
 
   //--------------------------Resources CRUD (Organizer)----------
@@ -134,7 +135,7 @@ class ApiConstants {
   static const String updatePoll = '/resource/poll'; // PATCH /:id/:eventId
   static const String deletePoll = '/resource/poll'; // DELETE /:id/:eventId
   static const String getPollVotes = '/resource/poll'; // GET /:id/:eventId/votes
-  static const String submitSurvey = '/resource/survey'; // POST /:eventId/submit
+  static const String submitSurvey = '/resource/survey'; // POST /:surveyId/submit
   static const String getSurveyAnalytics =
       '/resource/survey'; // GET /:eventId/analytics
 
