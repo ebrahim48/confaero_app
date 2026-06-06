@@ -33,7 +33,7 @@ class LiveMeetingController extends GetxController {
   }
 
   /// Submit poll vote via ResourceService
-  Future<void> submitPollVote({required String pollId}) async {
+  Future<void> submitPollVote({required String pollId, required String optionId}) async {
     final hasSelection = pollOptions.any((selected) => selected);
 
     if (!hasSelection) {
@@ -41,7 +41,6 @@ class LiveMeetingController extends GetxController {
     }
 
     try {
-      // Build selected options
       final selectedIndices = <int>[];
       for (int i = 0; i < pollOptions.length; i++) {
         if (pollOptions[i]) selectedIndices.add(i);
@@ -49,11 +48,11 @@ class LiveMeetingController extends GetxController {
 
       await _resourceService.submitPollVote(
         pollId: pollId,
-        eventId: _eventId,
+        optionId: optionId,
         selectedOptionIndex: selectedIndices.first,
       );
-
     } catch (e) {
+      // fail silently
     }
   }
 

@@ -88,7 +88,7 @@ class PollCardWidget extends StatelessWidget {
           // Submit Button
           CustomButton(
             title: 'Submit',
-            onpress: () => controller.submitPollVote(pollId: 'poll_default'),
+            onpress: () => controller.submitPollVote(pollId: 'poll_default', optionId: ''),
             color: const Color(0xff32A69A),
             height: 48.h,
             borderRadius: 8.r,

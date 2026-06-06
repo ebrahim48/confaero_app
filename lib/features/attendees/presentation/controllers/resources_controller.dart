@@ -22,6 +22,8 @@ class ResourcesController extends GetxController {
   final RxList<PollModel> pollsList = <PollModel>[].obs;
   final RxMap<String, List<bool>> pollSelectedOptions = <String, List<bool>>{}.obs;
 
+  String _surveyId = '';
+
   final RxInt selectedRating = 0.obs;
   final RxString selectedOption = ''.obs;
   final TextEditingController suggestionController = TextEditingController();
@@ -32,31 +34,27 @@ class ResourcesController extends GetxController {
     super.onInit();
     fetchData();
     suggestionController.addListener(() {
-      final text = suggestionController.text.trim();
-      if (text.isNotEmpty && text.length < 80) {
-        suggestionError.value = 'Minimum 80 characters required (${text.length}/80)';
-      } else {
-        suggestionError.value = '';
-      }
+      suggestionError.value = '';
     });
   }
 
   Future<void> fetchData() async {
     isLoading.value = true;
-    try {
-      final qnaData = await _service.getEventQnA(currentEventId);
-      qaList.assignAll(qnaData);
-
-      final pollData = await _service.getEventPolls(currentEventId);
-      pollsList.assignAll(pollData);
-    } catch (e) {
-      if (!e.toString().contains('404')) {
-      }
-      qaList.clear();
-      pollsList.clear();
-    } finally {
-      isLoading.value = false;
-    }
+    await Future.wait([
+      _service.getEventQnA(currentEventId).then(
+        (data) => qaList.assignAll(data),
+        onError: (_) => qaList.clear(),
+      ),
+      _service.getEventPolls(currentEventId).then(
+        (data) => pollsList.assignAll(data),
+        onError: (_) => pollsList.clear(),
+      ),
+      _service.getEventSurvey(currentEventId).then(
+        (survey) { if (survey != null) _surveyId = survey.id; },
+        onError: (_) {},
+      ),
+    ]);
+    isLoading.value = false;
   }
 
   Future<void> refreshData() async {
@@ -79,15 +77,16 @@ class ResourcesController extends GetxController {
     }
   }
 
-  Future<void> submitPollVote(String pollId, int selectedOptionIndex) async {
+  Future<void> submitPollVote(String pollId, String optionId, int selectedOptionIndex) async {
     try {
       await _service.submitPollVote(
         pollId: pollId,
-        eventId: currentEventId,
+        optionId: optionId,
         selectedOptionIndex: selectedOptionIndex,
       );
       await fetchData();
     } catch (e) {
+      // fail silently — UI already popped
     }
   }
 
@@ -115,14 +114,18 @@ class ResourcesController extends GetxController {
 
   Future<void> submitSurvey() async {
     if (selectedRating.value == 0) {
+      ToastMessageHelper.showToastMessage('Please select a rating', title: 'Required');
       return;
     }
     if (selectedOption.value.isEmpty) {
+      ToastMessageHelper.showToastMessage('Please answer whether the sessions were helpful', title: 'Required');
       return;
     }
     final suggestion = suggestionController.text.trim();
     try {
       isSurveyLoading.value = true;
+      // Use fetched surveyId; fall back to eventId if no survey document was loaded
+      final surveyTarget = _surveyId.isNotEmpty ? _surveyId : currentEventId;
       final payload = <String, dynamic>{
         'rating': selectedRating.value,
         'helpful': selectedOption.value == 'Yes',
@@ -130,11 +133,20 @@ class ResourcesController extends GetxController {
       if (suggestion.isNotEmpty) {
         payload['suggestion'] = suggestion;
       }
-      await _service.submitSurvey(currentEventId, payload);
+      final result = await _service.submitSurvey(surveyTarget, payload);
+      if (result['success'] == false) {
+        ToastMessageHelper.showToastMessage(
+          result['message']?.toString() ?? 'Failed to submit feedback.',
+          title: 'Error',
+        );
+        return;
+      }
+      ToastMessageHelper.showToastMessage('Feedback submitted successfully!');
       selectedRating.value = 0;
       selectedOption.value = '';
       suggestionController.clear();
     } catch (e) {
+      ToastMessageHelper.showToastMessage('Failed to submit feedback. Please try again.', title: 'Error');
     } finally {
       isSurveyLoading.value = false;
     }

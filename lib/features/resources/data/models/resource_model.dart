@@ -1,3 +1,19 @@
+class SurveyModel {
+  final String id;
+  final String eventId;
+  final bool isActive;
+
+  SurveyModel({required this.id, required this.eventId, required this.isActive});
+
+  factory SurveyModel.fromJson(Map<String, dynamic> json) {
+    return SurveyModel(
+      id: json['_id']?.toString() ?? '',
+      eventId: json['eventId']?.toString() ?? '',
+      isActive: json['isActive'] as bool? ?? true,
+    );
+  }
+}
+
 class QnAModel {
   final String id;
   final String question;

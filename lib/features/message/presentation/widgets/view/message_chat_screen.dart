@@ -251,14 +251,7 @@ class _MessageChatScreenState extends State<MessageChatScreen> {
                           color: hasText ? const Color(0xFF32A69A) : Colors.grey.shade300,
                           shape: BoxShape.circle,
                         ),
-                        child: controller.isSending.value
-                            ? Padding(
-                                padding: EdgeInsets.all(14.w),
-                                child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2),
-                              )
-                            : const Icon(Icons.send, color: Colors.white, size: 20),
+                        child: const Icon(Icons.send, color: Colors.white, size: 20),
                       ),
                     );
                   }),

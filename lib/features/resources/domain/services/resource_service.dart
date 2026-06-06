@@ -29,23 +29,21 @@ class ResourceService {
       final response = await _apiService.get(
         '${ApiConstants.getEventQnA}/$eventId',
       );
-
-      _logger.i('Q&A Response: ${response.data}');
-      
       if (response.data is Map<String, dynamic>) {
         final resData = response.data as Map<String, dynamic>;
-        _logger.i('Q&A success: ${resData['success']}, data type: ${resData['data'].runtimeType}');
-        
         if ((resData['success'] == true) && resData['data'] is List) {
           final dataList = resData['data'] as List;
           _logger.i('Q&A count: ${dataList.length}');
           return dataList.map((e) => QnAModel.fromJson(e)).toList();
-        } else if (resData['success'] != true) {
-          _logger.e('Q&A API returned success=false. Response: $resData');
         }
-      } else {
-        _logger.w('Q&A response is not a Map. Type: ${response.data.runtimeType}');
       }
+    } on ServerException catch (e) {
+      if (e.statusCode == 404) {
+        _logger.i('No Q&A found for event: $eventId');
+        return [];
+      }
+      _logger.e('Error fetching Q&A: $e');
+      rethrow;
     } catch (e) {
       _logger.e('Error fetching Q&A: $e');
       rethrow;
@@ -60,23 +58,21 @@ class ResourceService {
       final response = await _apiService.get(
         '${ApiConstants.getEventPolls}/$eventId',
       );
-
-      _logger.i('Polls Response: ${response.data}');
-      
       if (response.data is Map<String, dynamic>) {
         final resData = response.data as Map<String, dynamic>;
-        _logger.i('Polls success: ${resData['success']}, data type: ${resData['data'].runtimeType}');
-        
         if ((resData['success'] == true) && resData['data'] is List) {
           final dataList = resData['data'] as List;
           _logger.i('Polls count: ${dataList.length}');
           return dataList.map((e) => PollModel.fromJson(e)).toList();
-        } else if (resData['success'] != true) {
-          _logger.e('Polls API returned success=false. Response: $resData');
         }
-      } else {
-        _logger.w('Polls response is not a Map. Type: ${response.data.runtimeType}');
       }
+    } on ServerException catch (e) {
+      if (e.statusCode == 404) {
+        _logger.i('No polls found for event: $eventId');
+        return [];
+      }
+      _logger.e('Error fetching Polls: $e');
+      rethrow;
     } catch (e) {
       _logger.e('Error fetching Polls: $e');
       rethrow;
@@ -86,16 +82,54 @@ class ResourceService {
 
   Future<void> submitPollVote({
     required String pollId,
-    required String eventId,
+    required String optionId,
     required int selectedOptionIndex,
   }) async {
     await _checkConnectivity();
-    _logger.i('Submitting vote for poll: $pollId in event: $eventId, index: $selectedOptionIndex');
+    _logger.i('Submitting vote for poll: $pollId, option: $optionId, index: $selectedOptionIndex');
+    try {
+      await _apiService.post(
+        '${ApiConstants.submitPollVote}/$pollId/$optionId/submit',
+        data: {'selectedOptionIndex': selectedOptionIndex},
+      );
+    } on ServerException catch (e) {
+      if (e.statusCode == 404) {
+        _logger.w('Poll vote endpoint not available for poll: $pollId');
+        return;
+      }
+      rethrow;
+    }
+  }
 
-    await _apiService.post(
-      '${ApiConstants.submitPollVote}/$pollId/$eventId/submit',
-      data: {'selectedOptionIndex': selectedOptionIndex},
-    );
+  Future<SurveyModel?> getEventSurvey(String eventId) async {
+    await _checkConnectivity();
+    _logger.i('Fetching survey for event: $eventId');
+    try {
+      final response = await _apiService.get(
+        '${ApiConstants.getEventSurvey}/$eventId',
+      );
+      if (response.data is Map<String, dynamic>) {
+        final resData = response.data as Map<String, dynamic>;
+        if (resData['success'] == true) {
+          final data = resData['data'];
+          if (data is Map<String, dynamic>) {
+            return SurveyModel.fromJson(data);
+          }
+          if (data is List && data.isNotEmpty) {
+            return SurveyModel.fromJson(data.first as Map<String, dynamic>);
+          }
+        }
+      }
+    } on ServerException catch (e) {
+      if (e.statusCode == 404) {
+        _logger.i('No survey found for event: $eventId');
+        return null;
+      }
+      _logger.e('Error fetching survey: $e');
+    } catch (e) {
+      _logger.e('Error fetching survey: $e');
+    }
+    return null;
   }
 
   // --- Attendee Q&A ---
@@ -149,16 +183,24 @@ class ResourceService {
   // --- Survey ---
 
   Future<Map<String, dynamic>> submitSurvey(
-    String eventId,
+    String surveyId,
     Map<String, dynamic> surveyData,
   ) async {
     await _checkConnectivity();
-    _logger.i('Submitting survey for event: $eventId');
-    final response = await _apiService.post(
-      '${ApiConstants.submitSurvey}/$eventId/submit',
-      data: surveyData,
-    );
-    return response.data as Map<String, dynamic>;
+    _logger.i('Submitting survey: $surveyId');
+    try {
+      final response = await _apiService.post(
+        '${ApiConstants.submitSurvey}/$surveyId/submit',
+        data: surveyData,
+      );
+      return response.data as Map<String, dynamic>;
+    } on ServerException catch (e) {
+      if (e.statusCode == 404) {
+        _logger.w('Survey not found: $surveyId');
+        return {'success': false, 'message': 'Survey not available for this event'};
+      }
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>> getSurveyAnalytics(String eventId) async {

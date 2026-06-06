@@ -261,14 +261,15 @@ class AppRoutes {
           return null;
         }
 
-        // If no event selected and trying to access protected routes → redirect to events screen
-        if (currentEventId.isEmpty && !isGoingToAuth && !isPreEventRoute) {
+        if (isGoingToAuth) {
+          // Logged-in user on an auth/onboarding screen → skip past it
+          if (currentEventId.isNotEmpty) return AppRoutes.mainNavigationScreen;
           return AppRoutes.eventsScreen;
         }
 
-        // If user has event and trying to access auth pages (except events) → redirect to main nav
-        if (currentEventId.isNotEmpty && isGoingToAuth) {
-          return AppRoutes.mainNavigationScreen;
+        // If no event selected and trying to access protected routes → redirect to events screen
+        if (currentEventId.isEmpty) {
+          return AppRoutes.eventsScreen;
         }
       }
 

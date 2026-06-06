@@ -28,8 +28,10 @@ class _PollScreenState extends State<PollScreen> {
       Get.snackbar('Warning', 'Please select an option');
       return;
     }
+    final poll = widget.poll!;
+    final optionId = poll.options[_selectedIndex!].id;
     setState(() => _isSubmitting = true);
-    await _controller.submitPollVote(widget.poll!.id, _selectedIndex!);
+    await _controller.submitPollVote(poll.id, optionId, _selectedIndex!);
     if (mounted) {
       setState(() => _isSubmitting = false);
       Navigator.pop(context);
