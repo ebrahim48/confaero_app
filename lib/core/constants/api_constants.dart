@@ -4,9 +4,9 @@ class ApiConstants {
   // static const String imageUrl = "http://10.10.11.30:8081";
   // static const String socketServerUrl = 'http://10.10.11.30:8081';
 
-  static const String baseUrl = 'http://api.confaero.com/api/v1';
-  static const String imageUrl = "http://api.confaero.com";
-  static const String socketServerUrl = 'http://api.confaero.com';
+  static const String baseUrl = 'https://api.confaero.com/api/v1';
+  static const String imageUrl = "https://api.confaero.com";
+  static const String socketServerUrl = 'https://api.confaero.com';
 
 
   static Map<String, String> headers = {'Content-Type': 'application/json'};
@@ -33,7 +33,7 @@ class ApiConstants {
 
   //--------------------------Events----------------------------
   static const String getAllUpcomingEvents = '/attendee/events';
-  static const String getExploreEvents = '/attendee/events';
+  static const String getExploreEvents = '/attendee/all-events';
 
   static const String getMyAllEvents = '/attendee/my-events';
   static const String getMyEventsAndInvitations = '/attendee/my-events';
