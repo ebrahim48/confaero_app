@@ -43,7 +43,7 @@
             <!-- Google Maps API Key -->
             <meta-data
                 android:name="com.google.android.geo.API_KEY"
-                android:value="AIzaSyDFiKLw_sSi4BAjNEBe1HYIqG-FDAs86Kk" />
+                android:value="AIzaSyDzIh16RvM4ajB6XGdl9adsVJJUGJP13wU" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
