@@ -56,6 +56,11 @@ ios/Runner/GoogleService-Info.plist
 # Kiro IDE
 .kiro/
 
+# Android signing — never commit
+android/key.properties
+**/*.jks
+**/*.keystore
+
 # Temporary files (screenshots, testing, etc.)
 /temp/
 

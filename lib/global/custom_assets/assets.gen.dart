@@ -34,6 +34,9 @@ class $AssetsIconsGen {
   /// File path: assets/icons/ateendees.svg
   SvgGenImage get ateendees => const SvgGenImage('assets/icons/ateendees.svg');
 
+  /// File path: assets/icons/booth.svg
+  SvgGenImage get booth => const SvgGenImage('assets/icons/booth.svg');
+
   /// File path: assets/icons/calendar.svg
   SvgGenImage get calendar => const SvgGenImage('assets/icons/calendar.svg');
 
@@ -82,6 +85,10 @@ class $AssetsIconsGen {
   SvgGenImage get deleteicon =>
       const SvgGenImage('assets/icons/deleteicon.svg');
 
+  /// File path: assets/icons/detailedanalytics.svg
+  SvgGenImage get detailedanalytics =>
+      const SvgGenImage('assets/icons/detailedanalytics.svg');
+
   /// File path: assets/icons/downloadicon.svg
   SvgGenImage get downloadicon =>
       const SvgGenImage('assets/icons/downloadicon.svg');
@@ -92,13 +99,16 @@ class $AssetsIconsGen {
   /// File path: assets/icons/editicon.svg
   SvgGenImage get editicon => const SvgGenImage('assets/icons/editicon.svg');
 
+  /// File path: assets/icons/email.svg
+  SvgGenImage get email => const SvgGenImage('assets/icons/email.svg');
+
   /// File path: assets/icons/eventposters.svg
   SvgGenImage get eventposters =>
       const SvgGenImage('assets/icons/eventposters.svg');
 
-  /// File path: assets/icons/exhibitors_sponsors_booth.svg
+  /// File path: assets/icons/exhibitors.svg
   SvgGenImage get exhibitors =>
-      const SvgGenImage('assets/icons/exhibitors_sponsors_booth.svg');
+      const SvgGenImage('assets/icons/exhibitors.svg');
 
   /// File path: assets/icons/exploreevents.svg
   SvgGenImage get exploreevents =>
@@ -116,12 +126,18 @@ class $AssetsIconsGen {
   /// File path: assets/icons/home.svg
   SvgGenImage get home => const SvgGenImage('assets/icons/home.svg');
 
+  /// File path: assets/icons/https.svg
+  SvgGenImage get https => const SvgGenImage('assets/icons/https.svg');
+
   /// File path: assets/icons/image.svg
   SvgGenImage get image => const SvgGenImage('assets/icons/image.svg');
 
   /// File path: assets/icons/imagepdficon.svg
   SvgGenImage get imagepdficon =>
       const SvgGenImage('assets/icons/imagepdficon.svg');
+
+  /// File path: assets/icons/leadscan.svg
+  SvgGenImage get leadscan => const SvgGenImage('assets/icons/leadscan.svg');
 
   /// File path: assets/icons/like.svg
   SvgGenImage get like => const SvgGenImage('assets/icons/like.svg');
@@ -164,8 +180,15 @@ class $AssetsIconsGen {
   /// File path: assets/icons/pdficon.svg
   SvgGenImage get pdficon => const SvgGenImage('assets/icons/pdficon.svg');
 
+  /// File path: assets/icons/penciloffer.svg
+  SvgGenImage get penciloffer =>
+      const SvgGenImage('assets/icons/penciloffer.svg');
+
   /// File path: assets/icons/poll.svg
   SvgGenImage get poll => const SvgGenImage('assets/icons/poll.svg');
+
+  /// File path: assets/icons/profile.svg
+  SvgGenImage get profile => const SvgGenImage('assets/icons/profile.svg');
 
   /// File path: assets/icons/qa.svg
   SvgGenImage get qa => const SvgGenImage('assets/icons/qa.svg');
@@ -183,6 +206,10 @@ class $AssetsIconsGen {
   /// File path: assets/icons/rolearrow.svg
   SvgGenImage get rolearrow => const SvgGenImage('assets/icons/rolearrow.svg');
 
+  /// File path: assets/icons/scanviewleads.svg
+  SvgGenImage get scanviewleads =>
+      const SvgGenImage('assets/icons/scanviewleads.svg');
+
   /// File path: assets/icons/search.svg
   SvgGenImage get search => const SvgGenImage('assets/icons/search.svg');
 
@@ -191,6 +218,9 @@ class $AssetsIconsGen {
 
   /// File path: assets/icons/share.svg
   SvgGenImage get share => const SvgGenImage('assets/icons/share.svg');
+
+  /// File path: assets/icons/share2.svg
+  SvgGenImage get share2 => const SvgGenImage('assets/icons/share2.svg');
 
   /// File path: assets/icons/speakers.svg
   SvgGenImage get speakers => const SvgGenImage('assets/icons/speakers.svg');
@@ -207,6 +237,10 @@ class $AssetsIconsGen {
 
   /// File path: assets/icons/time.svg
   SvgGenImage get time => const SvgGenImage('assets/icons/time.svg');
+
+  /// File path: assets/icons/totalleads.svg
+  SvgGenImage get totalleads =>
+      const SvgGenImage('assets/icons/totalleads.svg');
 
   /// File path: assets/icons/userprofile.svg
   SvgGenImage get userprofile =>
@@ -228,6 +262,7 @@ class $AssetsIconsGen {
     addpostericon,
     arrow,
     ateendees,
+    booth,
     calendar,
     calendar1,
     checkcircle,
@@ -242,9 +277,11 @@ class $AssetsIconsGen {
     confareo,
     delete,
     deleteicon,
+    detailedanalytics,
     downloadicon,
     edit,
     editicon,
+    email,
     eventposters,
     exhibitors,
     exploreevents,
@@ -252,8 +289,10 @@ class $AssetsIconsGen {
     floormap,
     google,
     home,
+    https,
     image,
     imagepdficon,
+    leadscan,
     like,
     link,
     location,
@@ -267,20 +306,25 @@ class $AssetsIconsGen {
     notification,
     organizer,
     pdficon,
+    penciloffer,
     poll,
+    profile,
     qa,
     qrcode,
     quicknotes,
     resources,
     rolearrow,
+    scanviewleads,
     search,
     settings,
     share,
+    share2,
     speakers,
     sponsors,
     star,
     termsconditions,
     time,
+    totalleads,
     userprofile,
     viewpdf,
     watch,
@@ -299,6 +343,14 @@ class $AssetsImagesGen {
   AssetGenImage get accesshandouts =>
       const AssetGenImage('assets/images/accesshandouts.png');
 
+  /// File path: assets/images/app_logo.png
+  AssetGenImage get appLogo =>
+      const AssetGenImage('assets/images/app_logo.png');
+
+  /// File path: assets/images/attendees.jpg
+  AssetGenImage get attendees =>
+      const AssetGenImage('assets/images/attendees.jpg');
+
   /// File path: assets/images/banner.png
   AssetGenImage get banner => const AssetGenImage('assets/images/banner.png');
 
@@ -306,15 +358,31 @@ class $AssetsImagesGen {
   AssetGenImage get bannerdetails =>
       const AssetGenImage('assets/images/bannerdetails.png');
 
+  /// File path: assets/images/booth.png
+  AssetGenImage get booth => const AssetGenImage('assets/images/booth.png');
+
+  /// File path: assets/images/byd.png
+  AssetGenImage get byd => const AssetGenImage('assets/images/byd.png');
+
   /// File path: assets/images/cardbanner.png
   AssetGenImage get cardbanner =>
       const AssetGenImage('assets/images/cardbanner.png');
+
+  /// File path: assets/images/catel.png
+  AssetGenImage get catel => const AssetGenImage('assets/images/catel.png');
 
   /// File path: assets/images/catl.png
   AssetGenImage get catl => const AssetGenImage('assets/images/catl.png');
 
   /// File path: assets/images/demomap.png
   AssetGenImage get demomap => const AssetGenImage('assets/images/demomap.png');
+
+  /// File path: assets/images/eve.png
+  AssetGenImage get eve => const AssetGenImage('assets/images/eve.png');
+
+  /// File path: assets/images/exhibitor.png
+  AssetGenImage get exhibitor =>
+      const AssetGenImage('assets/images/exhibitor.png');
 
   /// File path: assets/images/homebanner.png
   AssetGenImage get homebanner =>
@@ -335,6 +403,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/logo.png
   AssetGenImage get logo => const AssetGenImage('assets/images/logo.png');
 
+  /// File path: assets/images/manly.png
+  AssetGenImage get manly => const AssetGenImage('assets/images/manly.png');
+
   /// File path: assets/images/map.png
   AssetGenImage get map => const AssetGenImage('assets/images/map.png');
 
@@ -342,13 +413,25 @@ class $AssetsImagesGen {
   AssetGenImage get meetconnect =>
       const AssetGenImage('assets/images/meetconnect.png');
 
+  /// File path: assets/images/mikbanner.png
+  AssetGenImage get mikbanner =>
+      const AssetGenImage('assets/images/mikbanner.png');
+
   /// File path: assets/images/myevents.png
   AssetGenImage get myevents =>
       const AssetGenImage('assets/images/myevents.png');
 
+  /// File path: assets/images/organizer.png
+  AssetGenImage get organizer =>
+      const AssetGenImage('assets/images/organizer.png');
+
   /// File path: assets/images/ourmission.png
   AssetGenImage get ourmission =>
       const AssetGenImage('assets/images/ourmission.png');
+
+  /// File path: assets/images/panasonic.png
+  AssetGenImage get panasonic =>
+      const AssetGenImage('assets/images/panasonic.png');
 
   /// File path: assets/images/pdf.png
   AssetGenImage get pdf => const AssetGenImage('assets/images/pdf.png');
@@ -376,9 +459,26 @@ class $AssetsImagesGen {
   /// File path: assets/images/qr.png
   AssetGenImage get qr => const AssetGenImage('assets/images/qr.png');
 
+  /// File path: assets/images/sampleprofile.png
+  AssetGenImage get sampleprofile =>
+      const AssetGenImage('assets/images/sampleprofile.png');
+
+  /// File path: assets/images/samsung.png
+  AssetGenImage get samsung => const AssetGenImage('assets/images/samsung.png');
+
   /// File path: assets/images/speakers.jpg
   AssetGenImage get speakers =>
       const AssetGenImage('assets/images/speakers.jpg');
+
+  /// File path: assets/images/sponsorsbanner.png
+  AssetGenImage get sponsorsbanner =>
+      const AssetGenImage('assets/images/sponsorsbanner.png');
+
+  /// File path: assets/images/svolt.png
+  AssetGenImage get svolt => const AssetGenImage('assets/images/svolt.png');
+
+  /// File path: assets/images/tesla.png
+  AssetGenImage get tesla => const AssetGenImage('assets/images/tesla.png');
 
   /// File path: assets/images/viewpdf.png
   AssetGenImage get viewpdf => const AssetGenImage('assets/images/viewpdf.png');
@@ -390,20 +490,31 @@ class $AssetsImagesGen {
   List<AssetGenImage> get values => [
     aboutbanner,
     accesshandouts,
+    appLogo,
+    attendees,
     banner,
     bannerdetails,
+    booth,
+    byd,
     cardbanner,
+    catel,
     catl,
     demomap,
+    eve,
+    exhibitor,
     homebanner,
     imagepdf,
     jobopenings,
     livesession,
     logo,
+    manly,
     map,
     meetconnect,
+    mikbanner,
     myevents,
+    organizer,
     ourmission,
+    panasonic,
     pdf,
     pdf1,
     photo1,
@@ -412,7 +523,12 @@ class $AssetsImagesGen {
     posterprofile,
     profile,
     qr,
+    sampleprofile,
+    samsung,
     speakers,
+    sponsorsbanner,
+    svolt,
+    tesla,
     viewpdf,
     welcome,
   ];
