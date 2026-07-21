@@ -71,6 +71,13 @@ dev_dependencies:
   flutter_gen_runner:
   flutter_launcher_icons:
 
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_logo.png"
+  adaptive_icon_foreground: "assets/images/app_logo.png"
+  adaptive_icon_background: "#0FC3C2"
+
 #flutter_icons:
 #  android: true
 #  ios: true

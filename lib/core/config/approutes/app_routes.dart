@@ -218,10 +218,12 @@ class AppRoutes {
 
   static final GoRouter goRouter = GoRouter(
     initialLocation: onBoardingScreen,
-    redirect: (context, state) async {
-      final token = await PrefsHelper.getString(AppConstants.bearerToken);
-      final isLogged = await PrefsHelper.getBool(AppConstants.isLogged);
-      final currentEventId = await PrefsHelper.getString(AppConstants.currentEventId);
+    redirect: (context, state) {
+      // Synchronous on purpose: an async redirect lets go_router render the
+      // initial location (onboarding) before the session is known.
+      final token = PrefsHelper.getStringSync(AppConstants.bearerToken);
+      final isLogged = PrefsHelper.getBoolSync(AppConstants.isLogged);
+      final currentEventId = PrefsHelper.getStringSync(AppConstants.currentEventId);
 
       final authRoutes = <String>{
         AppRoutes.onBoardingScreen,
@@ -235,7 +237,6 @@ class AppRoutes {
 
       final currentPath = state.matchedLocation;
       final isGoingToAuth = authRoutes.contains(currentPath);
-      final isGoingToEvents = currentPath == AppRoutes.eventsScreen;
 
       // Routes accessible even before an event is selected
       final preEventRoutes = <String>{
@@ -249,8 +250,10 @@ class AppRoutes {
       };
       final isPreEventRoute = preEventRoutes.contains(currentPath);
 
-      // Unauthenticated user trying to access protected pages → redirect to sign in
-      if ((token.isEmpty || !isLogged) && !isGoingToAuth && !isGoingToEvents) {
+      // Unauthenticated user trying to access protected pages → redirect to sign in.
+      // EventsScreen is NOT exempt: it calls protected /attendee endpoints on init,
+      // which 401 when no token is stored.
+      if ((token.isEmpty || !isLogged) && !isGoingToAuth) {
         return AppRoutes.signInScreen;
       }
 

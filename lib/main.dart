@@ -9,6 +9,7 @@ import 'core/config/approutes/app_routes.dart';
 import 'core/config/appthemes/app_themes.dart';
 import 'core/di/dependency_injection.dart';
 import 'core/helpers/network_connection.dart';
+import 'core/helpers/prefs_helper.dart';
 import 'firebase_options.dart';
 import 'presentations/controller/theme_controller.dart';
 
@@ -18,6 +19,10 @@ void main() async {
   PlatformDispatcher.instance.onAccessibilityFeaturesChanged = () {};
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Load prefs before the router is built so the first redirect can read the
+  // stored session synchronously (otherwise logged-in users land on onboarding).
+  await PrefsHelper.init();
 
   // Initialize dependency injection
   DependencyInjection.init();
@@ -38,7 +43,7 @@ class MyApp extends StatelessWidget {
         builder: (context, child) {
           return MaterialApp.router(
             debugShowCheckedModeBanner: false,
-            title: 'Confaero App',
+            title: 'ConfAero',
             theme: Themes().lightTheme,
             darkTheme: Themes().darkTheme,
             locale: DevicePreview.locale(context),

@@ -1,6 +1,18 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PrefsHelper {
+  static SharedPreferences? _prefs;
+
+  /// Must be awaited in main() before runApp so the router can read auth
+  /// state synchronously during the very first redirect.
+  static Future<void> init() async {
+    _prefs = await SharedPreferences.getInstance();
+  }
+
+  static String getStringSync(String key) => _prefs?.getString(key) ?? "";
+
+  static bool getBoolSync(String key) => _prefs?.getBool(key) ?? false;
+
   static Future<String> getString(String key) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
 

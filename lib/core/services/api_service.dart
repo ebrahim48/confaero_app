@@ -1,8 +1,9 @@
-﻿import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'package:get/get.dart' hide Response;
-import 'package:go_router/go_router.dart';
+﻿import 'dart:convert';
 
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+
+import '../config/approutes/app_routes.dart';
 import '../constants/api_constants.dart';
 import '../constants/app_constants.dart';
 import '../exceptions/app_exceptions.dart';
@@ -35,8 +36,16 @@ class ApiService {
         onRequest: (options, handler) async {
           final token = await PrefsHelper.getString(AppConstants.bearerToken);
 
-          if (token.isNotEmpty) {
+          // Never attach the (likely expired) access token to the refresh call.
+          // The backend validates the Authorization header before reading the
+          // refreshToken body, so a stale header makes refresh fail with
+          // "You are not authorized!" even when the refresh token is valid.
+          final isRefreshCall = options.path == ApiConstants.refreshTokenApi;
+
+          if (token.isNotEmpty && !isRefreshCall) {
             options.headers['Authorization'] = 'Bearer $token';
+          } else if (isRefreshCall) {
+            options.headers.remove('Authorization');
           }
 
           if (kDebugMode) {
@@ -110,7 +119,15 @@ class ApiService {
               statusCode == 404 &&
               serverMessage.contains('route is not found');
 
-          final isAuthError = (statusCode == 401) ||
+          // A 401 does not always mean "expired session" — the backend also
+          // returns it when the current role lacks access to a route (e.g. a
+          // SPEAKER hitting an /attendee/ endpoint). Refreshing cannot fix that,
+          // and treating it as an expiry destroyed a perfectly valid session and
+          // bounced the user to login. Only chase a refresh when the access
+          // token has actually expired.
+          final accessTokenExpired = await _isStoredAccessTokenExpired();
+
+          final isAuthError = (statusCode == 401 && accessTokenExpired) ||
               (statusCode == 500 && isJwtExpired) ||
               isHidden404;
 
@@ -240,6 +257,37 @@ class ApiService {
     }
   }
 
+  //*---------------- Access Token Expiry Check ----------------*//
+
+  /// Reads the stored access token and reports whether its `exp` claim has
+  /// passed. Returns true when there is no token, or when the token cannot be
+  /// parsed — in both cases a refresh attempt is the right fallback.
+  Future<bool> _isStoredAccessTokenExpired() async {
+    final token = await PrefsHelper.getString(AppConstants.bearerToken);
+    if (token.isEmpty) return true;
+
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return true;
+
+      // base64Url payloads are unpadded; normalize before decoding.
+      final payload = json.decode(
+        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+      );
+
+      final exp = (payload as Map<String, dynamic>)['exp'];
+      if (exp is! int) return true;
+
+      final expiry = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
+      // 10s skew so a token expiring mid-flight still counts as expired.
+      return DateTime.now().isAfter(
+        expiry.subtract(const Duration(seconds: 10)),
+      );
+    } catch (_) {
+      return true;
+    }
+  }
+
   //*---------------- Handle Refresh Token ----------------*//
   Future<String?> _handleTokenRefresh() async {
     if (_isRefreshing && _refreshTokenFuture != null) {
@@ -312,12 +360,12 @@ class ApiService {
     await PrefsHelper.remove(AppConstants.email);
     await PrefsHelper.setBool(AppConstants.isLogged, false);
 
-    // Redirect to login — use a small delay so any in-flight UI settles first
+    // Redirect to login. Use the router singleton rather than Get.context —
+    // context is frequently null/unmounted here, which silently dropped the
+    // redirect and left the user on a protected screen with no token, so every
+    // later request went out unauthenticated and 401'd.
     await Future.delayed(const Duration(milliseconds: 300));
-    final context = Get.context;
-    if (context != null && context.mounted) {
-      context.go('/signInScreen');
-    }
+    AppRoutes.goRouter.go(AppRoutes.signInScreen);
   }
   //------------------ API Methods ------------------*//
   //__________________________________________________//
