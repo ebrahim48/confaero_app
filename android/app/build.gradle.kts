@@ -59,3 +59,18 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // mobile_scanner 5.2.3 bundles ML Kit barcode-scanning 17.2.0, whose native
+    // libs (libbarhopper_v3.so, libimage_processing_util_jni.so) are only 4 KB-
+    // aligned and fail Google Play's 16 KB page-size check. Force the 16 KB-
+    // aligned release; the higher version wins Gradle's conflict resolution.
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+
+    // mobile_scanner 5.2.3 pins androidx.camera 1.3.3, whose
+    // libimage_processing_util_jni.so is 4 KB-aligned. camera 1.5.0 ships the
+    // 16 KB-aligned lib; the higher version wins conflict resolution.
+    implementation("androidx.camera:camera-core:1.5.0")
+    implementation("androidx.camera:camera-camera2:1.5.0")
+    implementation("androidx.camera:camera-lifecycle:1.5.0")
+}
