@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -15,6 +16,19 @@ import 'presentations/controller/theme_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Silence harmless image-load network failures (e.g. unreachable/placeholder
+  // image URLs). These are already handled gracefully by errorWidget/errorBuilder
+  // in the UI, so we only suppress the redundant console spam. All other errors
+  // are forwarded to the default handler.
+  final defaultOnError = FlutterError.onError;
+  FlutterError.onError = (FlutterErrorDetails details) {
+    if (details.library == 'image resource service' ||
+        details.exception is SocketException) {
+      return;
+    }
+    defaultOnError?.call(details);
+  };
 
   PlatformDispatcher.instance.onAccessibilityFeaturesChanged = () {};
 

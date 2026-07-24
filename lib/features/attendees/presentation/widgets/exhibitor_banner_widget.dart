@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../presentations/widgets/custom_network_image.dart';
+
 class ExhibitorBannerWidget extends StatelessWidget {
   final String imagePath;
 
@@ -11,28 +13,26 @@ class ExhibitorBannerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final border = Border.all(color: const Color(0xFF707070), width: 1);
+    final borderRadius = BorderRadius.circular(12.r);
+
+    if (imagePath.startsWith('http')) {
+      return CustomNetworkImage(
+        imageUrl: imagePath,
+        width: 346.w,
+        height: 197.h,
+        border: border,
+        borderRadius: borderRadius,
+      );
+    }
+
     return Container(
       width: 346.w,
       height: 197.h,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFF707070),
-          width: 1,
-        ),
-      ),
+      decoration: BoxDecoration(borderRadius: borderRadius, border: border),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12.r),
-        child: imagePath.startsWith('http')
-            ? Image.network(
-                imagePath,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: const Color(0xFFF5F5F5),
-                  child: const Icon(Icons.image_not_supported, size: 48),
-                ),
-              )
-            : Image.asset(imagePath, fit: BoxFit.cover),
+        borderRadius: borderRadius,
+        child: Image.asset(imagePath, fit: BoxFit.cover),
       ),
     );
   }

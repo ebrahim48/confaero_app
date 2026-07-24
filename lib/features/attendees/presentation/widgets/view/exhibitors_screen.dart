@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../../exhibitors_sponsors_booth/data/models/booth_model.dart';
+import 'package:confaero_app/presentations/widgets/custom_network_image.dart';
 import '../../controllers/exhibitor_controller.dart';
 import '../custom_app_bar_widget.dart';
 
@@ -122,16 +123,10 @@ class ExhibitorScreen extends StatelessWidget {
                     topRight: Radius.circular(16.r),
                   ),
                   child: booth.banner.startsWith('http')
-                      ? Image.network(
-                          booth.banner,
+                      ? CustomNetworkImage(
+                          imageUrl: booth.banner,
                           width: double.infinity,
                           height: 150.h,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            height: 150.h,
-                            color: const Color(0xFFF5F5F5),
-                            child: const Icon(Icons.image_not_supported),
-                          ),
                         )
                       : Image.asset(
                           'assets/images/exhibitor.png',

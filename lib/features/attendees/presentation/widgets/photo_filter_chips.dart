@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 
 class PhotoFilterChip extends StatelessWidget {
@@ -24,10 +25,12 @@ class PhotoFilterChip extends StatelessWidget {
         margin: EdgeInsets.only(right: 12.w),
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isSelected ? AppColors.primaryColor32A69A : Colors.white,
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: const Color(0xffD2D2D2),
+            color: isSelected
+                ? AppColors.primaryColor32A69A
+                : AppColors.borderColorD2D2D2,
             width: 1,
           ),
         ),
@@ -36,7 +39,9 @@ class PhotoFilterChip extends StatelessWidget {
             text: text,
             fontsize: 12.sp,
             fontWeight: FontWeight.w500,
-            color: const Color(0xff252525),
+            color: isSelected
+                ? AppColors.textColorFFFFFF
+                : AppColors.textColor252525,
           ),
         ),
       ),

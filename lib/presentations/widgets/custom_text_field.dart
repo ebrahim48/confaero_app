@@ -161,9 +161,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 focusedBorder: focusedBorder(),
                 enabledBorder: enabledBorder(),
                 errorBorder: errorBorder(),
+                focusedErrorBorder: errorBorder(),
                 border: focusedBorder(),
-                errorStyle:
-                    TextStyle(fontSize: 12.h, fontWeight: FontWeight.w400)),
+                errorStyle: TextStyle(
+                    color: AppColors.redColorAC1F1F,
+                    fontSize: 12.h,
+                    fontWeight: FontWeight.w400)),
           ),
         ],
       ),
@@ -195,7 +198,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
   OutlineInputBorder errorBorder() {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(widget.borderRadio?.r ?? 10.r),
-      borderSide: const BorderSide(color: Colors.red, width: 0.5),
+      borderSide: const BorderSide(color: AppColors.redColorAC1F1F, width: 1),
     );
   }
 }
