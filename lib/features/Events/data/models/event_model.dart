@@ -17,6 +17,8 @@ class EventModel {
   final String? paymentType;
   final DateTime? createdAt;
   final String? registrationStatus;
+  final double? latitude;
+  final double? longitude;
 
   EventModel({
     required this.id,
@@ -35,6 +37,8 @@ class EventModel {
     this.paymentType,
     this.createdAt,
     this.registrationStatus,
+    this.latitude,
+    this.longitude,
   });
 
   factory EventModel.fromJson(Map<String, dynamic> json) {
@@ -57,8 +61,16 @@ class EventModel {
           ? DateTime.tryParse(json['createdAt'] as String)
           : null,
       registrationStatus: json['registrationStatus'] as String?,
+      latitude: json['latitude'] != null
+          ? (json['latitude'] as num).toDouble()
+          : null,
+      longitude: json['longitude'] != null
+          ? (json['longitude'] as num).toDouble()
+          : null,
     );
   }
+
+  bool get hasCoordinates => latitude != null && longitude != null;
 
   /// Formats: "Jun 22-25, 2026" or "Jun 22 - Jul 5, 2026"
   String get formattedDateRange {

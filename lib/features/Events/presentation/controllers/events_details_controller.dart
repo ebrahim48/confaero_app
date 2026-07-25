@@ -9,12 +9,14 @@ import '../../../../../core/controllers/session_controller.dart';
 import '../../../../../core/helpers/toast_message_helper.dart';
 import '../../../../../core/services/api_service.dart';
 import '../../../../../core/services/connectivity_service.dart';
+import '../../../../../core/services/invitation_service.dart';
 import '../../data/models/event_model.dart';
 import '../../data/repositories/events_repository.dart';
 import '../../domain/services/events_service.dart';
 
 class EventDetailsController extends GetxController {
   late final EventsRepository _repository;
+  late final InvitationService _invitationService;
 
   final invitationCodeController = TextEditingController();
 
@@ -23,9 +25,15 @@ class EventDetailsController extends GetxController {
   final isJoining = false.obs;
   final showInvitationInput = false.obs;
 
+  // Pending invitation (for registrationStatus == PENDING) accept/reject
+  final RxString invitationId = ''.obs;
+  final isResolvingInvite = false.obs;
+  final isAcceptingInvite = false.obs;
+  final isRejectingInvite = false.obs;
+
   final event = Rxn<EventModel>();
   final errorMessage = ''.obs;
-  
+
   // Registration status passed from EventsScreen (for "My Events" tab)
   final RxString registrationStatus = ''.obs;
 
@@ -38,6 +46,10 @@ class EventDetailsController extends GetxController {
         apiService: Get.find<ApiService>(),
         connectivityService: Get.find<ConnectivityService>(),
       ),
+    );
+    _invitationService = InvitationService(
+      apiService: Get.find<ApiService>(),
+      connectivityService: Get.find<ConnectivityService>(),
     );
   }
 
@@ -62,10 +74,185 @@ class EventDetailsController extends GetxController {
       }
 
       event.value = await _repository.getEventDetails(eventId);
+
+      debugPrint('[EVENT_DETAILS] eventId=$eventId '
+          'passedStatus="$status" '
+          'detailsRegStatus="${event.value?.registrationStatus}"');
+
+      // The /attendee/events/{id} response does not always include the current
+      // user's registrationStatus (e.g. when opened from Explore / New Events).
+      // If we still don't know it, look it up from the user's registered events
+      // and invitations so a registered user correctly sees "Join Now".
+      final known = registrationStatus.value.isNotEmpty
+          ? registrationStatus.value
+          : event.value?.registrationStatus ?? '';
+      if (known.isEmpty) {
+        await _resolveRegistrationStatus(eventId);
+      }
+
+      debugPrint('[EVENT_DETAILS] resolved registrationStatus.value='
+          '"${registrationStatus.value}" '
+          'isVerifiedOrRegistered=$isVerifiedOrRegistered '
+          'isPending=$isPendingRegistration');
+
+      // If the registration is PENDING, it's an unanswered invitation —
+      // resolve its id so we can offer Accept / Reject.
+      if (isPendingRegistration) {
+        await _resolvePendingInvitation(eventId);
+      } else {
+        invitationId.value = '';
+      }
     } catch (e) {
       errorMessage.value = e.toString().replaceAll('Exception: ', '');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  /// Resolves the current user's registration status for [eventId] by checking
+  /// their registered events (`/attendee/my-events`) and, failing that, their
+  /// invitations (`/invitation/my-invitations`). Sets [registrationStatus] so
+  /// the UI shows Join Now (registered) or Accept/Reject (pending invitation).
+  Future<void> _resolveRegistrationStatus(String eventId) async {
+    try {
+      // 1) Registered events — status is VERIFIED / PENDING.
+      final myEvents = await _repository.getMyEvents();
+      debugPrint('[EVENT_DETAILS] myEvents=${myEvents.map((m) => '${m.event.id}:${m.status}').toList()}');
+      for (final m in myEvents) {
+        if (m.event.id == eventId && m.status.isNotEmpty) {
+          registrationStatus.value = m.status;
+          if (m.role.trim().isNotEmpty) {
+            await RoleController.to.setRole(m.role.trim());
+          }
+          return;
+        }
+      }
+
+      // 2) Invitations — an unanswered one means PENDING (accept/reject).
+      final invitations = await _invitationService.getMyInvitations();
+      debugPrint('[EVENT_DETAILS] invitations=${invitations.map((i) {
+        final ev = i['eventId'];
+        final id = ev is Map ? ev['_id'] : ev;
+        return '$id:${i['status']}';
+      }).toList()}');
+      for (final inv in invitations) {
+        final ev = inv['eventId'];
+        final evId = ev is Map ? ev['_id'] as String? : ev as String?;
+        if (evId != eventId) continue;
+
+        final s = (inv['status'] as String? ?? '').toUpperCase();
+        if (s == 'PENDING' || s == 'INVITED' || s.isEmpty) {
+          registrationStatus.value = 'PENDING';
+          invitationId.value = inv['_id'] as String? ?? '';
+        } else if (s == 'ACCEPTED') {
+          registrationStatus.value = 'VERIFIED';
+        }
+        break;
+      }
+    } catch (_) {
+      // Non-fatal — falls back to the "Not Registered" state.
+    }
+  }
+
+  /// Looks up the current user's pending invitation for [eventId] so the
+  /// Accept / Reject buttons have an invitation id to act on.
+  Future<void> _resolvePendingInvitation(String eventId) async {
+    try {
+      isResolvingInvite.value = true;
+      invitationId.value = '';
+
+      final invitations = await _invitationService.getMyInvitations();
+      for (final inv in invitations) {
+        final ev = inv['eventId'];
+        final evId = ev is Map ? ev['_id'] as String? : ev as String?;
+        if (evId == eventId) {
+          final status = (inv['status'] as String? ?? '').toUpperCase();
+          // Only unanswered invitations are actionable.
+          if (status == 'PENDING' || status == 'INVITED' || status.isEmpty) {
+            invitationId.value = inv['_id'] as String? ?? '';
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      // Non-fatal — buttons will simply be disabled if we can't resolve it.
+      invitationId.value = '';
+    } finally {
+      isResolvingInvite.value = false;
+    }
+  }
+
+  Future<void> acceptInvitation(BuildContext context) async {
+    final eventId = event.value?.id ?? '';
+    final invId = invitationId.value;
+    if (eventId.isEmpty || invId.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Could not find your invitation for this event.',
+        title: 'Error',
+      );
+      return;
+    }
+
+    try {
+      isAcceptingInvite.value = true;
+      final result =
+          await _invitationService.acceptInvitation(invId, eventId);
+      final success = result['success'] as bool? ?? true;
+      if (success) {
+        ToastMessageHelper.showToastMessage('Invitation accepted');
+        // Reflect the new status immediately, then refresh from server.
+        registrationStatus.value = 'VERIFIED';
+        await loadEvent(eventId);
+      } else {
+        ToastMessageHelper.showToastMessage(
+          result['message'] as String? ?? 'Failed to accept invitation',
+          title: 'Error',
+        );
+      }
+    } catch (e) {
+      ToastMessageHelper.showToastMessage(
+        e.toString().replaceAll('Exception: ', '').trim(),
+        title: 'Error',
+      );
+    } finally {
+      isAcceptingInvite.value = false;
+    }
+  }
+
+  Future<void> rejectInvitation(BuildContext context) async {
+    final eventId = event.value?.id ?? '';
+    final invId = invitationId.value;
+    if (eventId.isEmpty || invId.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Could not find your invitation for this event.',
+        title: 'Error',
+      );
+      return;
+    }
+
+    try {
+      isRejectingInvite.value = true;
+      final result =
+          await _invitationService.rejectInvitation(invId, eventId);
+      final success = result['success'] as bool? ?? true;
+      if (success) {
+        ToastMessageHelper.showToastMessage('Invitation rejected');
+        registrationStatus.value = 'REJECTED';
+        invitationId.value = '';
+        if (context.mounted) Navigator.of(context).pop();
+      } else {
+        ToastMessageHelper.showToastMessage(
+          result['message'] as String? ?? 'Failed to reject invitation',
+          title: 'Error',
+        );
+      }
+    } catch (e) {
+      ToastMessageHelper.showToastMessage(
+        e.toString().replaceAll('Exception: ', '').trim(),
+        title: 'Error',
+      );
+    } finally {
+      isRejectingInvite.value = false;
     }
   }
 
@@ -217,12 +404,14 @@ class EventDetailsController extends GetxController {
     isLoading.value = false;
   }
 
-  // True only for VERIFIED / REGISTERED — can join
+  // True for VERIFIED / REGISTERED / ACCEPTED — can join
   bool get isVerifiedOrRegistered {
     final status = registrationStatus.value.isNotEmpty
         ? registrationStatus.value
         : event.value?.registrationStatus ?? '';
-    return status == 'VERIFIED' || status == 'REGISTERED';
+    return status == 'VERIFIED' ||
+        status == 'REGISTERED' ||
+        status == 'ACCEPTED';
   }
 
   // True only for PENDING — awaiting approval

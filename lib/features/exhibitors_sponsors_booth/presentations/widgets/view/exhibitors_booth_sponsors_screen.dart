@@ -7,6 +7,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/controllers/role_controller.dart';
+import '../../../../bottomNavbar/presentation/main_nav_controller.dart';
 import '../../controllers/booth_controllers.dart';
 import '../booth_header_card.dart';
 import '../booth_quick_action_tile.dart';
@@ -179,8 +180,9 @@ class _BoothScreenState extends State<BoothScreen> {
                   subtitle: 'Manage your scanned badges',
                   backgroundColor: Colors.white,
                   iconBgColor: const Color(0xffF5F5F5),
-                  onTap: () =>
-                      context.push(AppRoutes.leadManagementScreen),
+                  // Switch to the Lead tab so the bottom navbar stays visible,
+                  // instead of pushing a full-screen route over it.
+                  onTap: () => MainNavController.to.changeTab(3),
                 ),
               ],
             ),

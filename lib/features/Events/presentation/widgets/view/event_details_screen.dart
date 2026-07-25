@@ -183,6 +183,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
             padding: EdgeInsets.symmetric(horizontal: 24.w),
             child: MapLocationCard(
               locationName: event.location,
+              latitude: event.latitude,
+              longitude: event.longitude,
               onTap: controller.openMap,
             ),
           ),
@@ -337,34 +339,45 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
 
 
+  Widget _statusBadge({
+    required String label,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      width: double.infinity,
+      height: 54.h,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: color),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color, size: 20.sp),
+          SizedBox(width: 8.w),
+          CustomText(
+            text: label,
+            fontsize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRegistrationSection(EventModel event) {
-    // VERIFIED / REGISTERED — show badge + Join Now button
+    // VERIFIED / REGISTERED / ACCEPTED — show status badge + Join Now
     if (controller.isVerifiedOrRegistered) {
       return Column(
         children: [
-          Container(
-            width: double.infinity,
-            height: 54.h,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: const Color(0xff5BB8AE).withOpacity(0.12),
-              borderRadius: BorderRadius.circular(8.r),
-              border: Border.all(color: const Color(0xff5BB8AE)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.check_circle_outline,
-                    color: const Color(0xff5BB8AE), size: 20.sp),
-                SizedBox(width: 8.w),
-                CustomText(
-                  text: controller.registrationStatusLabel,
-                  fontsize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xff5BB8AE),
-                ),
-              ],
-            ),
+          _statusBadge(
+            label: controller.registrationStatusLabel,
+            color: const Color(0xff5BB8AE),
+            icon: Icons.check_circle_outline,
           ),
           SizedBox(height: 12.h),
           Obx(() => GestureDetector(
@@ -406,31 +419,86 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       );
     }
 
-    // PENDING — show pending badge only (no join button)
+    // PENDING — invitation awaiting response: show badge + Accept / Reject
     if (controller.isPendingRegistration) {
-      return Container(
-        width: double.infinity,
-        height: 54.h,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Colors.orange.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(color: Colors.orange.shade400),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.hourglass_top_rounded,
-                color: Colors.orange.shade700, size: 20.sp),
-            SizedBox(width: 8.w),
-            CustomText(
-              text: 'Pending Approval',
-              fontsize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.orange.shade700,
-            ),
-          ],
-        ),
+      return Column(
+        children: [
+          _statusBadge(
+            label: 'Pending Approval',
+            color: Colors.orange.shade700,
+            icon: Icons.hourglass_top_rounded,
+          ),
+          SizedBox(height: 12.h),
+          Obx(() {
+            final busy = controller.isAcceptingInvite.value ||
+                controller.isRejectingInvite.value ||
+                controller.isResolvingInvite.value;
+            return Row(
+              children: [
+                // Reject
+                Expanded(
+                  child: GestureDetector(
+                    onTap: busy
+                        ? null
+                        : () => controller.rejectInvitation(context),
+                    child: Container(
+                      height: 50.h,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(color: Colors.red.shade400),
+                      ),
+                      child: controller.isRejectingInvite.value
+                          ? SizedBox(
+                              width: 20.w,
+                              height: 20.h,
+                              child: CircularProgressIndicator(
+                                  color: Colors.red.shade400, strokeWidth: 2),
+                            )
+                          : CustomText(
+                              text: 'Reject',
+                              fontsize: 15.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red.shade400,
+                            ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                // Accept
+                Expanded(
+                  child: GestureDetector(
+                    onTap: busy
+                        ? null
+                        : () => controller.acceptInvitation(context),
+                    child: Container(
+                      height: 50.h,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: const Color(0xff5BB8AE),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: controller.isAcceptingInvite.value
+                          ? SizedBox(
+                              width: 20.w,
+                              height: 20.h,
+                              child: const CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2),
+                            )
+                          : CustomText(
+                              text: 'Accept',
+                              fontsize: 15.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }),
+        ],
       );
     }
 

@@ -7,6 +7,7 @@ import 'package:confaero_app/features/mainattendees/presentation/widgets/view/at
 import 'package:confaero_app/features/message/presentation/widgets/view/message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'presentation/main_nav_controller.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/controllers/role_controller.dart';
 import '../../core/controllers/session_controller.dart';
@@ -34,8 +35,8 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int currentIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final MainNavController _navController = Get.put(MainNavController());
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +49,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       final roleData = _getRoleBasedData(eventId);
       final screens = roleData['screens'] as List<Widget>;
       final useRoleBasedNav = roleData['useRoleBasedNav'] as bool;
+
+      // Keep the selected index within the current role's screen range.
+      var currentIndex = _navController.currentIndex.value;
+      if (currentIndex >= screens.length) {
+        currentIndex = 0;
+      }
 
       // Make scaffold key accessible globally for opening drawer
       Get.delete<GlobalKey<ScaffoldState>>(force: true);
@@ -70,19 +77,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         bottomNavigationBar: useRoleBasedNav
             ? RoleBasedBottomNav(
                 currentIndex: currentIndex,
-                onTap: (index) {
-                  setState(() {
-                    currentIndex = index;
-                  });
-                },
+                onTap: _navController.changeTab,
               )
             : BottomNavBar(
                 currentIndex: currentIndex,
-                onTap: (index) {
-                  setState(() {
-                    currentIndex = index;
-                  });
-                },
+                onTap: _navController.changeTab,
               ),
       );
     });

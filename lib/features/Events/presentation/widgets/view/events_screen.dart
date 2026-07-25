@@ -11,6 +11,7 @@ import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/controllers/role_controller.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../../data/models/event_model.dart';
+import '../../../data/models/invitation_model.dart';
 import '../../../data/models/my_event_model.dart';
 import '../../controllers/events_controller.dart';
 import '../../widgets/event_card_widget.dart';
@@ -180,29 +181,73 @@ class _EventsScreenState extends State<EventsScreen>
     }
 
     final active = controller.filteredActiveEvents;
+    final invitations = controller.filteredMyInvitations;
 
-    if (active.isEmpty) {
+    if (active.isEmpty && invitations.isEmpty) {
       return _noEventsWidget();
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Pending invitations (awaiting Accept / Reject)
+        if (invitations.isNotEmpty) ...[
+          CustomText(
+            text: 'Invitations(${invitations.length})',
+            fontsize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textColor424242,
+            textAlign: TextAlign.start,
+            bottom: 12.h,
+          ),
+          ...invitations.map((inv) => Padding(
+            padding: EdgeInsets.only(bottom: 8.h),
+            child: _buildInvitationCard(inv),
+          )),
+          SizedBox(height: 24.h),
+        ],
+
         // Active (registered) events
-        CustomText(
-          text: 'My events(${active.length})',
-          fontsize: 16.sp,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textColor424242,
-          textAlign: TextAlign.start,
-          bottom: 12.h,
-        ),
-        ...active.map((m) => Padding(
-          padding: EdgeInsets.only(bottom: 8.h),
-          child: _buildRegisteredCard(m),
-        )),
-        SizedBox(height: 24.h),
+        if (active.isNotEmpty) ...[
+          CustomText(
+            text: 'My events(${active.length})',
+            fontsize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textColor424242,
+            textAlign: TextAlign.start,
+            bottom: 12.h,
+          ),
+          ...active.map((m) => Padding(
+            padding: EdgeInsets.only(bottom: 8.h),
+            child: _buildRegisteredCard(m),
+          )),
+          SizedBox(height: 24.h),
+        ],
       ],
+    );
+  }
+
+  Widget _buildInvitationCard(InvitationModel inv) {
+    final e = inv.event;
+    return EventCard(
+      imageUrl: e?.bannerImageUrl ?? '',
+      isNetworkImage: e?.bannerImageUrl != null && e!.bannerImageUrl!.isNotEmpty,
+      title: e?.title ?? 'Event Invitation',
+      date: e?.formattedDateRange ?? '',
+      location: e?.location ?? '',
+      isRegistered: true,
+      registrationStatus: 'PENDING',
+      onCardTap: () async {
+        await controller.openEventDetails(
+          context,
+          inv.eventId,
+          title: e?.title ?? '',
+          registrationStatus: 'PENDING',
+          role: inv.role,
+        );
+        // Returning from details — the invitation may now be accepted/rejected.
+        await controller.loadMyEvents();
+      },
     );
   }
 

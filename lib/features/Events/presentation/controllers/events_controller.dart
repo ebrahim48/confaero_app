@@ -9,6 +9,7 @@ import '../../../../../core/services/api_service.dart';
 import '../../../../../core/services/connectivity_service.dart';
 import '../../../../../core/services/invitation_service.dart';
 import '../../data/models/event_model.dart';
+import '../../data/models/invitation_model.dart';
 import '../../data/models/my_event_model.dart';
 import '../../data/repositories/events_repository.dart';
 import '../../domain/services/events_service.dart';
@@ -25,10 +26,12 @@ class EventsController extends GetxController {
   final RxList<String> tabLabels = <String>[].obs;
 
   // My Events tab
-  // activeMyEvents  = registered events from /attendee/my-event
+  // activeMyEvents  = registered events from /attendee/my-events
   // upcomingMyEvents = all upcoming events from /attendee/events (not registered)
+  // myInvitations   = pending invitations from /invitation/my-invitations
   final activeMyEvents = <MyEventModel>[].obs;
   final upcomingMyEvents = <EventModel>[].obs;
+  final myInvitations = <InvitationModel>[].obs;
   final isMyEventsLoading = false.obs;
   final myEventsError = ''.obs;
 
@@ -166,8 +169,15 @@ class EventsController extends GetxController {
       isMyEventsLoading.value = true;
       myEventsError.value = '';
 
-      // Only fetch registered events from /attendee/my-event
-      final myEvents = await _repository.getMyEvents();
+      // Fetch registered events (/attendee/my-events) and invitations
+      // (/invitation/my-invitations) in parallel.
+      final results = await Future.wait([
+        _repository.getMyEvents(),
+        _invitationService.getMyInvitations(),
+      ]);
+
+      final myEvents = results[0] as List<MyEventModel>;
+      final invitationsRaw = results[1] as List<Map<String, dynamic>>;
 
       // Active = all my registered events
       activeMyEvents.value = myEvents;
@@ -176,6 +186,16 @@ class EventsController extends GetxController {
       _myEventIds
         ..clear()
         ..addAll(myEvents.map((m) => m.event.id));
+
+      // Parse invitations, keep only unanswered ones for events the user
+      // is not already registered for.
+      myInvitations.value = invitationsRaw
+          .map((e) => InvitationModel.fromJson(e))
+          .where((inv) =>
+              inv.isPending &&
+              inv.eventId.isNotEmpty &&
+              !_myEventIds.contains(inv.eventId))
+          .toList();
 
       // Clear upcoming events (not shown in My Events tab anymore)
       upcomingMyEvents.clear();
@@ -277,6 +297,16 @@ class EventsController extends GetxController {
         .toList();
   }
 
+  List<InvitationModel> get filteredMyInvitations {
+    if (searchQuery.isEmpty) return myInvitations;
+    return myInvitations.where((inv) {
+      final e = inv.event;
+      if (e == null) return false;
+      return e.title.toLowerCase().contains(searchQuery.value) ||
+          e.location.toLowerCase().contains(searchQuery.value);
+    }).toList();
+  }
+
   List<EventModel> get filteredUpcomingEvents {
     if (searchQuery.isEmpty) return upcomingMyEvents;
     return upcomingMyEvents
@@ -323,8 +353,8 @@ class EventsController extends GetxController {
 
   // ── Navigation ────────────────────────────────────────────────────────────
 
-  void openEventDetails(BuildContext context, String eventId, {String title = '', String registrationStatus = '', String role = ''}) {
-    context.pushNamed(AppRoutes.eventsDetailsScreen, extra: {
+  Future<void> openEventDetails(BuildContext context, String eventId, {String title = '', String registrationStatus = '', String role = ''}) {
+    return context.pushNamed(AppRoutes.eventsDetailsScreen, extra: {
       'eventId': eventId,
       'registrationStatus': registrationStatus,
       'role': role,

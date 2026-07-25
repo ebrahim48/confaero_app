@@ -17,26 +17,13 @@ class AttendeesScreen extends StatefulWidget {
   State<AttendeesScreen> createState() => _AttendeesScreenState();
 }
 
-class _AttendeesScreenState extends State<AttendeesScreen>
-    with SingleTickerProviderStateMixin {
+class _AttendeesScreenState extends State<AttendeesScreen> {
   late final AttendeesController controller;
-  late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     controller = Get.put(AttendeesController());
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) return;
-      controller.selectRole(_tabController.index == 0 ? '' : 'SPEAKER');
-    });
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   @override
@@ -55,17 +42,39 @@ class _AttendeesScreenState extends State<AttendeesScreen>
               bottom: false,
               child: Row(
                 children: [
-                  // GestureDetector(
-                  //   onTap: () => Navigator.of(context).pop(),
-                  //   child: Icon(Icons.arrow_back, size: 24.sp, color: AppColors.textColor424242),
-                  // ),
-                  // SizedBox(width: 16.w),
+                  Container(
+                    width: 44.w,
+                    height: 44.w,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xffD7EAE8),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Icon(Icons.groups_outlined,
+                        size: 24.sp, color: const Color(0xff32A69A)),
+                  ),
+                  SizedBox(width: 12.w),
                   Expanded(
-                    child: CustomText(
-                      text: 'Event Attendees',
-                      fontsize: 18.sp,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textColor424242,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CustomText(
+                          text: 'Event Attendees',
+                          fontsize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textColor424242,
+                          textAlign: TextAlign.start,
+                        ),
+                        SizedBox(height: 2.h),
+                        CustomText(
+                          text: 'Connect with participants',
+                          fontsize: 12.sp,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textColor7E7F7E,
+                          textAlign: TextAlign.start,
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -73,37 +82,62 @@ class _AttendeesScreenState extends State<AttendeesScreen>
             ),
           ),
 
-          // Search bar
+          // Search bar + filter
           Padding(
             padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 12.h),
-            child: Container(
-              height: 40.h,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: const Color(0xffE1E1E1)),
-              ),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w),
-                    child: Icon(Icons.search, size: 20.sp, color: AppColors.textColor7E7F7E),
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: controller.searchController,
-                      decoration: InputDecoration(
-                        hintText: 'Search attendees',
-                        hintStyle: TextStyle(fontSize: 12.sp, color: AppColors.textColor7E7F7E),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(vertical: 10.h),
-                        isDense: true,
-                      ),
-                      style: TextStyle(fontSize: 12.sp, color: AppColors.textColor424242),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 44.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8.r),
+                      border: Border.all(color: const Color(0xffE1E1E1)),
+                    ),
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12.w),
+                          child: Icon(Icons.search,
+                              size: 20.sp, color: AppColors.textColor7E7F7E),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: controller.searchController,
+                            decoration: InputDecoration(
+                              hintText: 'Search event name, Location, etc',
+                              hintStyle: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: AppColors.textColor7E7F7E),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(vertical: 10.h),
+                              isDense: true,
+                            ),
+                            style: TextStyle(
+                                fontSize: 12.sp,
+                                color: AppColors.textColor424242),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                SizedBox(width: 12.w),
+                // Filter button
+                Container(
+                  width: 44.h,
+                  height: 44.h,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(color: const Color(0xffE1E1E1)),
+                  ),
+                  child: Icon(Icons.tune,
+                      size: 20.sp, color: AppColors.textColor424242),
+                ),
+              ],
             ),
           ),
 
@@ -115,7 +149,7 @@ class _AttendeesScreenState extends State<AttendeesScreen>
                 Expanded(
                   child: StatsCard(
                     count: controller.totalAttendees.value.toString(),
-                    label: _tabController.index == 0 ? 'Total Attendees' : 'Total Speakers',
+                    label: 'Total Attendees',
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -127,34 +161,6 @@ class _AttendeesScreenState extends State<AttendeesScreen>
                 ),
               ],
             )),
-          ),
-
-          SizedBox(height: 12.h),
-
-          // Tabs
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 24.w),
-            decoration: BoxDecoration(
-              color: const Color(0xffF5F5F5),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              indicator: BoxDecoration(
-                color: const Color(0xff32A69A),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              indicatorSize: TabBarIndicatorSize.tab,
-              labelColor: Colors.white,
-              unselectedLabelColor: AppColors.textColor7E7F7E,
-              labelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
-              unselectedLabelStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
-              dividerColor: Colors.transparent,
-              tabs: const [
-                Tab(text: 'Attendees'),
-                Tab(text: 'Speakers'),
-              ],
-            ),
           ),
 
           SizedBox(height: 12.h),
