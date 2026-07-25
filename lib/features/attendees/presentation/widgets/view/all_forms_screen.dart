@@ -131,23 +131,11 @@ class _EducationFormScreenState extends State<EducationFormScreen> {
   }
 
   Widget _yearDropdown(int? value, String hint, ValueChanged<int?> onChanged) {
-    return DropdownButtonFormField<int>(
+    return AppDropdownField<int>(
       value: value,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(fontSize: 13.sp, color: AppColors.textColor7E7F7E),
-        contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.r),
-            borderSide: const BorderSide(color: Color(0xffD9D9D9))),
-        enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.r),
-            borderSide: const BorderSide(color: Color(0xffD9D9D9))),
-      ),
-      isExpanded: true,
-      items: _years
-          .map((y) => DropdownMenuItem(value: y, child: Text('$y', style: TextStyle(fontSize: 13.sp))))
-          .toList(),
+      hint: hint,
+      items: _years,
+      labelBuilder: (y) => '$y',
       onChanged: onChanged,
     );
   }
@@ -417,21 +405,11 @@ class _SocialLinkFormScreenState extends State<SocialLinkFormScreen> {
                   CustomText(text: 'Platform', fontsize: 13.sp,
                       fontWeight: FontWeight.w500, color: AppColors.textColor424242),
                   SizedBox(height: 8.h),
-                  DropdownButtonFormField<String>(
+                  AppDropdownField<String>(
                     value: _platform,
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                          borderSide: const BorderSide(color: Color(0xffD9D9D9))),
-                      enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                          borderSide: const BorderSide(color: Color(0xffD9D9D9))),
-                    ),
-                    items: _platforms
-                        .map((p) => DropdownMenuItem(
-                            value: p, child: Text(p, style: TextStyle(fontSize: 13.sp))))
-                        .toList(),
+                    hint: 'Select platform',
+                    items: _platforms,
+                    labelBuilder: (p) => p,
                     onChanged: (v) => setState(() => _platform = v ?? 'LinkedIn'),
                   ),
                   SizedBox(height: 12.h),
@@ -545,22 +523,7 @@ Widget _buildHeader(BuildContext context, String title) {
   );
 }
 
-Widget _buildSectionHeader(String title) {
-  return Container(
-    width: double.infinity,
-    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-    decoration: BoxDecoration(
-      color: const Color(0xffE1E1E1),
-      borderRadius: BorderRadius.circular(4.r),
-    ),
-    child: CustomText(
-      text: title,
-      fontsize: 13.sp,
-      fontWeight: FontWeight.w600,
-      color: AppColors.textColor424242,
-    ),
-  );
-}
+Widget _buildSectionHeader(String title) => AppFormSectionHeader(title);
 
 Widget _buildCheckbox(String label, bool value, Function(bool?) onChanged) {
   return Row(

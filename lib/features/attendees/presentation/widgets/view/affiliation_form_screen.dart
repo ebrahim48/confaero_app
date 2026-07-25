@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../../../../presentations/widgets/custom_button.dart';
@@ -19,25 +20,8 @@ class _AffiliationFormScreenState extends State<AffiliationFormScreen> {
   final _positionController = TextEditingController();
   bool _isCurrent = false;
 
-  // From
-  int? _fromYear;
-  int? _fromMonth;
-  // To
-  int? _toYear;
-  int? _toMonth;
-
-  static const _months = [
-    '01 - January', '02 - February', '03 - March', '04 - April',
-    '05 - May', '06 - June', '07 - July', '08 - August',
-    '09 - September', '10 - October', '11 - November', '12 - December',
-  ];
-
-  List<int> get _years {
-    final current = DateTime.now().year;
-    return List.generate(current - 1949, (i) => current - i);
-  }
-
-  String _monthValue(int? month) => month == null ? '' : month.toString().padLeft(2, '0');
+  DateTime? _fromDate;
+  DateTime? _toDate;
 
   @override
   void dispose() {
@@ -52,19 +36,25 @@ class _AffiliationFormScreenState extends State<AffiliationFormScreen> {
           backgroundColor: Colors.red[100]);
       return;
     }
-    if (_fromYear == null || _fromMonth == null) {
-      Get.snackbar('Error', 'Please select start year and month',
+    if (_fromDate == null) {
+      Get.snackbar('Error', 'Please select a start date',
           backgroundColor: Colors.red[100]);
       return;
     }
-    if (!_isCurrent && (_toYear == null || _toMonth == null)) {
-      Get.snackbar('Error', 'Please select end year and month or check "I currently work here"',
+    if (!_isCurrent && _toDate == null) {
+      Get.snackbar('Error', 'Please select an end date or check "I currently work here"',
+          backgroundColor: Colors.red[100]);
+      return;
+    }
+    if (!_isCurrent && _toDate!.isBefore(_fromDate!)) {
+      Get.snackbar('Error', 'End date cannot be before the start date',
           backgroundColor: Colors.red[100]);
       return;
     }
 
-    final from = '$_fromYear-${_monthValue(_fromMonth)}';
-    final to = _isCurrent ? '' : '$_toYear-${_monthValue(_toMonth)}';
+    final fmt = DateFormat('yyyy-MM');
+    final from = fmt.format(_fromDate!);
+    final to = _isCurrent ? '' : fmt.format(_toDate!);
 
     Navigator.pop(
       context,
@@ -91,7 +81,7 @@ class _AffiliationFormScreenState extends State<AffiliationFormScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _sectionHeader('Affiliation'),
+                  const AppFormSectionHeader('Affiliation'),
                   SizedBox(height: 16.h),
 
                   FormInputWidget(controller: _companyController, hintText: 'Company *'),
@@ -102,12 +92,10 @@ class _AffiliationFormScreenState extends State<AffiliationFormScreen> {
                   CustomText(text: 'From *', fontsize: 13.sp, fontWeight: FontWeight.w500,
                       color: AppColors.textColor424242),
                   SizedBox(height: 8.h),
-                  Row(
-                    children: [
-                      Expanded(child: _yearDropdown(_fromYear, 'Year', (v) => setState(() => _fromYear = v))),
-                      SizedBox(width: 12.w),
-                      Expanded(child: _monthDropdown(_fromMonth, 'Month', (v) => setState(() => _fromMonth = v))),
-                    ],
+                  AppDatePickerField(
+                    value: _fromDate,
+                    hint: 'Select start date',
+                    onPicked: (d) => setState(() => _fromDate = d),
                   ),
                   SizedBox(height: 16.h),
 
@@ -115,12 +103,11 @@ class _AffiliationFormScreenState extends State<AffiliationFormScreen> {
                     CustomText(text: 'To *', fontsize: 13.sp, fontWeight: FontWeight.w500,
                         color: AppColors.textColor424242),
                     SizedBox(height: 8.h),
-                    Row(
-                      children: [
-                        Expanded(child: _yearDropdown(_toYear, 'Year', (v) => setState(() => _toYear = v))),
-                        SizedBox(width: 12.w),
-                        Expanded(child: _monthDropdown(_toMonth, 'Month', (v) => setState(() => _toMonth = v))),
-                      ],
+                    AppDatePickerField(
+                      value: _toDate,
+                      hint: 'Select end date',
+                      firstDate: _fromDate,
+                      onPicked: (d) => setState(() => _toDate = d),
                     ),
                     SizedBox(height: 16.h),
                   ],
@@ -159,71 +146,6 @@ class _AffiliationFormScreenState extends State<AffiliationFormScreen> {
     );
   }
 
-  Widget _yearDropdown(int? value, String hint, ValueChanged<int?> onChanged) {
-    return DropdownButtonFormField<int>(
-      value: value,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(fontSize: 13.sp, color: AppColors.textColor7E7F7E),
-        contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.r),
-          borderSide: const BorderSide(color: Color(0xffD9D9D9)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.r),
-          borderSide: const BorderSide(color: Color(0xffD9D9D9)),
-        ),
-      ),
-      isExpanded: true,
-      items: _years
-          .map((y) => DropdownMenuItem(value: y, child: Text('$y', style: TextStyle(fontSize: 13.sp))))
-          .toList(),
-      onChanged: onChanged,
-    );
-  }
-
-  Widget _monthDropdown(int? value, String hint, ValueChanged<int?> onChanged) {
-    return DropdownButtonFormField<int>(
-      value: value,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(fontSize: 13.sp, color: AppColors.textColor7E7F7E),
-        contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.r),
-          borderSide: const BorderSide(color: Color(0xffD9D9D9)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.r),
-          borderSide: const BorderSide(color: Color(0xffD9D9D9)),
-        ),
-      ),
-      isExpanded: true,
-      items: List.generate(
-        12,
-        (i) => DropdownMenuItem(value: i + 1, child: Text(_months[i], style: TextStyle(fontSize: 12.sp))),
-      ),
-      onChanged: onChanged,
-    );
-  }
-}
-
-Widget _sectionHeader(String title) {
-  return Container(
-    width: double.infinity,
-    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-    decoration: BoxDecoration(
-      color: const Color(0xffE1E1E1),
-      borderRadius: BorderRadius.circular(4.r),
-    ),
-    child: CustomText(
-      text: title,
-      fontsize: 13.sp,
-      fontWeight: FontWeight.w600,
-      color: AppColors.textColor424242,
-    ),
-  );
 }
 
 Widget _buildHeader(BuildContext context, String title) {
