@@ -2,6 +2,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/content_service.dart';
 
 class AboutUsController extends GetxController {
@@ -14,8 +17,14 @@ class AboutUsController extends GetxController {
     context.pushNamed(AppRoutes.newEventProposalScreen);
   }
 
-  void onSupportEmailTap() {
-    // TODO: Launch email client with support address
+  Future<void> onSupportEmailTap() async {
+    final uri = Uri.parse('mailto:${AppConstants.supportEmail}');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ToastMessageHelper.showToastMessage(
+        'No email app found. Write to us at ${AppConstants.supportEmail}',
+        title: 'Info',
+      );
+    }
   }
 
   /// Load terms & conditions — endpoint removed from backend API

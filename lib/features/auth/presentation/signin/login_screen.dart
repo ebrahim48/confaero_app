@@ -28,16 +28,23 @@ class _SignInScreenState extends State<SignInScreen>
   @override
   void initState() {
     super.initState();
-    // Always create a fresh controller for signin screen
+    // Permanent + reused (never deleted/recreated): logout flows navigate
+    // here then run `Get.deleteAll()` one frame later to reset app state.
+    // deleteAll() skips permanent instances, so this avoids disposing this
+    // screen's TextEditingControllers while its TextFormFields are still on
+    // screen — see SidebarController.logout() and friends.
     if (Get.isRegistered<SignInController>()) {
-      Get.delete<SignInController>();
+      controller = Get.find<SignInController>();
+      controller.clearFields();
+      controller.clearErrors();
+    } else {
+      controller = Get.put(SignInController(), permanent: true);
     }
-    controller = Get.put(SignInController(), permanent: false);
   }
 
   @override
   void dispose() {
-    // Controller will be disposed by GetX when screen is popped
+    // Controller is permanent — intentionally not deleted here; see initState.
     super.dispose();
   }
 

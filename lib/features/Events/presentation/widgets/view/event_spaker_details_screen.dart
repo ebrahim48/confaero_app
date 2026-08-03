@@ -71,7 +71,7 @@ class EventSpekarDetailsScreen extends StatelessWidget {
 
                             // Action Buttons Widget
                             EventSpekarActionButtons(
-                              onSayHi: () => controller.sayHi(),
+                              onSayHi: () => controller.sayHi(context),
                               onSendMail: () => controller.sendMail(),
                             ),
                             SizedBox(height: 32.h),

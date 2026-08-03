@@ -56,7 +56,11 @@ class SponsorDashboardController extends GetxController {
   }
 
   Future<void> createSponsor() async {
-    if (nameController.text.isEmpty) {
+    if (nameController.text.trim().isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Enter a sponsor name first.',
+        title: 'Warning',
+      );
       return;
     }
     try {
@@ -69,9 +73,11 @@ class SponsorDashboardController extends GetxController {
         'eventId': currentEventId,
       });
       _clearForm();
+      ToastMessageHelper.showToastMessage('Sponsor created');
       Get.back();
       loadDashboard();
     } catch (e) {
+      _showError(e, 'Could not create the sponsor.');
     } finally {
       isSaving.value = false;
     }
@@ -80,17 +86,29 @@ class SponsorDashboardController extends GetxController {
   Future<void> approveSponsor(String sponsorId) async {
     try {
       await _service.approveSponsor(sponsorId);
+      ToastMessageHelper.showToastMessage('Sponsor approved');
       loadDashboard();
     } catch (e) {
+      _showError(e, 'Could not approve the sponsor.');
     }
   }
 
   Future<void> rejectSponsor(String sponsorId) async {
     try {
       await _service.rejectSponsor(sponsorId);
+      ToastMessageHelper.showToastMessage('Sponsor rejected');
       loadDashboard();
     } catch (e) {
+      _showError(e, 'Could not reject the sponsor.');
     }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 
   void populateForm(Map<String, dynamic> sponsor) {

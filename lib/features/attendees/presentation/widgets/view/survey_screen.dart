@@ -97,7 +97,7 @@ class SurveyScreen extends StatelessWidget {
 
                   // Question 3: Suggestions
                   CustomText(
-                    text: '3. Any suggestions? (optional)',
+                    text: '3. Any suggestions?',
                     fontsize: 14.sp,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xff252525),

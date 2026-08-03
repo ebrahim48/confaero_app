@@ -167,6 +167,8 @@ class _AgendaScreenState extends State<AgendaScreen> {
                                 isBreak: false,
                                 location: session.location,
                                 onFavorite: () => controller.toggleFavorite(index),
+                                onBookmark: () => controller.toggleBookmark(session),
+                                isBookmarked: session.isBookmarked,
                                 onTap: () => context.pushNamed(
                                   AppRoutes.agendaDetailsScreen,
                                   extra: session.sessionIndex.toString(),

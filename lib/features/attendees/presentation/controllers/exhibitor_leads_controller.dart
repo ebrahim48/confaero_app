@@ -93,7 +93,9 @@ class ExhibitorLeadsController extends GetxController {
     try {
       await _qrService.addLeadNote(leadId, noteController.text.trim());
       await loadLeads();
+      ToastMessageHelper.showToastMessage('Note saved');
     } catch (e) {
+      _showError(e, 'Could not save the note.');
     } finally {
       isSaving.value = false;
     }
@@ -131,16 +133,32 @@ class ExhibitorLeadsController extends GetxController {
             .where((t) => t.isNotEmpty)
             .toList();
 
-    if (tags.isEmpty) return;
+    if (tags.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Enter at least one tag.',
+        title: 'Warning',
+      );
+      return;
+    }
 
     isSaving.value = true;
     try {
       await _qrService.tagLead(leadId, tags);
       await loadLeads();
+      ToastMessageHelper.showToastMessage('Tags saved');
     } catch (e) {
+      _showError(e, 'Could not save the tags.');
     } finally {
       isSaving.value = false;
     }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 
   Future<void> refreshLeads() => loadLeads();

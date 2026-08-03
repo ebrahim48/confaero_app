@@ -1,5 +1,10 @@
-﻿import 'package:get/get.dart';
+﻿import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/config/approutes/app_routes.dart';
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../domain/services/agenda_service.dart';
 
 class SpeakerProfileController extends GetxController {
@@ -109,27 +114,83 @@ class SpeakerProfileController extends GetxController {
     return null;
   }
 
-  void openLinkedIn() {
+  String get _speakerEmail =>
+      _info['email']?.toString() ??
+      speaker['email']?.toString() ??
+      '';
+
+  Future<void> openLinkedIn() async {
     final url = _getSocialUrl('LinkedIn');
-    if (url != null && url.isNotEmpty) {
-      // TODO: url_launcher
-    } else {
+    if (url == null || url.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        '$speakerName has not shared a LinkedIn profile.',
+        title: 'Info',
+      );
+      return;
     }
+    await _launch(url, failureMessage: 'Could not open the LinkedIn profile.');
   }
 
-  void openWebsite() {
+  Future<void> openWebsite() async {
     final websites = _info['personalWebsites'] as List?;
-    final url = (websites != null && websites.isNotEmpty) ? websites.first?.toString() : null;
-    if (url != null && url.isNotEmpty) {
-      // TODO: url_launcher
-    } else {
+    final url = (websites != null && websites.isNotEmpty)
+        ? websites.first?.toString()
+        : null;
+    if (url == null || url.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        '$speakerName has not shared a website.',
+        title: 'Info',
+      );
+      return;
+    }
+    await _launch(url, failureMessage: 'Could not open the website.');
+  }
+
+  /// Opens the device mail composer addressed to the speaker.
+  Future<void> contractSpeaker() async {
+    final email = _speakerEmail.trim();
+    if (email.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'No contact email is available for this speaker.',
+        title: 'Info',
+      );
+      return;
+    }
+    final uri = Uri.parse('mailto:$email');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ToastMessageHelper.showToastMessage(
+        'No email app found on this device.',
+        title: 'Error',
+      );
     }
   }
 
-  void contractSpeaker() {
+  /// The agenda details route is keyed by the session's index (same value the
+  /// agenda list passes), falling back to its id when the index is absent.
+  void goToSessionDetails(BuildContext context, Map<String, dynamic> session) {
+    final idx = session['sessionIndex']?.toString() ?? '';
+    final sessionRef = idx.isNotEmpty ? idx : (session['_id']?.toString() ?? '');
+    if (sessionRef.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Session details are not available.',
+        title: 'Info',
+      );
+      return;
+    }
+    context.pushNamed(AppRoutes.agendaDetailsScreen, extra: sessionRef);
   }
 
-  void goToSessionDetails(Map<String, dynamic> session) {
-    // TODO: navigate to session details
+  /// Launches [raw] externally, prefixing https:// when the scheme is missing.
+  Future<void> _launch(String raw, {required String failureMessage}) async {
+    final trimmed = raw.trim();
+    final uri = Uri.tryParse(
+      trimmed.startsWith('http://') || trimmed.startsWith('https://')
+          ? trimmed
+          : 'https://$trimmed',
+    );
+    if (uri == null ||
+        !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ToastMessageHelper.showToastMessage(failureMessage, title: 'Error');
+    }
   }
 }

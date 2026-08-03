@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../../core/constants/app_colors.dart';
+import '../../../../../core/helpers/toast_message_helper.dart';
 import '../../../../../presentations/widgets/custom_button.dart';
 import '../../../../../presentations/widgets/custom_text_field.dart';
 import '../../controllers/booth_controllers.dart';
@@ -68,11 +69,32 @@ class _BoothProfileScreenState extends State<BoothProfileScreen> {
                 final bannerVal = controller.boothBannerPath.value;
                 if (bannerVal.isEmpty) {
                   return _bannerUploadEmpty();
-                } else if (bannerVal.startsWith('http')) {
-                  return _bannerNetwork(bannerVal);
-                } else {
-                  return _bannerAsset(bannerVal);
                 }
+                // Tapping an existing banner lets it be replaced or removed.
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _editBanner,
+                  child: Stack(
+                    children: [
+                      bannerVal.startsWith('http')
+                          ? _bannerNetwork(bannerVal)
+                          : _bannerAsset(bannerVal),
+                      Positioned(
+                        top: 8.h,
+                        right: 8.w,
+                        child: Container(
+                          padding: EdgeInsets.all(6.w),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Icon(Icons.edit,
+                              size: 16.sp, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               }),
               SizedBox(height: 4.h),
               Divider(color: AppColors.borderColorD2D2D2),
@@ -243,11 +265,82 @@ class _BoothProfileScreenState extends State<BoothProfileScreen> {
     );
   }
 
+  /// The booth API stores the banner as an image URL, so the banner is set by
+  /// entering/pasting a link. Also allows clearing an existing one.
+  Future<void> _editBanner() async {
+    final input =
+        TextEditingController(text: controller.boothBannerPath.value);
+    final hadBanner = controller.boothBannerPath.value.isNotEmpty;
+
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Booth Banner',
+          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Paste a link to your banner image (recommended 1200x600px).',
+              style: TextStyle(
+                  fontSize: 12.sp, color: AppColors.textColor7E7F7E),
+            ),
+            SizedBox(height: 12.h),
+            TextField(
+              controller: input,
+              autofocus: true,
+              keyboardType: TextInputType.url,
+              decoration: const InputDecoration(
+                hintText: 'https://example.com/banner.png',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          if (hadBanner)
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, ''),
+              child: Text('Remove', style: TextStyle(color: Colors.red[400])),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, input.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    input.dispose();
+    if (result == null) return; // dismissed
+
+    if (result.isEmpty) {
+      controller.boothBannerPath.value = '';
+      return;
+    }
+
+    final uri = Uri.tryParse(result);
+    if (uri == null || !uri.hasScheme || !uri.hasAuthority) {
+      ToastMessageHelper.showToastMessage(
+        'Please enter a valid image link starting with http:// or https://',
+        title: 'Error',
+      );
+      return;
+    }
+    controller.boothBannerPath.value = result;
+  }
+
   Widget _bannerUploadEmpty() {
     return GestureDetector(
-      onTap: () {
-        // TODO: image picker integration
-      },
+      behavior: HitTestBehavior.opaque,
+      onTap: _editBanner,
       child: Container(
         width: double.infinity,
         height: 130.h,

@@ -55,7 +55,9 @@ class TaskScreen extends StatelessWidget {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () {},
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () =>
+                        context.pushNamed(AppRoutes.notificationsScreen),
                     child: Icon(Icons.notifications_outlined,
                         size: 24.sp, color: AppColors.textColor424242),
                   ),

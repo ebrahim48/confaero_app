@@ -2,6 +2,7 @@
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../connection/data/models/connection_model.dart';
 import '../../../connection/domain/services/connection_service.dart';
 import '../../../message/presentation/widgets/view/message_chat_screen.dart';
@@ -43,7 +44,13 @@ class ConnectionDetailsController extends GetxController {
 
   void sayHi(BuildContext context) {
     final c = connection.value;
-    if (c == null) return;
+    if (c == null) {
+      ToastMessageHelper.showToastMessage(
+        'This connection cannot be messaged right now.',
+        title: 'Info',
+      );
+      return;
+    }
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -57,10 +64,20 @@ class ConnectionDetailsController extends GetxController {
   }
 
   Future<void> sendMail() async {
-    final email = connection.value?.email ?? '';
+    final email = connection.value?.email?.trim() ?? '';
     if (email.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'No email address is available for this connection.',
+        title: 'Info',
+      );
       return;
     }
-    await launchUrl(Uri.parse('mailto:$email'));
+    final uri = Uri.parse('mailto:$email');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ToastMessageHelper.showToastMessage(
+        'No email app found on this device.',
+        title: 'Error',
+      );
+    }
   }
 }

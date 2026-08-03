@@ -2,7 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../data/reviewer_models.dart';
 import 'cotroller/review_documents_controller.dart';
 
@@ -103,9 +105,8 @@ class AbstractDetailScreen extends StatelessWidget {
                         if (doc.fileUrl.isNotEmpty) ...[
                           Center(
                             child: GestureDetector(
-                              onTap: () {
-                                // Open URL in browser
-                              },
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => _openDocument(doc.fileUrl),
                               child: Container(
                                 padding: EdgeInsets.symmetric(
                                     horizontal: 20.w, vertical: 10.h),
@@ -261,6 +262,18 @@ class AbstractDetailScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Opens the submitted abstract in the device's browser / PDF viewer.
+  Future<void> _openDocument(String url) async {
+    final uri = Uri.tryParse(url.trim());
+    if (uri == null ||
+        !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ToastMessageHelper.showToastMessage(
+        'Could not open this document.',
+        title: 'Error',
+      );
+    }
   }
 
   Widget _infoRow(String label, String value) {

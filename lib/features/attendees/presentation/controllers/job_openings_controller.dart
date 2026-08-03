@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/job_service.dart';
 
 // Job Model
@@ -144,8 +145,10 @@ class JobOpeningsController extends GetxController {
     try {
       isSaving.value = true;
       await _jobService.createJob(data);
+      ToastMessageHelper.showToastMessage('Job posted');
       loadJobs();
     } catch (e) {
+      _showError(e, 'Could not post the job.');
     } finally {
       isSaving.value = false;
     }
@@ -186,24 +189,38 @@ class JobOpeningsController extends GetxController {
   Future<void> updateJobStatus(String jobId, Map<String, dynamic> data) async {
     try {
       await _jobService.updateJobStatus(jobId, data);
+      ToastMessageHelper.showToastMessage('Job status updated');
       loadJobs();
     } catch (e) {
+      _showError(e, 'Could not update the job status.');
     }
   }
 
   Future<void> updateJob(String jobId, Map<String, dynamic> data) async {
     try {
       await _jobService.updateJob(jobId, data);
+      ToastMessageHelper.showToastMessage('Job updated');
       loadJobs();
     } catch (e) {
+      _showError(e, 'Could not update the job.');
     }
   }
 
   Future<void> deleteJob(String jobId) async {
     try {
       await _jobService.deleteJob(jobId);
+      ToastMessageHelper.showToastMessage('Job deleted');
       loadJobs();
     } catch (e) {
+      _showError(e, 'Could not delete the job.');
     }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 }

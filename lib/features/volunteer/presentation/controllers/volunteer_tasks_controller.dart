@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/volunteer_service.dart';
 import '../../data/models/volunteer_models.dart';
 
@@ -63,7 +64,13 @@ class TaskController extends GetxController {
       isCompleting.value = true;
       await _service.completeTask(taskId);
       await loadData();
-    } catch (_) {
+      ToastMessageHelper.showToastMessage('Task marked as complete');
+    } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '').trim();
+      ToastMessageHelper.showToastMessage(
+        msg.isEmpty ? 'Could not complete this task. Please try again.' : msg,
+        title: 'Error',
+      );
     } finally {
       isCompleting.value = false;
     }

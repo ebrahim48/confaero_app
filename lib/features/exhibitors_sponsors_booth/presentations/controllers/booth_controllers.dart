@@ -2,6 +2,7 @@
 import 'package:get/get.dart';
 
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/booth_service.dart';
 import '../../data/models/booth_model.dart';
 
@@ -172,12 +173,24 @@ class BoothController extends GetxController {
         hasBooth.value = true;
         await _loadBooth();
         await _loadAnalytics();
+        ToastMessageHelper.showToastMessage('Booth created');
         Navigator.pop(Get.context!);
+      } else {
+        ToastMessageHelper.showToastMessage(
+          res['message'] as String? ?? 'Could not create the booth.',
+          title: 'Error',
+        );
       }
     } catch (e) {
+      ToastMessageHelper.showToastMessage(_friendlyError(e), title: 'Error');
     } finally {
       isSaving.value = false;
     }
+  }
+
+  String _friendlyError(Object e) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    return msg.isEmpty ? 'Something went wrong. Please try again.' : msg;
   }
 
   Future<void> saveBoothChanges() async {
@@ -185,6 +198,7 @@ class BoothController extends GetxController {
     try {
       final body = <String, dynamic>{
         'companyName': companyNameController.text.trim(),
+        'banner': boothBannerPath.value,
         'offerTitle': offerTitleController.text.trim(),
         'boothOpening': boothOpeningController.text.trim(),
         'description': descriptionController.text.trim(),
@@ -199,9 +213,16 @@ class BoothController extends GetxController {
       final res = await _service.updateMyBooth(eventId, body);
       if (res['success'] == true) {
         await _loadBooth();
+        ToastMessageHelper.showToastMessage('Booth updated');
         Navigator.pop(Get.context!);
+      } else {
+        ToastMessageHelper.showToastMessage(
+          res['message'] as String? ?? 'Could not save your changes.',
+          title: 'Error',
+        );
       }
     } catch (e) {
+      ToastMessageHelper.showToastMessage(_friendlyError(e), title: 'Error');
     } finally {
       isSaving.value = false;
     }

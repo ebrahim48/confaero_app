@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/booth_service.dart';
 
 class BoothManagementController extends GetxController {
@@ -57,17 +58,29 @@ class BoothManagementController extends GetxController {
   Future<void> acceptBooth(String boothId) async {
     try {
       await _service.acceptBooth(boothId);
+      ToastMessageHelper.showToastMessage('Booth accepted');
       loadOrganizerBooths();
     } catch (e) {
+      _showError(e, 'Could not accept the booth.');
     }
   }
 
   Future<void> cancelBooth(String boothId) async {
     try {
       await _service.cancelBooth(boothId);
+      ToastMessageHelper.showToastMessage('Booth cancelled');
       loadOrganizerBooths();
     } catch (e) {
+      _showError(e, 'Could not cancel the booth.');
     }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 
   // =================== Exhibitor Methods ===================
@@ -106,7 +119,9 @@ class BoothManagementController extends GetxController {
         'name': boothNameController.text,
         'description': boothDescController.text,
       });
+      ToastMessageHelper.showToastMessage('Booth updated');
     } catch (e) {
+      _showError(e, 'Could not save your changes.');
     } finally {
       isSaving.value = false;
     }
@@ -115,8 +130,10 @@ class BoothManagementController extends GetxController {
   Future<void> addStaff(String email) async {
     try {
       await _service.addBoothStaff(currentEventId, email);
+      ToastMessageHelper.showToastMessage('Staff member added');
       loadMyBooth();
     } catch (e) {
+      _showError(e, 'Could not add the staff member.');
     }
   }
 

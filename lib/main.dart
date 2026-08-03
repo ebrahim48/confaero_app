@@ -5,6 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:image_picker_android/image_picker_android.dart';
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 import 'package:toastification/toastification.dart';
 import 'core/config/approutes/app_routes.dart';
 import 'core/config/appthemes/app_themes.dart';
@@ -32,6 +34,13 @@ void main() async {
 
   PlatformDispatcher.instance.onAccessibilityFeaturesChanged = () {};
 
+  // Route every image_picker call through the Android system photo picker so the
+  // app never needs READ_MEDIA_IMAGES / READ_MEDIA_VIDEO (Play "Photo and Video
+  // Permissions" policy). On Android 11-12 this falls back to the Play Services
+  // backported picker, and below that to the SAF document picker — all of which
+  // grant per-file access without a runtime permission prompt.
+  _useAndroidSystemPhotoPicker();
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Load prefs before the router is built so the first redirect can read the
@@ -44,6 +53,32 @@ void main() async {
   Get.put(ThemeController());
 
   runApp(DevicePreview(enabled: false, builder: (context) => MyApp()));
+}
+
+void _useAndroidSystemPhotoPicker() {
+  final implementation = ImagePickerPlatform.instance;
+  if (implementation is ImagePickerAndroid) {
+    implementation.useAndroidPhotoPicker = true;
+  }
+}
+
+// Android's default MaterialApp scroll behavior uses a stretch overscroll
+// indicator whose recede animation can start mid-frame, tripping Flutter's
+// "Build scheduled during frame" assertion. Swap it for the classic glow
+// indicator to avoid that framework-level timing bug.
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) {
+    return GlowingOverscrollIndicator(
+      axisDirection: details.direction,
+      color: Theme.of(context).colorScheme.primary,
+      child: child,
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -62,6 +97,7 @@ class MyApp extends StatelessWidget {
             darkTheme: Themes().darkTheme,
             locale: DevicePreview.locale(context),
             themeMode: Get.find<ThemeController>().themeMode.value,
+            scrollBehavior: _AppScrollBehavior(),
             routeInformationParser: AppRoutes.goRouter.routeInformationParser,
             routeInformationProvider:
                 AppRoutes.goRouter.routeInformationProvider,

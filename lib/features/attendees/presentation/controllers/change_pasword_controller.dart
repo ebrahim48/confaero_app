@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../auth/data/repositories/auth_repository.dart';
 
 class ChangePasswordController extends GetxController {
@@ -35,20 +36,24 @@ class ChangePasswordController extends GetxController {
   }
 
   Future<void> changePassword() async {
-    // Validation
+    // Validation — every branch tells the user why nothing happened.
     if (currentPasswordController.text.isEmpty) {
+      _warn('Enter your current password.');
       return;
     }
 
     if (newPasswordController.text.isEmpty) {
+      _warn('Enter a new password.');
       return;
     }
 
     if (newPasswordController.text.length < 6) {
+      _warn('The new password must be at least 6 characters.');
       return;
     }
 
     if (confirmPasswordController.text != newPasswordController.text) {
+      _warn('The passwords do not match.');
       return;
     }
 
@@ -57,6 +62,8 @@ class ChangePasswordController extends GetxController {
       r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$',
     );
     if (!passwordRegex.hasMatch(newPasswordController.text)) {
+      _warn('Use at least one letter, one number and one special character '
+          '(@\$!%*#?&).');
       return;
     }
 
@@ -70,14 +77,27 @@ class ChangePasswordController extends GetxController {
 
       final success = response['success'] as bool? ?? false;
       if (success) {
+        ToastMessageHelper.showToastMessage('Password changed');
         Get.back();
       } else {
+        ToastMessageHelper.showToastMessage(
+          response['message'] as String? ?? 'Could not change your password.',
+          title: 'Error',
+        );
       }
     } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '').trim();
+      ToastMessageHelper.showToastMessage(
+        msg.isEmpty ? 'Could not change your password.' : msg,
+        title: 'Error',
+      );
     } finally {
       isLoading.value = false;
     }
   }
+
+  void _warn(String message) =>
+      ToastMessageHelper.showToastMessage(message, title: 'Warning');
 
   @override
   void onClose() {

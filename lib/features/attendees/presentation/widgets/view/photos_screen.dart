@@ -74,7 +74,7 @@ class PhotosScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   return PhotoGridItem(
                     imagePath: photos[index].imageUrl,
-                    onTap: () => controller.openPhoto(photos[index]),
+                    onTap: () => controller.openPhoto(context, photos[index]),
                   );
                 },
               );

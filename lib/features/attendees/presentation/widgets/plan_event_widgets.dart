@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../presentations/widgets/custom_button.dart';
 import '../../../../presentations/widgets/custom_text.dart';
 
@@ -101,6 +102,7 @@ class PlanEventCardWidget extends StatelessWidget {
 
                 // Support Email
                 GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: onEmailTap,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -112,7 +114,7 @@ class PlanEventCardWidget extends StatelessWidget {
                         color: const Color(0xFF666666),
                       ),
                       CustomText(
-                        text: 'support@example.com',
+                        text: AppConstants.supportEmail,
                         fontsize: 13.sp,
                         fontWeight: FontWeight.w400,
                         color: const Color(0xFF32A69A),

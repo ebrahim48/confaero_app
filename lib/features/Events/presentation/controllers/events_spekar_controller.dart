@@ -2,6 +2,7 @@
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../mainattendees/domain/services/attendee_service.dart';
 import '../../../message/presentation/widgets/view/message_chat_screen.dart';
 
@@ -90,6 +91,10 @@ class EventSpekarController extends GetxController {
         ? attendee['accountId'].toString()
         : attendee['id']?.toString() ?? '';
     if (receiverId.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'This speaker cannot be messaged right now.',
+        title: 'Info',
+      );
       return;
     }
     Navigator.push(
@@ -105,11 +110,19 @@ class EventSpekarController extends GetxController {
   }
 
   Future<void> sendMail(String? email) async {
-    if (email == null || email.isEmpty) {
+    if (email == null || email.trim().isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'No email address is available for this speaker.',
+        title: 'Info',
+      );
       return;
     }
-    final uri = Uri.parse('mailto:$email');
+    final uri = Uri.parse('mailto:${email.trim()}');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ToastMessageHelper.showToastMessage(
+        'No email app found on this device.',
+        title: 'Error',
+      );
     }
   }
 }

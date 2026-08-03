@@ -48,6 +48,10 @@ class AnnouncementCrudController extends GetxController {
     final title = titleController.text.trim();
     final content = contentController.text.trim();
     if (title.isEmpty || content.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Enter both a title and content.',
+        title: 'Warning',
+      );
       return;
     }
     isSaving.value = true;
@@ -60,7 +64,9 @@ class AnnouncementCrudController extends GetxController {
       titleController.clear();
       contentController.clear();
       await loadAnnouncements();
+      ToastMessageHelper.showToastMessage('Announcement published');
     } catch (e) {
+      _showError(e, 'Could not publish the announcement.');
     } finally {
       isSaving.value = false;
     }
@@ -114,7 +120,9 @@ class AnnouncementCrudController extends GetxController {
       titleController.clear();
       contentController.clear();
       await loadAnnouncements();
+      ToastMessageHelper.showToastMessage('Announcement updated');
     } catch (e) {
+      _showError(e, 'Could not update the announcement.');
     } finally {
       isSaving.value = false;
     }
@@ -142,7 +150,17 @@ class AnnouncementCrudController extends GetxController {
     try {
       await _service.deleteAnnouncement(item.id, eventId);
       await loadAnnouncements();
+      ToastMessageHelper.showToastMessage('Announcement deleted');
     } catch (e) {
+      _showError(e, 'Could not delete the announcement.');
     }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 }

@@ -1,6 +1,7 @@
 ﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/socket_service.dart';
 import '../../../connection/domain/services/connection_service.dart';
 
@@ -105,9 +106,15 @@ class NotificationsController extends GetxController {
   Future<void> acceptConnection(String requestId) async {
     try {
       await _connectionService.acceptRequest(requestId);
+      ToastMessageHelper.showToastMessage('Connection accepted');
       // Refresh the list after accepting
       loadNotifications();
     } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '').trim();
+      ToastMessageHelper.showToastMessage(
+        msg.isEmpty ? 'Could not accept the request. Please try again.' : msg,
+        title: 'Error',
+      );
     }
   }
 

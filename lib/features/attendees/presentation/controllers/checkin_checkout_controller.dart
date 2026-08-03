@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/qr_service.dart';
 
 class CheckInOutController extends GetxController {
@@ -75,12 +76,18 @@ class CheckInOutController extends GetxController {
       // Send scan result to API
       try {
         await _qrService.scanQR(result, currentEventId);
+        ToastMessageHelper.showToastMessage('Attendee checked in');
       } catch (e) {
+        final msg = e.toString().replaceAll('Exception: ', '').trim();
+        ToastMessageHelper.showToastMessage(
+          msg.isEmpty ? 'Check-in failed. Please try again.' : msg,
+          title: 'Error',
+        );
       }
     }
   }
 
-  void submitContactForm() async {
+  void submitContactForm(BuildContext context) async {
     if (contactFormKey.currentState!.validate()) {
       isLoading.value = true;
       await Future.delayed(const Duration(seconds: 2));
@@ -89,8 +96,7 @@ class CheckInOutController extends GetxController {
       emailController.clear();
       messageController.clear();
 
-
-      Get.back();
+      if (context.mounted) Navigator.of(context).pop();
     }
   }
 

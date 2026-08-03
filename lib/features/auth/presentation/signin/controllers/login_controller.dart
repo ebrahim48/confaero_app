@@ -318,10 +318,14 @@ class SignInController extends GetxController {
       List<String> roles = [];
 
       if (data is List) {
-        roles = data.cast<String>();
+        roles = data.map((r) => r.toString()).toList();
       } else if (data is Map<String, dynamic>) {
-        final rolesList = data['roles'] as List?;
-        if (rolesList != null) roles = rolesList.cast<String>();
+        // /auth/my-roles returns { role: [...], activeRole: "..." };
+        // `roles` is tolerated for older backend builds.
+        final rolesList = (data['role'] ?? data['roles']) as List?;
+        if (rolesList != null) {
+          roles = rolesList.map((r) => r.toString()).toList();
+        }
       }
 
       roles = roles.map((r) => r.toUpperCase()).toList();
@@ -354,22 +358,26 @@ class SignInController extends GetxController {
       // Switch role on server to get a properly-scoped token
       final switchResponse = await _authRepository.changeRole(targetRole);
       final switchSuccess = switchResponse['success'] as bool? ?? false;
-      if (switchSuccess) {
-        final switchData = switchResponse['data'] as Map<String, dynamic>?;
-        if (switchData != null) {
-          final newToken = switchData['accessToken'] as String?;
-          final newRefresh = switchData['refreshToken'] as String?;
-          if (newToken != null) {
-            await PrefsHelper.setString(AppConstants.bearerToken, newToken);
-          }
-          if (newRefresh != null) {
-            await PrefsHelper.setString(AppConstants.refreshToken, newRefresh);
-          }
+      final switchData = switchResponse['data'] as Map<String, dynamic>?;
+      final newToken = (switchData?['accessToken'] as String? ?? '').trim();
+
+      // Without the re-issued token the JWT still carries the old activeRole,
+      // so switching locally would desync the app from the server.
+      if (switchSuccess && newToken.isNotEmpty) {
+        await PrefsHelper.setString(AppConstants.bearerToken, newToken);
+        final newRefresh = switchData?['refreshToken'] as String?;
+        if (newRefresh != null && newRefresh.isNotEmpty) {
+          await PrefsHelper.setString(AppConstants.refreshToken, newRefresh);
         }
-        await PrefsHelper.setString(AppConstants.userRole, targetRole);
-        _logger.i('Auto-switched role from $loginRole → $targetRole');
-        return targetRole;
+
+        final serverRole =
+            (switchData?['activeRole'] as String? ?? '').trim().toUpperCase();
+        final resolved = serverRole.isEmpty ? targetRole : serverRole;
+        await PrefsHelper.setString(AppConstants.userRole, resolved);
+        _logger.i('Auto-switched role from $loginRole → $resolved');
+        return resolved;
       }
+      _logger.w('change-role returned no accessToken; keeping $loginRole');
     } catch (e) {
       _logger.w('Role auto-switch failed, keeping $loginRole: $e');
     }

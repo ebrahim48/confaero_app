@@ -6,6 +6,7 @@ import '../../../../core/services/api_service.dart';
 import '../../../../core/services/connectivity_service.dart';
 import '../../../attendees/data/event_home_model.dart';
 import '../../data/models/event_model.dart';
+import '../../data/models/invited_event_model.dart';
 import '../../data/models/my_event_model.dart';
 import '../../data/models/my_events_and_invitations_model.dart';
 
@@ -173,14 +174,21 @@ class EventsService {
   // ── POST /attendee/events/{id}/initiate-registration ─────────────────────
 
   /// POST /attendee/events/{id}/initiate-registration
-  Future<Map<String, dynamic>?> initiateRegistration(String eventId, {double price = 0.0}) async {
+  ///
+  /// ATTENDEE self-registration only — every other role joins by accepting an
+  /// invitation. No request body: the backend reads `id` + `email` from the JWT.
+  ///
+  /// Returns the `data` object, which is one of:
+  ///   * `{ status: "VERIFIED", ... }`  — email was pre-verified by the organizer
+  ///   * `{ redirectUrl: "https://…" }` — EXTERNAL payment, open in a browser
+  ///   * `{ clientSecret: "pi_…" }`     — STRIPE payment, complete in a sheet
+  Future<Map<String, dynamic>?> initiateRegistration(String eventId) async {
     try {
       await _checkConnectivity();
       _logger.i('Initiating registration for event: $eventId');
 
       final response = await _apiService.post(
         '${ApiConstants.initiateRegistration}/$eventId/initiate-registration',
-        data: {'price': price},
       );
       _logger.d('Status: ${response.statusCode}');
 
@@ -245,14 +253,21 @@ class EventsService {
     }
   }
 
-  // ── PATCH /attendee/event/{eventId}/join ────────────────────────────────
+  // ── PATCH /attendee/event/{eventId}/join?role=ROLE ──────────────────────
 
-  Future<Map<String, dynamic>?> joinEvent(String eventId) async {
+  /// Sets the account's `activeEvent` + `activeRole` on the server. [role] must
+  /// be the role the user holds *for this event* — ATTENDEE for a self
+  /// registration, or the accepted `invitationRole` for every other role.
+  Future<Map<String, dynamic>?> joinEvent(
+    String eventId, {
+    required String role,
+  }) async {
     try {
       await _checkConnectivity();
-      _logger.i('Joining event: $eventId');
+      _logger.i('Joining event: $eventId as $role');
       final response = await _apiService.patch(
         '${ApiConstants.joinEvent}/$eventId/join',
+        queryParameters: {'role': role.toUpperCase()},
       );
       _logger.d('Status: ${response.statusCode}');
       if (response.data is Map<String, dynamic>) {
@@ -265,6 +280,63 @@ class EventsService {
       _logger.e('joinEvent failed', error: e);
       rethrow;
     }
+  }
+
+  // ── GET invited events (two-phase: invitations list + event details) ─────
+  //
+  // Each invitation from /invitation/my-invitations has the shape:
+  //   { "_id": "invId", "eventId": { "_id": "evId", ... }, "role": "SPONSOR",
+  //     "status": "PENDING" | "ACCEPTED" | ... }
+  //
+  // We extract the eventId, fetch event details, and merge with invitation
+  // metadata to produce InvitedEventModel instances.
+
+  Future<List<InvitedEventModel>> getInvitedEvents(
+    List<Map<String, dynamic>> invitations,
+  ) async {
+    await _checkConnectivity();
+    final results = <InvitedEventModel>[];
+
+    for (final inv in invitations) {
+      // eventId may be a populated object or a plain string
+      final rawEventId = inv['eventId'];
+      final eventId = rawEventId is Map
+          ? (rawEventId['_id'] as String? ?? '')
+          : (rawEventId as String? ?? '');
+
+      final invitationId = inv['_id'] as String? ?? '';
+      final role = inv['role'] as String? ?? '';
+      final invStatus = (inv['status'] as String? ?? '').toUpperCase();
+
+      // Skip rejected invitations and those with no event ID
+      if (eventId.isEmpty || invStatus == 'REJECTED') continue;
+
+      try {
+        final response = await _apiService.get(
+          '${ApiConstants.getEventDetails}/$eventId',
+        );
+
+        if (response.data is Map<String, dynamic>) {
+          final data = response.data as Map<String, dynamic>;
+          if ((data['success'] as bool? ?? false) && data['data'] != null) {
+            // Build a mutable copy and inject invitation metadata
+            final eventJson = Map<String, dynamic>.from(
+              data['data'] as Map<String, dynamic>,
+            );
+            eventJson['invitationId'] = invitationId;
+            eventJson['role'] = role;
+            eventJson['invitationStatus'] = invStatus;
+
+            results.add(InvitedEventModel.fromJson(eventJson));
+          }
+        }
+      } catch (e) {
+        // Skip events that fail to load — other invitations still render
+        _logger.w('Skipping invited event $eventId: $e');
+      }
+    }
+
+    return results;
   }
 
   // ── GET /attendee/my-events/:id ─────────────────────────────────────────
