@@ -20,7 +20,12 @@ class SpeakerHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(SpeakerHomeController());
-    final scaffoldKey = Get.put(GlobalKey<ScaffoldState>());
+    // A plain local key, NOT registered in GetX: this screen is only ever
+    // pushed as its own standalone route (never embedded in the bottom nav's
+    // IndexedStack), so it must not share the untagged GlobalKey<ScaffoldState>
+    // singleton that MainNavigationScreen registers for its own Scaffold —
+    // doing so put two simultaneously-mounted Scaffolds on the same GlobalKey.
+    final scaffoldKey = GlobalKey<ScaffoldState>();
 
     return Scaffold(
       key: scaffoldKey,

@@ -4,7 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/controllers/role_controller.dart';
 import '../../../../presentations/widgets/custom_text.dart';
+import '../../data/models/event_participation.dart';
 
 class EventCard extends StatelessWidget {
   final String imageUrl;
@@ -14,6 +16,10 @@ class EventCard extends StatelessWidget {
   final String location;
   final bool isRegistered;
   final String? registrationStatus;
+
+  /// Set when the user reached this event through an invitation — the badge
+  /// then reads "Invited as SPEAKER" instead of a generic status.
+  final String invitationRole;
   final VoidCallback? onRegisterTap;
   final VoidCallback? onCardTap;
 
@@ -26,6 +32,7 @@ class EventCard extends StatelessWidget {
     required this.location,
     this.isRegistered = false,
     this.registrationStatus,
+    this.invitationRole = '',
     this.onRegisterTap,
     this.onCardTap,
   });
@@ -169,8 +176,22 @@ class EventCard extends StatelessWidget {
 
   Widget _actionButton() {
     if (isRegistered) {
-      final label = registrationStatus == 'PENDING' ? 'Pending' : 'Registered';
-      final color = registrationStatus == 'PENDING'
+      final isPending = registrationStatus == RegistrationStatus.pending;
+      final isInvite = invitationRole.isNotEmpty &&
+          invitationRole != AppRole.attendee;
+
+      final String label;
+      if (isPending && isInvite) {
+        label = 'Invited as ${RoleController.formatRoleName(invitationRole)}';
+      } else if (isPending) {
+        label = 'Pending';
+      } else if (isInvite) {
+        label = RoleController.formatRoleName(invitationRole);
+      } else {
+        label = 'Registered';
+      }
+
+      final color = isPending
           ? const Color(0xFFFFA726)
           : AppColors.primaryColor32A69A;
 
@@ -186,11 +207,16 @@ class EventCard extends StatelessWidget {
           fontsize: 12.sp,
           fontWeight: FontWeight.w500,
           color: AppColors.textColor707070,
+          maxline: 1,
         ),
       );
     }
 
+    // Nothing to do on this card beyond opening it.
+    if (onRegisterTap == null) return const SizedBox.shrink();
+
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onRegisterTap,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),

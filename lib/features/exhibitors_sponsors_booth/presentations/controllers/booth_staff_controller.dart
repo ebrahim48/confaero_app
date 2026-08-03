@@ -62,9 +62,17 @@ class BoothStaffController extends GetxController {
   Future<void> addMember() async {
     final email = emailController.text.trim();
     if (email.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Enter the staff member\'s email address.',
+        title: 'Warning',
+      );
       return;
     }
     if (eventId.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Select an event first.',
+        title: 'Warning',
+      );
       return;
     }
 
@@ -73,10 +81,21 @@ class BoothStaffController extends GetxController {
       final res = await _service.addBoothStaff(eventId, email);
       if (res['success'] == true) {
         emailController.clear();
+        ToastMessageHelper.showToastMessage('Staff member added');
         Navigator.pop(Get.context!);
         await loadStaff();
+      } else {
+        ToastMessageHelper.showToastMessage(
+          res['message'] as String? ?? 'Could not add the staff member.',
+          title: 'Error',
+        );
       }
     } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '').trim();
+      ToastMessageHelper.showToastMessage(
+        msg.isEmpty ? 'Could not add the staff member.' : msg,
+        title: 'Error',
+      );
     } finally {
       isAdding.value = false;
     }

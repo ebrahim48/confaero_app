@@ -1,5 +1,6 @@
 ﻿import 'package:get/get.dart';
 
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/poster_assign_service.dart';
 import '../../../../core/services/reviewer_service.dart';
 
@@ -52,33 +53,49 @@ class PosterAssignController extends GetxController {
   Future<void> assignPoster(Map<String, dynamic> data) async {
     try {
       await _service.assignPoster(currentEventId, data);
+      ToastMessageHelper.showToastMessage('Poster assigned');
       loadAll();
     } catch (e) {
+      _showError(e, 'Could not assign the poster.');
     }
   }
 
   Future<void> reassignPoster(Map<String, dynamic> data) async {
     try {
       await _service.reassignPoster(currentEventId, data);
+      ToastMessageHelper.showToastMessage('Poster reassigned');
       loadAll();
     } catch (e) {
+      _showError(e, 'Could not reassign the poster.');
     }
   }
 
   Future<void> sendReminder(String assignmentId) async {
     try {
       await _service.sendReminder(assignmentId);
+      ToastMessageHelper.showToastMessage('Reminder sent');
     } catch (e) {
+      _showError(e, 'Could not send the reminder.');
     }
   }
 
   Future<void> submitReview(String attachmentId, Map<String, dynamic> data) async {
     try {
       await _reviewerService.reviewPosterImage(attachmentId, data);
+      ToastMessageHelper.showToastMessage('Review submitted');
       Get.back();
       loadAll();
     } catch (e) {
+      _showError(e, 'Could not submit the review.');
     }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 
   void switchTab(int index) => currentTab.value = index;

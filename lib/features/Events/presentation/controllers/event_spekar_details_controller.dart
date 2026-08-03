@@ -1,11 +1,12 @@
 ﻿// lib/features/Events/presentation/controllers/event_spekar_details_controller.dart
-import 'dart:ui';
-
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../agenda/domain/services/agenda_service.dart';
 import '../../../connection/domain/services/connection_service.dart';
+import '../../../message/presentation/widgets/view/message_chat_screen.dart';
 
 class EventSpekarDetailsController extends GetxController {
   final AgendaService _agendaService = Get.find<AgendaService>();
@@ -57,22 +58,70 @@ class EventSpekarDetailsController extends GetxController {
     attendeeDetails.refresh();
   }
 
-  // Say Hi
-  void sayHi() {
-    // TODO: implement messaging
+  // Say Hi — opens a 1:1 chat with this speaker
+  void sayHi(BuildContext context) {
+    final accountId = attendeeDetails['accountId']?.toString() ?? '';
+    final id = attendeeDetails['id']?.toString() ?? '';
+    final receiverId = accountId.isNotEmpty ? accountId : id;
+    if (receiverId.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'This speaker cannot be messaged right now.',
+        title: 'Info',
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MessageChatScreen(
+          receiverId: receiverId,
+          receiverName: attendeeDetails['name']?.toString() ?? 'Speaker',
+          receiverImage: attendeeDetails['image']?.toString() ??
+              attendeeDetails['profileImage']?.toString() ??
+              '',
+        ),
+      ),
+    );
   }
 
-  // Send Mail
-  void sendMail() {
-    // TODO: use url_launcher for mailto
+  // Send Mail — opens the device mail composer
+  Future<void> sendMail() async {
+    final email = attendeeDetails['email']?.toString().trim() ?? '';
+    if (email.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'No email address is available for this speaker.',
+        title: 'Info',
+      );
+      return;
+    }
+    final uri = Uri.parse('mailto:$email');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ToastMessageHelper.showToastMessage(
+        'No email app found on this device.',
+        title: 'Error',
+      );
+    }
   }
 
   // Request to Connect
   Future<void> requestToConnect(String eventId, String receiverId) async {
+    if (receiverId.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Could not identify this speaker.',
+        title: 'Error',
+      );
+      return;
+    }
     isRequesting.value = true;
     try {
       await _connectionService.sendRequest(eventId, receiverId: receiverId);
+      ToastMessageHelper.showToastMessage('Connection request sent');
     } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '').trim();
+      ToastMessageHelper.showToastMessage(
+        msg.isEmpty ? 'Could not send the request. Please try again.' : msg,
+        title: 'Error',
+      );
     } finally {
       isRequesting.value = false;
     }

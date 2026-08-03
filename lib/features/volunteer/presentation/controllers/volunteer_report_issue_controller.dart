@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/volunteer_service.dart';
 
 class ReportIssueController extends GetxController {
@@ -38,7 +39,13 @@ class ReportIssueController extends GetxController {
   void removeAttachment(int index) => attachments.removeAt(index);
 
   Future<void> submitReport(BuildContext context) async {
-    if (descriptionController.text.trim().isEmpty) return;
+    if (descriptionController.text.trim().isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Please describe the issue before submitting.',
+        title: 'Warning',
+      );
+      return;
+    }
     try {
       isLoading.value = true;
       await _service.submitReport({
@@ -49,8 +56,14 @@ class ReportIssueController extends GetxController {
         'images': <String>[],
       });
       _resetFields();
+      ToastMessageHelper.showToastMessage('Issue reported');
       if (context.mounted) Navigator.of(context).pop();
-    } catch (_) {
+    } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '').trim();
+      ToastMessageHelper.showToastMessage(
+        msg.isEmpty ? 'Could not submit the report. Please try again.' : msg,
+        title: 'Error',
+      );
     } finally {
       isLoading.value = false;
     }

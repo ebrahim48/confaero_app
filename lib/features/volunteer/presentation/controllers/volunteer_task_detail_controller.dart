@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/volunteer_service.dart';
 import '../../data/models/volunteer_models.dart';
 import 'volunteer_tasks_controller.dart';
@@ -35,8 +36,14 @@ class TaskDetailController extends GetxController {
       try {
         Get.find<TaskController>().loadData();
       } catch (_) {}
+      ToastMessageHelper.showToastMessage('Task marked as complete');
       if (context.mounted) Navigator.of(context).pop();
-    } catch (_) {
+    } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '').trim();
+      ToastMessageHelper.showToastMessage(
+        msg.isEmpty ? 'Could not complete this task. Please try again.' : msg,
+        title: 'Error',
+      );
     } finally {
       isCompleting.value = false;
     }

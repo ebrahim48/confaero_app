@@ -2,6 +2,7 @@ import '../../../../core/helpers/logger_helper.dart';
 import '../../../attendees/data/event_home_model.dart';
 import '../../domain/services/events_service.dart';
 import '../models/event_model.dart';
+import '../models/invited_event_model.dart';
 import '../models/my_event_model.dart';
 
 class EventsRepository {
@@ -61,10 +62,10 @@ class EventsRepository {
 
   // ── POST /attendee/events/{id}/initiate-registration ─────────────────────
 
-  Future<Map<String, dynamic>?> initiateRegistration(String eventId, {double price = 0.0}) async {
+  Future<Map<String, dynamic>?> initiateRegistration(String eventId) async {
     try {
       _logger.d('initiateRegistration: $eventId');
-      return await _eventsService.initiateRegistration(eventId, price: price);
+      return await _eventsService.initiateRegistration(eventId);
     } catch (e) {
       _logger.e('initiateRegistration failed', error: e);
       throw Exception('Failed to initiate registration: $e');
@@ -91,12 +92,15 @@ class EventsRepository {
   }
 
 
-  // ── PATCH /attendee/event/{eventId}/join ─────────────────────────────────
+  // ── PATCH /attendee/event/{eventId}/join?role=ROLE ───────────────────────
 
-  Future<Map<String, dynamic>?> joinEvent(String eventId) async {
+  Future<Map<String, dynamic>?> joinEvent(
+    String eventId, {
+    required String role,
+  }) async {
     try {
-      _logger.d('joinEvent: $eventId');
-      return await _eventsService.joinEvent(eventId);
+      _logger.d('joinEvent: $eventId as $role');
+      return await _eventsService.joinEvent(eventId, role: role);
     } catch (e) {
       _logger.e('joinEvent failed', error: e);
       throw Exception('Failed to join event: $e');
@@ -110,6 +114,20 @@ class EventsRepository {
     } catch (e) {
       _logger.e('getEventHome failed', error: e);
       throw Exception('Failed to fetch event home data: $e');
+    }
+  }
+
+  // ── GET invited events (two-phase) ────────────────────────────────────────
+
+  Future<List<InvitedEventModel>> getInvitedEvents(
+    List<Map<String, dynamic>> invitations,
+  ) async {
+    try {
+      _logger.d('getInvitedEvents (${invitations.length} invitations)');
+      return await _eventsService.getInvitedEvents(invitations);
+    } catch (e) {
+      _logger.e('getInvitedEvents failed', error: e);
+      throw Exception('Failed to fetch invited events: $e');
     }
   }
 }

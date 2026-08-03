@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:flutter/material.dart';
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../domain/services/agenda_service.dart';
 import '../../data/models/session_model.dart';
 
@@ -105,20 +105,42 @@ class AgendaController extends GetxController {
     try {
       await _agendaService.toggleSessionLike(currentEventId, session.idx.toString());
       await _fetchSessions();
-    } catch (_) {}
+    } catch (e) {
+      _showError(e, 'Could not update this session.');
+    }
+  }
+
+  Future<void> toggleBookmark(SessionModel session) {
+    return session.isBookmarked
+        ? removeFromMyAgenda(session)
+        : addToMyAgenda(session);
   }
 
   Future<void> addToMyAgenda(SessionModel session) async {
     try {
       await _agendaService.bookmarkSession(currentEventId, session.idx.toString());
       await _fetchSessions();
-    } catch (_) {}
+      ToastMessageHelper.showToastMessage('Added to your agenda');
+    } catch (e) {
+      _showError(e, 'Could not add this session to your agenda.');
+    }
   }
 
   Future<void> removeFromMyAgenda(SessionModel session) async {
     try {
       await _agendaService.removeBookmarkSession(currentEventId, session.idx.toString());
       await _fetchSessions();
-    } catch (_) {}
+      ToastMessageHelper.showToastMessage('Removed from your agenda');
+    } catch (e) {
+      _showError(e, 'Could not remove this session from your agenda.');
+    }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 }

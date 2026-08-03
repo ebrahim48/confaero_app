@@ -121,23 +121,23 @@ class ApiConstants {
 
   //--------------------------Resources (Q&A/Polls)---------------
 
-  static const String getEventQnA = '/resource/event/qna'; // append /:eventId
-  static const String getEventPolls = '/resource/event/poll'; // append /:eventId
-  static const String getEventSurvey = '/resource/event/survey'; // append /:eventId
-  static const String submitPollVote = '/resource/poll'; // append /:pollId/:optionId/submit
+  static const String getEventQnA = '/resouce/event/qna'; // append /:eventId
+  static const String getEventPolls = '/resouce/event/poll'; // append /:eventId
+  static const String getEventSurvey = '/resouce/event/survey'; // append /:eventId
+  static const String submitPollVote = '/resouce/poll'; // append /:pollId/:optionId/submit
 
 
   //--------------------------Resources CRUD (Organizer)----------
-  static const String createQnA = '/resource/qna'; // POST /:eventId
-  static const String updateQnA = '/resource/qna'; // PATCH /:id/:eventId
-  static const String deleteQnA = '/resource/qna'; // DELETE /:id/:eventId
-  static const String createPoll = '/resource/poll'; // POST /:eventId
-  static const String updatePoll = '/resource/poll'; // PATCH /:id/:eventId
-  static const String deletePoll = '/resource/poll'; // DELETE /:id/:eventId
-  static const String getPollVotes = '/resource/poll'; // GET /:id/:eventId/votes
-  static const String submitSurvey = '/resource/survey'; // POST /:surveyId/submit
+  static const String createQnA = '/resouce/qna'; // POST /:eventId
+  static const String updateQnA = '/resouce/qna'; // PATCH /:id/:eventId
+  static const String deleteQnA = '/resouce/qna'; // DELETE /:id/:eventId
+  static const String createPoll = '/resouce/poll'; // POST /:eventId
+  static const String updatePoll = '/resouce/poll'; // PATCH /:id/:eventId
+  static const String deletePoll = '/resouce/poll'; // DELETE /:id/:eventId
+  static const String getPollVotes = '/resouce/poll'; // GET /:id/:eventId/votes
+  static const String submitSurvey = '/resouce/survey'; // POST /:surveyId/submit
   static const String getSurveyAnalytics =
-      '/resource/survey'; // GET /:eventId/analytics
+      '/resouce/survey'; // GET /:eventId/analytics
 
   //--------------------------Verified Email (Organizer)----------
   // REMOVED: verifyEmail endpoints no longer in backend API

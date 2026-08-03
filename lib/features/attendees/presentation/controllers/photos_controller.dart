@@ -1,9 +1,12 @@
 ﻿import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../photos/data/models/photo_model.dart';
 import '../../../photos/domain/services/photo_service.dart';
+import '../../../photos/presentation/widgets/photo_viewer_screen.dart';
 
 class PhotosController extends GetxController {
   final PhotoService _service = Get.find<PhotoService>();
@@ -64,8 +67,10 @@ class PhotosController extends GetxController {
         final file = File(image.path);
         await _service.uploadPhoto(currentEventId, file);
         await fetchPhotos();
+        ToastMessageHelper.showToastMessage('Photo uploaded');
       }
     } catch (e) {
+      _showError(e, 'The photo could not be uploaded.');
     } finally {
       isUploading.value = false;
     }
@@ -76,8 +81,18 @@ class PhotosController extends GetxController {
     try {
       await _service.deletePhoto(photoId);
       allPhotos.removeWhere((p) => p.id == photoId);
+      ToastMessageHelper.showToastMessage('Photo deleted');
     } catch (e) {
+      _showError(e, 'The photo could not be deleted.');
     }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 
   // Change filter
@@ -86,8 +101,18 @@ class PhotosController extends GetxController {
     fetchPhotos();
   }
 
-  // Open photo
-  void openPhoto(PhotoModel photo) {
-    // TODO: open full screen photo viewer
+  // Open photo in a full-screen, zoomable viewer
+  void openPhoto(BuildContext context, PhotoModel photo) {
+    if (photo.imageUrl.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'This photo is unavailable.',
+        title: 'Info',
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => PhotoViewerScreen(photo: photo)),
+    );
   }
 }

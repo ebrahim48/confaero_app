@@ -2,6 +2,7 @@
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../connection/domain/services/connection_service.dart';
 import '../../../message/presentation/widgets/view/message_chat_screen.dart';
 import '../../domain/services/attendee_service.dart';
@@ -75,6 +76,10 @@ class AttendeeDetailsController extends GetxController {
     final id = attendeeDetails['id']?.toString() ?? '';
     final receiverId = accountId.isNotEmpty ? accountId : id;
     if (receiverId.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'This attendee cannot be messaged right now.',
+        title: 'Info',
+      );
       return;
     }
     Navigator.push(
@@ -90,26 +95,41 @@ class AttendeeDetailsController extends GetxController {
   }
 
   Future<void> sendMail() async {
-    final email = attendeeDetails['email']?.toString() ?? '';
+    final email = attendeeDetails['email']?.toString().trim() ?? '';
     if (email.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'No email address is available for this attendee.',
+        title: 'Info',
+      );
       return;
     }
     final uri = Uri.parse('mailto:$email');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ToastMessageHelper.showToastMessage(
+        'No email app found on this device.',
+        title: 'Error',
+      );
     }
   }
 
   Future<void> requestToConnect(String eventId, String receiverId) async {
     if (receiverId.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Could not identify this attendee.',
+        title: 'Error',
+      );
       return;
     }
     isRequesting.value = true;
     try {
       await _connectionService.sendRequest(eventId, receiverId: receiverId);
+      ToastMessageHelper.showToastMessage('Connection request sent');
     } catch (e) {
-      if (!e.toString().contains('404')) {
-      } else {
-      }
+      final msg = e.toString().replaceAll('Exception: ', '').trim();
+      ToastMessageHelper.showToastMessage(
+        msg.isEmpty ? 'Could not send the request. Please try again.' : msg,
+        title: 'Error',
+      );
     } finally {
       isRequesting.value = false;
     }

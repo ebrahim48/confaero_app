@@ -16,6 +16,9 @@ class AppConstants {
   static const String mechanicType = "mechanicType";
   static const String emailValidator = "emailValidator";
 
+  /// Address shown on the About screen and used by its "write to us" link.
+  static const String supportEmail = "support@confaero.com";
+
   // ========== DEMO MODE FOR INVESTOR PRESENTATION ==========
   // Set to true to auto-select default event after login
   static const bool DEMO_MODE = true;

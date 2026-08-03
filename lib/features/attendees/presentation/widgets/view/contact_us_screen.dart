@@ -122,7 +122,7 @@ class _ContactUsScreenState extends State<ContactUsScreen>
                     // Submit Button
                     Obx(() => CustomButton(
                       title: 'Submit',
-                      onpress: controller.submitContactForm,
+                      onpress: () => controller.submitContactForm(context),
                       loading: controller.isLoading.value,
                       color: const Color(0xff32A69A),
                       height: 48.h,

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/controllers/role_controller.dart';
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../domain/services/agenda_service.dart';
 
 class AgendaDetailsController extends GetxController {
@@ -148,7 +149,9 @@ class AgendaDetailsController extends GetxController {
     try {
       await _agendaService.addSpeaker(currentEventId, sessionIdx, speakerId);
       await loadSessionDetails(); // refresh
+      ToastMessageHelper.showToastMessage('Speaker added to session');
     } catch (e) {
+      _showError(e, 'Could not add the speaker.');
     } finally {
       isAddingSpeaker.value = false;
     }
@@ -160,9 +163,19 @@ class AgendaDetailsController extends GetxController {
     try {
       await _agendaService.removeSpeaker(currentEventId, sessionIdx, speakerId);
       await loadSessionDetails(); // refresh
+      ToastMessageHelper.showToastMessage('Speaker removed from session');
     } catch (e) {
+      _showError(e, 'Could not remove the speaker.');
     } finally {
       isRemovingSpeaker.value = false;
     }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 }

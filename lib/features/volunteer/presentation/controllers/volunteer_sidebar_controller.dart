@@ -54,11 +54,14 @@ class VolunteerSidebarController extends GetxController {
     await Get.find<RoleController>().clearRole();
     await Get.find<SessionController>().clearEvent();
 
-    // Delete all non-permanent controllers so the next user gets a clean state.
-    Get.deleteAll();
-
     if (context.mounted) {
       context.go(AppRoutes.signInScreen);
     }
+
+    // Delete all non-permanent controllers so the next user gets a clean
+    // state. Deferred to a post-frame callback so the outgoing screen isn't
+    // rebuilt against an already-disposed controller mid-transition — see
+    // the same fix in SidebarController.logout().
+    WidgetsBinding.instance.addPostFrameCallback((_) => Get.deleteAll());
   }
 }

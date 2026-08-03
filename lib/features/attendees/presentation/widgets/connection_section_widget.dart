@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../../../core/helpers/toast_message_helper.dart';
 
 class ConnectSectionWidget extends StatelessWidget {
   final String website;
@@ -14,6 +17,12 @@ class ConnectSectionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasWebsite = website.trim().isNotEmpty;
+    final hasEmail = email.trim().isNotEmpty;
+
+    // Nothing to connect to — don't render dead rows.
+    if (!hasWebsite && !hasEmail) return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -28,24 +37,52 @@ class ConnectSectionWidget extends StatelessWidget {
         SizedBox(height: 12.h),
 
         // Website
-        _buildConnectItem(
-          icon: 'assets/icons/weblink.svg',
-          title: 'Website',
-          value: website,
-          onTap: () {},
-        ),
+        if (hasWebsite)
+          _buildConnectItem(
+            icon: 'assets/icons/weblink.svg',
+            title: 'Website',
+            value: website,
+            onTap: () => _openWebsite(website),
+          ),
 
-        SizedBox(height: 12.h),
+        if (hasWebsite && hasEmail) SizedBox(height: 12.h),
 
         // Email
-        _buildConnectItem(
-          icon: 'assets/icons/email.svg',
-          title: 'Email',
-          value: email,
-          onTap: () {},
-        ),
+        if (hasEmail)
+          _buildConnectItem(
+            icon: 'assets/icons/email.svg',
+            title: 'Email',
+            value: email,
+            onTap: () => _openEmail(email),
+          ),
       ],
     );
+  }
+
+  Future<void> _openWebsite(String raw) async {
+    final trimmed = raw.trim();
+    final uri = Uri.tryParse(
+      trimmed.startsWith('http://') || trimmed.startsWith('https://')
+          ? trimmed
+          : 'https://$trimmed',
+    );
+    if (uri == null ||
+        !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ToastMessageHelper.showToastMessage(
+        'Could not open $trimmed',
+        title: 'Error',
+      );
+    }
+  }
+
+  Future<void> _openEmail(String raw) async {
+    final uri = Uri.parse('mailto:${raw.trim()}');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ToastMessageHelper.showToastMessage(
+        'No email app found on this device.',
+        title: 'Error',
+      );
+    }
   }
 
   Widget _buildConnectItem({

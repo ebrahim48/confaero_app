@@ -50,6 +50,10 @@ class OrganizerResourceController extends GetxController {
     final question = questionController.text.trim();
     final answer = answerController.text.trim();
     if (question.isEmpty || answer.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Enter both a question and an answer.',
+        title: 'Warning',
+      );
       return;
     }
     isSaving.value = true;
@@ -58,7 +62,9 @@ class OrganizerResourceController extends GetxController {
       questionController.clear();
       answerController.clear();
       await loadData();
+      ToastMessageHelper.showToastMessage('Q&A added');
     } catch (e) {
+      _showError(e, 'Could not add the Q&A.');
     } finally {
       isSaving.value = false;
     }
@@ -111,7 +117,9 @@ class OrganizerResourceController extends GetxController {
       questionController.clear();
       answerController.clear();
       await loadData();
+      ToastMessageHelper.showToastMessage('Q&A updated');
     } catch (e) {
+      _showError(e, 'Could not update the Q&A.');
     } finally {
       isSaving.value = false;
     }
@@ -139,7 +147,17 @@ class OrganizerResourceController extends GetxController {
     try {
       await _service.deleteQnA(item.id, eventId);
       await loadData();
+      ToastMessageHelper.showToastMessage('Q&A deleted');
     } catch (e) {
+      _showError(e, 'Could not delete the Q&A.');
     }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 }

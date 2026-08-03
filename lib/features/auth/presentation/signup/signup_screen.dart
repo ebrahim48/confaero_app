@@ -26,16 +26,21 @@ class _SignUpScreenState extends State<SignUpScreen>
   @override
   void initState() {
     super.initState();
-    // Always create a fresh controller for signup screen
+    // Permanent + reused (never deleted/recreated): deleting disposes its
+    // TextEditingControllers synchronously, which crashes if this screen's
+    // fields are still attached to the tree (e.g. a route rebuild, or a
+    // logout flow's post-frame `Get.deleteAll()` — see login_screen.dart).
     if (Get.isRegistered<SignUpController>()) {
-      Get.delete<SignUpController>();
+      controller = Get.find<SignUpController>();
+      controller.clearFields();
+    } else {
+      controller = Get.put(SignUpController(), permanent: true);
     }
-    controller = Get.put(SignUpController(), permanent: false);
   }
 
   @override
   void dispose() {
-    // Controller will be disposed by GetX when screen is popped
+    // Controller is permanent — intentionally not deleted here; see initState.
     super.dispose();
   }
 

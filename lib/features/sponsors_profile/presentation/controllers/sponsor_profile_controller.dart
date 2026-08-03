@@ -153,7 +153,13 @@ class SponsorProfileController extends GetxController {
 
   Future<void> createProfile(BuildContext context) async {
     final eventId = SessionController.to.eventId;
-    if (eventId.isEmpty) return;
+    if (eventId.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Select an event first.',
+        title: 'Warning',
+      );
+      return;
+    }
     try {
       isSaving.value = true;
       final body = {
@@ -168,9 +174,16 @@ class SponsorProfileController extends GetxController {
       if (result['success'] == true) {
         if (result['data'] != null) _applyProfile(result['data'] as Map<String, dynamic>);
         hasProfile.value = true;
+        ToastMessageHelper.showToastMessage('Sponsor profile created');
         if (context.mounted) Navigator.of(context).pop();
+      } else {
+        ToastMessageHelper.showToastMessage(
+          result['message'] as String? ?? 'Could not create the profile.',
+          title: 'Error',
+        );
       }
     } catch (e) {
+      _showError(e, 'Could not create the profile.');
     } finally {
       isSaving.value = false;
     }
@@ -179,7 +192,13 @@ class SponsorProfileController extends GetxController {
   // ── Update profile ────────────────────────────────────────────────────────
 
   Future<void> saveProfile(BuildContext context) async {
-    if (sponsorId.value.isEmpty) return;
+    if (sponsorId.value.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Create your sponsor profile first.',
+        title: 'Warning',
+      );
+      return;
+    }
     try {
       isSaving.value = true;
       final body = {
@@ -192,11 +211,26 @@ class SponsorProfileController extends GetxController {
       final result = await _service.updateSponsor(sponsorId.value, body);
       if (result['success'] == true) {
         if (result['data'] != null) _applyProfile(result['data'] as Map<String, dynamic>);
+        ToastMessageHelper.showToastMessage('Sponsor profile updated');
         if (context.mounted) Navigator.of(context).pop();
+      } else {
+        ToastMessageHelper.showToastMessage(
+          result['message'] as String? ?? 'Could not save your changes.',
+          title: 'Error',
+        );
       }
     } catch (e) {
+      _showError(e, 'Could not save your changes.');
     } finally {
       isSaving.value = false;
     }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 }

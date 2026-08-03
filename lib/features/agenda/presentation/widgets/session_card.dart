@@ -12,6 +12,8 @@ class SessionCard extends StatelessWidget {
   final int favorites;
   final VoidCallback? onFavorite;
   final VoidCallback? onTap;
+  final VoidCallback? onBookmark;
+  final bool isBookmarked;
   final bool isBreak;
   final String? location;
 
@@ -24,6 +26,8 @@ class SessionCard extends StatelessWidget {
     this.favorites = 0,
     this.onFavorite,
     this.onTap,
+    this.onBookmark,
+    this.isBookmarked = false,
     this.isBreak = false,
     this.location,
   });
@@ -220,11 +224,19 @@ class SessionCard extends StatelessWidget {
                       ),
                     ),
 
-                    // Calendar icon (top right)
+                    // Calendar icon (top right) — add/remove from My Agenda
                     Positioned(
                       top: 12.h,
                       right: 12.w,
-                      child: Assets.icons.calendar1.svg(),
+                      child: GestureDetector(
+                        onTap: onBookmark,
+                        child: Assets.icons.calendar1.svg(
+                          colorFilter: isBookmarked
+                              ? const ColorFilter.mode(
+                                  Color(0xff32A69A), BlendMode.srcIn)
+                              : null,
+                        ),
+                      ),
                     ),
                   ],
                 ),

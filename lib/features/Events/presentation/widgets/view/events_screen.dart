@@ -11,6 +11,7 @@ import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/controllers/role_controller.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
 import '../../../data/models/event_model.dart';
+import '../../../data/models/event_participation.dart';
 import '../../../data/models/invitation_model.dart';
 import '../../../data/models/my_event_model.dart';
 import '../../controllers/events_controller.dart';
@@ -60,17 +61,21 @@ class _EventsScreenState extends State<EventsScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    width: 40.w,
-                    height: 42.h,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: const Color(0xff252525), width: 0.7),
-                    ),
-                    child: ClipOval(
-                      child: Image.asset('assets/images/profile.png',
-                          fit: BoxFit.cover),
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => context.pushNamed(AppRoutes.myProfileScreen),
+                    child: Container(
+                      width: 40.w,
+                      height: 42.h,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            color: const Color(0xff252525), width: 0.7),
+                      ),
+                      child: ClipOval(
+                        child: Image.asset('assets/images/profile.png',
+                            fit: BoxFit.cover),
+                      ),
                     ),
                   ),
                   CustomText(
@@ -236,13 +241,14 @@ class _EventsScreenState extends State<EventsScreen>
       date: e?.formattedDateRange ?? '',
       location: e?.location ?? '',
       isRegistered: true,
-      registrationStatus: 'PENDING',
+      registrationStatus: RegistrationStatus.pending,
+      invitationRole: inv.role,
       onCardTap: () async {
         await controller.openEventDetails(
           context,
           inv.eventId,
           title: e?.title ?? '',
-          registrationStatus: 'PENDING',
+          registrationStatus: RegistrationStatus.pending,
           role: inv.role,
         );
         // Returning from details — the invitation may now be accepted/rejected.
@@ -260,14 +266,25 @@ class _EventsScreenState extends State<EventsScreen>
       date: e.formattedDateRange,
       location: e.location,
       isRegistered: true,
-      registrationStatus: m.status,
-      onCardTap: () => controller.openEventDetails(
-        context,
-        e.id,
-        title: e.title,
-        registrationStatus: m.status,
-        role: m.role,
-      ),
+      // An unanswered invitation is shown as PENDING so the card offers
+      // Accept / Reject on the details screen rather than "Enter Event".
+      registrationStatus: m.isPendingInvitation
+          ? RegistrationStatus.pending
+          : RegistrationStatus.verified,
+      invitationRole: m.invitationRole,
+      onCardTap: () async {
+        await controller.openEventDetails(
+          context,
+          e.id,
+          title: e.title,
+          registrationStatus: m.isPendingInvitation
+              ? RegistrationStatus.pending
+              : RegistrationStatus.verified,
+          role: m.joinRole,
+        );
+        // The invitation may have been accepted/rejected while we were away.
+        if (m.isInvited) await controller.loadMyEvents();
+      },
     );
   }
 
@@ -279,7 +296,9 @@ class _EventsScreenState extends State<EventsScreen>
       date: e.formattedDateRange,
       location: e.location,
       isRegistered: false,
-      onRegisterTap: () => controller.registerEvent(context, e.id, title: e.title),
+      onRegisterTap: _canSelfRegister
+          ? () => controller.registerEvent(context, e.id, title: e.title)
+          : null,
       onCardTap: () => controller.openEventDetails(context, e.id, title: e.title),
     );
   }
@@ -318,7 +337,11 @@ class _EventsScreenState extends State<EventsScreen>
             date: e.formattedDateRange,
             location: e.location,
             isRegistered: false,
-            onRegisterTap: () => controller.registerEvent(context, e.id, title: e.title),
+            // Only attendees self-register; other roles open the details page
+            // to read the "you join by invitation" explanation.
+            onRegisterTap: _canSelfRegister
+                ? () => controller.registerEvent(context, e.id, title: e.title)
+                : null,
             onCardTap: () => controller.openEventDetails(context, e.id, title: e.title),
           ),
         )),
@@ -326,6 +349,10 @@ class _EventsScreenState extends State<EventsScreen>
       ],
     );
   }
+
+  /// True when the active role may use the self-registration path.
+  bool get _canSelfRegister =>
+      AppRole.canSelfRegister(RoleController.to.activeRole.value);
 
   // ── Invited Events Tab ────────────────────────────────────────────────────
 
@@ -352,12 +379,17 @@ class _EventsScreenState extends State<EventsScreen>
           bottom: 12.h,
         ),
         ...events.map((e) {
-          // Check if already registered in myEvents
+          // These are invitations, so pull the matching My Events entry for
+          // the invitation role / status.
           final myEvent = controller.activeMyEvents
               .where((m) => m.event.id == e.id)
               .firstOrNull;
-          final isRegistered = myEvent != null;
-          final status = myEvent?.status ?? '';
+          final inMyEvents = myEvent != null;
+          final status = myEvent == null
+              ? ''
+              : (myEvent.isPendingInvitation
+                  ? RegistrationStatus.pending
+                  : RegistrationStatus.verified);
 
           return Padding(
             padding: EdgeInsets.only(bottom: 8.h),
@@ -368,17 +400,22 @@ class _EventsScreenState extends State<EventsScreen>
               title: e.title,
               date: e.formattedDateRange,
               location: e.location,
-              isRegistered: isRegistered,
+              isRegistered: inMyEvents,
               registrationStatus: status,
-              onRegisterTap: isRegistered
-                  ? null
-                  : () => controller.registerEvent(context, e.id, title: e.title),
-              onCardTap: () => controller.openEventDetails(
-                context,
-                e.id,
-                title: e.title,
-                registrationStatus: status,
-              ),
+              invitationRole: myEvent?.invitationRole ?? '',
+              // Invited roles never self-register — the card just opens.
+              onRegisterTap: null,
+              onCardTap: () async {
+                await controller.openEventDetails(
+                  context,
+                  e.id,
+                  title: e.title,
+                  registrationStatus: status,
+                  role: myEvent?.joinRole ?? '',
+                );
+                await controller.loadMyEvents();
+                await controller.loadInvitedEvents();
+              },
             ),
           );
         }),
@@ -421,7 +458,9 @@ class _EventsScreenState extends State<EventsScreen>
             date: e.formattedDateRange,
             location: e.location,
             isRegistered: false,
-            onRegisterTap: () => controller.registerEvent(context, e.id, title: e.title),
+            onRegisterTap: _canSelfRegister
+                ? () => controller.registerEvent(context, e.id, title: e.title)
+                : null,
             onCardTap: () => controller.openEventDetails(context, e.id, title: e.title),
           ),
         )),

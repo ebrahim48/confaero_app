@@ -59,29 +59,45 @@ class ReviewerController extends GetxController {
   Future<void> approveAttachment(String id) async {
     try {
       await _service.approveAttachment(id);
+      ToastMessageHelper.showToastMessage('Submission approved');
     } catch (e) {
+      _showError(e, 'Could not approve this submission.');
     }
   }
 
   Future<void> rejectAttachment(String id) async {
     try {
       await _service.rejectAttachment(id);
+      ToastMessageHelper.showToastMessage('Submission rejected');
     } catch (e) {
+      _showError(e, 'Could not reject this submission.');
     }
   }
 
   Future<void> requestRevision(String id) async {
     try {
       await _service.reviseAttachment(id);
+      ToastMessageHelper.showToastMessage('Revision requested');
     } catch (e) {
+      _showError(e, 'Could not request a revision.');
     }
   }
 
   Future<void> flagToAdmin(String id) async {
     try {
       await _service.flagToAdmin(id);
+      ToastMessageHelper.showToastMessage('Flagged to admin');
     } catch (e) {
+      _showError(e, 'Could not flag this submission.');
     }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 
   // ======================== Additional Methods ========================
@@ -105,7 +121,9 @@ class ReviewerController extends GetxController {
   ) async {
     try {
       await _service.reviewPosterImage(attachmentId, data);
+      ToastMessageHelper.showToastMessage('Review submitted');
     } catch (e) {
+      _showError(e, 'Could not submit the review.');
     }
   }
 }

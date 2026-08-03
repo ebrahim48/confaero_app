@@ -1,11 +1,14 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/controllers/session_controller.dart';
+import '../../../../core/exceptions/app_exceptions.dart';
 import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../resources/data/models/resource_model.dart';
 import '../../../resources/domain/services/resource_service.dart';
 
 class ResourcesController extends GetxController {
+  static const int _minSuggestionLength = 80;
+
   final ResourceService _service = Get.find<ResourceService>();
   final RxBool isLoading = false.obs;
   final RxBool isSurveyLoading = false.obs;
@@ -122,6 +125,12 @@ class ResourcesController extends GetxController {
       return;
     }
     final suggestion = suggestionController.text.trim();
+    // Backend requires at least 80 characters when a suggestion is provided.
+    if (suggestion.isNotEmpty && suggestion.length < _minSuggestionLength) {
+      suggestionError.value =
+          'Suggestion must be at least $_minSuggestionLength characters (currently ${suggestion.length}).';
+      return;
+    }
     try {
       isSurveyLoading.value = true;
       // Use fetched surveyId; fall back to eventId if no survey document was loaded
@@ -145,11 +154,33 @@ class ResourcesController extends GetxController {
       selectedRating.value = 0;
       selectedOption.value = '';
       suggestionController.clear();
+    } on ServerException catch (e) {
+      ToastMessageHelper.showToastMessage(
+        _extractValidationMessage(e) ?? 'Failed to submit feedback. Please try again.',
+        title: 'Error',
+      );
     } catch (e) {
       ToastMessageHelper.showToastMessage('Failed to submit feedback. Please try again.', title: 'Error');
     } finally {
       isSurveyLoading.value = false;
     }
+  }
+
+  /// Backend wraps field-level validation errors under `errorSources`, with
+  /// only a generic "Validation Error" in `message`. Pull the actual reason
+  /// out so the user sees why the request failed, not just that it did.
+  String? _extractValidationMessage(ServerException e) {
+    final data = e.responseData;
+    if (data is! Map) return e.message;
+
+    final sources = data['errorSources'];
+    if (sources is List && sources.isNotEmpty) {
+      final first = sources.first;
+      if (first is Map && first['message'] != null) {
+        return first['message'].toString();
+      }
+    }
+    return e.message;
   }
 
   @override

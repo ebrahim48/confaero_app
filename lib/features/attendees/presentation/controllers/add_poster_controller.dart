@@ -103,8 +103,13 @@ class AddPosterController extends GetxController {
       if (url.isNotEmpty) {
         bannerUrl.value = url;
       } else {
+        ToastMessageHelper.showToastMessage(
+          'The banner could not be uploaded. Please try again.',
+          title: 'Error',
+        );
       }
     } catch (e) {
+      _showError(e, 'The banner could not be uploaded.');
     } finally {
       isBannerUploading.value = false;
     }
@@ -137,11 +142,24 @@ class AddPosterController extends GetxController {
           'icon': type == 'pdf' ? Icons.picture_as_pdf : Icons.image,
         });
       } else {
+        ToastMessageHelper.showToastMessage(
+          'The attachment could not be uploaded. Please try again.',
+          title: 'Error',
+        );
       }
     } catch (e) {
+      _showError(e, 'The attachment could not be uploaded.');
     } finally {
       isAttachmentUploading.value = false;
     }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 
   Future<void> submitForm({VoidCallback? onSuccess}) async {

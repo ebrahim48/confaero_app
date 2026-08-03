@@ -56,30 +56,52 @@ class VideoConferenceController extends GetxController {
   }
 
   Future<void> startSession(int sessionIndex) async {
-    if (_eventId.isEmpty) return;
+    if (_eventId.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Select an event first.',
+        title: 'Warning',
+      );
+      return;
+    }
     loadingIndex.value = sessionIndex;
     try {
       await _service.startSession(_eventId, sessionIndex);
       await loadSessions();
-    } catch (_) {
+      ToastMessageHelper.showToastMessage('Session started');
+    } catch (e) {
+      _showError(e, 'Could not start the session.');
     } finally {
       loadingIndex.value = null;
     }
   }
 
   Future<void> joinSession(int sessionIndex) async {
-    if (_eventId.isEmpty) return;
+    if (_eventId.isEmpty) {
+      ToastMessageHelper.showToastMessage(
+        'Select an event first.',
+        title: 'Warning',
+      );
+      return;
+    }
 
     // Request camera + mic permissions before entering the conference
     final camStatus = await Permission.camera.request();
     final micStatus = await Permission.microphone.request();
 
     if (camStatus.isPermanentlyDenied || micStatus.isPermanentlyDenied) {
+      ToastMessageHelper.showToastMessage(
+        'Camera and microphone access are required. Enable them in Settings.',
+        title: 'Info',
+      );
       await openAppSettings();
       return;
     }
 
     if (camStatus.isDenied || micStatus.isDenied) {
+      ToastMessageHelper.showToastMessage(
+        'Camera and microphone access are required to join a live session.',
+        title: 'Warning',
+      );
       return;
     }
 
@@ -102,6 +124,10 @@ class VideoConferenceController extends GetxController {
       final userName = await PrefsHelper.getString(AppConstants.name);
 
       if (zegoToken.value.isEmpty || zegoRoomId.value.isEmpty || zegoAppId.value == 0) {
+        ToastMessageHelper.showToastMessage(
+          'This session is not live yet. Please try again shortly.',
+          title: 'Info',
+        );
         return;
       }
 
@@ -120,8 +146,8 @@ class VideoConferenceController extends GetxController {
       );
     } catch (e, s) {
       loadingIndex.value = null;
-      // ignore: avoid_print
-      print('JOIN SESSION ERROR: $e\n$s');
+      debugPrint('JOIN SESSION ERROR: $e\n$s');
+      _showError(e, 'Could not join the session.');
     }
   }
 
@@ -152,9 +178,19 @@ class VideoConferenceController extends GetxController {
     try {
       await _service.endSession(_eventId, sessionIndex);
       await loadSessions();
-    } catch (_) {
+      ToastMessageHelper.showToastMessage('Session ended');
+    } catch (e) {
+      _showError(e, 'Could not end the session.');
     } finally {
       loadingIndex.value = null;
     }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 }

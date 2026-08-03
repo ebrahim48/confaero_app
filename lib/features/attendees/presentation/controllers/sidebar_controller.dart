@@ -152,13 +152,21 @@ class SidebarController extends GetxController {
     await Get.find<RoleController>().clearRole();
     await Get.find<SessionController>().clearEvent();
 
-    // Delete all non-permanent controllers so the next user gets a clean state.
-    // Services are fenix:true and will recreate on demand; permanent controllers
-    // (SessionController, RoleController, SocketService) are not affected.
-    Get.deleteAll();
-
     if (context.mounted) {
       context.go(AppRoutes.signInScreen);
     }
+
+    // Delete all non-permanent controllers so the next user gets a clean state.
+    // Services are fenix:true and will recreate on demand; permanent controllers
+    // (SessionController, RoleController, SocketService) are not affected.
+    // Deferred to a post-frame callback: go_router's notifyListeners() from
+    // context.go() above can force one more rebuild of the outgoing screen
+    // (e.g. Events, still showing behind the closing drawer) before the
+    // transition removes it. Disposing controllers first — as this used to do
+    // — left screens like EventsScreen rebuilding a TextField whose
+    // TextEditingController had just been disposed, crashing with
+    // "A TextEditingController was used after being disposed." Deleting after
+    // the frame that performs navigation avoids that race.
+    WidgetsBinding.instance.addPostFrameCallback((_) => Get.deleteAll());
   }
 }

@@ -3,11 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
-import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/constants/app_colors.dart';
-import '../../../../../presentations/widgets/custom_button.dart';
 import '../../../../../presentations/widgets/custom_text.dart';
-import '../../../../../presentations/widgets/custom_text_field.dart';
 import '../../../data/models/event_model.dart';
 import '../../controllers/events_details_controller.dart';
 import '../../widgets/shimmer_event_details.dart';
@@ -254,7 +251,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   // ── Description ───────────────────────────────────────────────────────────
 
   Widget _buildDescription(EventModel event) {
-    final desc = event.details?.isNotEmpty == true
+    final hasDetails = event.details?.isNotEmpty == true;
+    final desc = hasDetails
         ? event.details!
         : 'No description available for this event.';
 
@@ -269,27 +267,72 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
           textAlign: TextAlign.start,
         ),
         SizedBox(height: 12.h),
-        CustomText(
-          text: desc,
-          fontsize: 14.sp,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textColor7E7F7E,
-          textAlign: TextAlign.start,
-          maxline: 6,
-        ),
-        SizedBox(height: 8.h),
-        GestureDetector(
-          onTap: () {},
-          child: CustomText(
-            text: 'See More',
-            fontsize: 14.sp,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xff5BB8AE),
-            textAlign: TextAlign.start,
-          ),
-        ),
+        Obx(() {
+          final expanded = controller.isDescriptionExpanded.value;
+          // Only offer the toggle when the text is actually clipped, so the
+          // link is never a no-op.
+          final isClipped = _exceedsLines(
+            text: desc,
+            maxLines: _collapsedDescriptionLines,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w400,
+            ),
+            maxWidth: MediaQuery.of(context).size.width - 48.w,
+          );
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomText(
+                text: desc,
+                fontsize: 14.sp,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textColor7E7F7E,
+                textAlign: TextAlign.start,
+                maxline: expanded ? null : _collapsedDescriptionLines,
+                textOverflow: expanded ? TextOverflow.visible : null,
+              ),
+              if (isClipped) ...[
+                SizedBox(height: 8.h),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: controller.toggleDescriptionExpanded,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4.h),
+                    child: CustomText(
+                      text: expanded ? 'See Less' : 'See More',
+                      fontsize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xff5BB8AE),
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          );
+        }),
       ],
     );
+  }
+
+  static const int _collapsedDescriptionLines = 6;
+
+  /// True when [text] needs more than [maxLines] to render at [maxWidth].
+  bool _exceedsLines({
+    required String text,
+    required int maxLines,
+    required TextStyle style,
+    required double maxWidth,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      maxLines: maxLines,
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: maxWidth);
+    return painter.didExceedMaxLines;
   }
 
   // ── Extra Info ────────────────────────────────────────────────────────────
@@ -419,8 +462,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       );
     }
 
-    // PENDING — invitation awaiting response: show badge + Accept / Reject
-    if (controller.isPendingRegistration) {
+    // PENDING invitation — awaiting response: show badge + Accept / Reject
+    if (controller.isInvitationPending) {
       return Column(
         children: [
           _statusBadge(
@@ -502,29 +545,48 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       );
     }
 
-    // Invitation code input
-    if (controller.showInvitationInput.value) {
-      return Column(
-        children: [
-          CustomTextField(
-            controller: controller.invitationCodeController,
-            hintText: 'Enter event invitation code',
-            contentPaddingHorizontal: 16.w,
-            contentPaddingVertical: 14.h,
-          ),
-          SizedBox(height: 16.h),
-          CustomButton(
-            title: 'Join',
-            onpress: controller.joinWithInvitationCode,
-            loading: controller.isLoading.value,
-            height: 48.h,
-            borderRadius: 8.r,
-          ),
-        ],
+    // Payment / verification still outstanding on a self-registration.
+    if (controller.isPendingRegistration) {
+      return _statusBadge(
+        label: controller.registrationStatusLabel,
+        color: Colors.orange.shade700,
+        icon: Icons.hourglass_top_rounded,
       );
     }
 
-    // Default: Not registered
+    // Invite-only roles (speaker, exhibitor, sponsor, …) never self-register —
+    // showing a Register button here would just fail server-side.
+    if (!controller.canSelfRegister) {
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: const Color(0xFFD2D2D2)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.mail_outline,
+                size: 20.sp, color: AppColors.textColor7E7F7E),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: CustomText(
+                text: 'Your role joins events by invitation. Ask the organizer '
+                    'to invite you — it will appear in My Events.',
+                fontsize: 13.sp,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textColor7E7F7E,
+                textAlign: TextAlign.start,
+                maxline: 3,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Default: attendee, not registered
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

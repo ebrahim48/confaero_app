@@ -105,7 +105,7 @@ class _SpeakerProfileScreenState extends State<SpeakerProfileScreen> {
                                 (s) => s['_id'] == sessionId,
                                 orElse: () => {},
                               );
-                              controller.goToSessionDetails(session);
+                              controller.goToSessionDetails(context, session);
                             },
                             onFavoriteTap: controller.toggleSessionFavorite,
                             isSessionFavorited: controller.isSessionFavorited,

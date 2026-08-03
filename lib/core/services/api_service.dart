@@ -110,10 +110,12 @@ class ApiService {
           // token is missing or expired (auth middleware hides the route instead
           // of returning 401). Treat this as an auth error so we retry with a
           // refreshed token. Skip on retried requests to prevent infinite loops.
-          // Exclude /resource/ paths — they may genuinely return 404 when the
-          // event has no data yet, and should NOT trigger an auth retry loop.
+          // Exclude /resouce/ paths (backend's actual, misspelled route
+          // prefix — see ApiConstants.getEventSurvey etc.) — they may
+          // genuinely return 404 when the event has no data yet, and should
+          // NOT trigger an auth retry loop.
           final isRetry = requestOptions.extra['isRetry'] == true;
-          final isResourcePath = requestOptions.path.contains('/resource/');
+          final isResourcePath = requestOptions.path.contains('/resouce/');
           final isHidden404 = !isRetry &&
               !isResourcePath &&
               statusCode == 404 &&
@@ -201,7 +203,7 @@ class ApiService {
       '/booth/me',
       '/booth/analytics',
       '/exhibitor/performance',
-      '/resource/',
+      '/resouce/',
     ];
 
     if (suppressedPaths.any((suppressed) => path.contains(suppressed))) {

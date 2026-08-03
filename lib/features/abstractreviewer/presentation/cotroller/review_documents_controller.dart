@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../core/helpers/toast_message_helper.dart';
 import '../../../../core/services/reviewer_service.dart';
 import '../../data/reviewer_models.dart';
 
@@ -85,9 +86,11 @@ class ReviewDocumentsController extends GetxController {
           break;
       }
       reasonController.clear();
+      ToastMessageHelper.showToastMessage('Review submitted');
       if (context.mounted) Navigator.of(context).pop();
       await loadSubmissions();
-    } catch (_) {
+    } catch (e) {
+      _showError(e, 'Could not submit the review.');
     } finally {
       isSubmitting.value = false;
     }
@@ -104,9 +107,11 @@ class ReviewDocumentsController extends GetxController {
         'overall': posterOverall.value,
       };
       await _service.reviewPosterImage(attachmentId, payload);
+      ToastMessageHelper.showToastMessage('Poster review submitted');
       if (context.mounted) Navigator.of(context).pop();
       await loadSubmissions();
-    } catch (_) {
+    } catch (e) {
+      _showError(e, 'Could not submit the poster review.');
     } finally {
       isSubmitting.value = false;
     }
@@ -116,9 +121,11 @@ class ReviewDocumentsController extends GetxController {
     try {
       isSubmitting.value = true;
       await _service.rejectPoster(attachmentId, reason: reason);
+      ToastMessageHelper.showToastMessage('Poster rejected');
       if (context.mounted) Navigator.of(context).pop();
       await loadSubmissions();
-    } catch (_) {
+    } catch (e) {
+      _showError(e, 'Could not reject the poster.');
     } finally {
       isSubmitting.value = false;
     }
@@ -127,7 +134,18 @@ class ReviewDocumentsController extends GetxController {
   Future<void> flagToAdmin(String attachmentId, String reason) async {
     try {
       await _service.flagToAdmin(attachmentId, reason);
-    } catch (_) {}
+      ToastMessageHelper.showToastMessage('Flagged to admin');
+    } catch (e) {
+      _showError(e, 'Could not flag this submission.');
+    }
+  }
+
+  void _showError(Object e, String fallback) {
+    final msg = e.toString().replaceAll('Exception: ', '').trim();
+    ToastMessageHelper.showToastMessage(
+      msg.isEmpty ? fallback : msg,
+      title: 'Error',
+    );
   }
 
   @override

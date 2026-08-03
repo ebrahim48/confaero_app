@@ -5,11 +5,14 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/config/approutes/app_routes.dart';
 import '../../../../../core/controllers/session_controller.dart';
 import '../../../../../core/controllers/role_controller.dart';
+import '../../../../../core/helpers/toast_message_helper.dart';
 import '../../../../../core/services/api_service.dart';
 import '../../../../../core/services/connectivity_service.dart';
 import '../../../../../core/services/invitation_service.dart';
 import '../../data/models/event_model.dart';
+import '../../data/models/event_participation.dart';
 import '../../data/models/invitation_model.dart';
+import '../../data/models/invited_event_model.dart';
 import '../../data/models/my_event_model.dart';
 import '../../data/repositories/events_repository.dart';
 import '../../domain/services/events_service.dart';
@@ -42,6 +45,8 @@ class EventsController extends GetxController {
 
   // Invited Events tab (for speakers, volunteers, reviewers, etc.)
   final invitedEvents = <EventModel>[].obs;
+  final invitedEventModels = <InvitedEventModel>[].obs;
+  final invitedCardLoadingId = ''.obs; // invitationId currently being actioned
   final isInvitedLoading = false.obs;
   final invitedError = ''.obs;
 
@@ -179,16 +184,39 @@ class EventsController extends GetxController {
       final myEvents = results[0] as List<MyEventModel>;
       final invitationsRaw = results[1] as List<Map<String, dynamic>>;
 
-      // Active = all my registered events
-      activeMyEvents.value = myEvents;
+      // `my-events` never returns invitationId, so index the invitations by
+      // event and merge them in — Accept / Reject need that id.
+      final invitationsByEvent = <String, Map<String, dynamic>>{};
+      for (final inv in invitationsRaw) {
+        final rawEvent = inv['eventId'];
+        final evId = rawEvent is Map
+            ? (rawEvent['_id'] as String? ?? '')
+            : (rawEvent as String? ?? '');
+        if (evId.isEmpty) continue;
+        // Keep the first non-rejected invitation per event.
+        final status = (inv['status'] as String? ?? '').toUpperCase();
+        if (status == InvitationStatus.rejected) continue;
+        invitationsByEvent.putIfAbsent(evId, () => inv);
+      }
 
-      // Cache registered event IDs
+      activeMyEvents.value = myEvents.map((m) {
+        final inv = invitationsByEvent[m.event.id];
+        if (inv == null) return m;
+        return m.copyWith(
+          invitationId: inv['_id'] as String? ?? '',
+          invitationStatus: (inv['status'] as String? ?? '').toUpperCase(),
+          invitationRole: m.invitationRole.isNotEmpty
+              ? m.invitationRole
+              : (inv['role'] as String? ?? '').toUpperCase(),
+        );
+      }).toList();
+
+      // Cache event IDs already present in My Events
       _myEventIds
         ..clear()
         ..addAll(myEvents.map((m) => m.event.id));
 
-      // Parse invitations, keep only unanswered ones for events the user
-      // is not already registered for.
+      // Standalone invitation cards: only for events my-events did not return.
       myInvitations.value = invitationsRaw
           .map((e) => InvitationModel.fromJson(e))
           .where((inv) =>
@@ -212,7 +240,25 @@ class EventsController extends GetxController {
     try {
       isExploreLoading.value = true;
       exploreError.value = '';
-      exploreEvents.value = await _repository.getExploreEvents();
+
+      // Explore should only offer events the user hasn't already joined or
+      // been invited to — make sure that set is populated before filtering,
+      // otherwise an already-registered event can show up here and its
+      // details screen (which reads the real per-user status from the
+      // backend) offers "Join Now" instead of "Register", looking like the
+      // user can enter an event they never registered for.
+      if (_myEventIds.isEmpty && activeMyEvents.isEmpty) {
+        await loadMyEvents();
+      }
+
+      final excludedIds = <String>{
+        ..._myEventIds,
+        ...myInvitations.map((inv) => inv.eventId),
+      };
+
+      final events = await _repository.getExploreEvents();
+      exploreEvents.value =
+          events.where((e) => !excludedIds.contains(e.id)).toList();
     } catch (e) {
       exploreError.value = _cleanError(e.toString());
     } finally {
@@ -227,37 +273,25 @@ class EventsController extends GetxController {
       isInvitedLoading.value = true;
       invitedError.value = '';
 
-      // Load my events first so we can cross-check registration status
-      if (activeMyEvents.isEmpty) {
-        await loadMyEvents();
-      }
-
-      // Get all invitations across all events
+      // Fetch all invitations — response has shape:
+      // { "_id": "invId", "eventId": { "_id": "evId", ... },
+      //   "role": "SPONSOR", "status": "PENDING" | "ACCEPTED" | ... }
       final invitations = await _invitationService.getMyInvitations('');
 
-      // Extract unique event IDs from invitations
-      final eventIds = <String>{};
-      for (final invitation in invitations) {
-        final eventId = invitation['event']?['id'] as String?;
-        if (eventId != null && eventId.isNotEmpty) {
-          eventIds.add(eventId);
-        }
-      }
+      // Build InvitedEventModel list by fetching event details per invitation
+      invitedEventModels.value =
+          await _repository.getInvitedEvents(invitations);
 
-      // Fetch event details for each invited event
-      final events = <EventModel>[];
-      for (final eventId in eventIds) {
-        try {
-          final event = await _repository.getEventDetails(eventId);
-          if (event != null) {
-            events.add(event);
-          }
-        } catch (e) {
-          // Skip events that fail to load
-        }
-      }
-
-      invitedEvents.value = events;
+      // Keep legacy invitedEvents in sync for any existing consumers
+      invitedEvents.value =
+          invitedEventModels.map((m) => EventModel(
+            id: m.id,
+            title: m.title,
+            location: m.location,
+            startDate: m.startDate,
+            endDate: m.endDate,
+            bannerImageUrl: m.bannerImageUrl,
+          )).toList();
     } catch (e) {
       invitedError.value = _cleanError(e.toString());
     } finally {
@@ -340,6 +374,17 @@ class EventsController extends GetxController {
         .toList();
   }
 
+  List<InvitedEventModel> get filteredInvitedEventModels {
+    if (searchQuery.isEmpty) return invitedEventModels;
+    return invitedEventModels
+        .where(
+          (m) =>
+              m.title.toLowerCase().contains(searchQuery.value) ||
+              m.location.toLowerCase().contains(searchQuery.value),
+        )
+        .toList();
+  }
+
   List<EventModel> get filteredAllEvents {
     if (searchQuery.isEmpty) return allEvents;
     return allEvents
@@ -352,7 +397,6 @@ class EventsController extends GetxController {
   }
 
   // ── Navigation ────────────────────────────────────────────────────────────
-
   Future<void> openEventDetails(BuildContext context, String eventId, {String title = '', String registrationStatus = '', String role = ''}) {
     return context.pushNamed(AppRoutes.eventsDetailsScreen, extra: {
       'eventId': eventId,
@@ -362,6 +406,16 @@ class EventsController extends GetxController {
   }
 
   void registerEvent(BuildContext context, String eventId, {String title = ''}) {
+    // Self-registration is the ATTENDEE path only — invite-only roles must
+    // reach an event by accepting an invitation.
+    if (!AppRole.canSelfRegister(RoleController.to.activeRole.value)) {
+      ToastMessageHelper.showToastMessage(
+        'Events are joined by invitation for your role. Ask the organizer to '
+        'invite you, then accept it from My Events.',
+        title: 'Info',
+      );
+      return;
+    }
     // Do NOT call setEvent here — session is set only after successful registration
     // inside EventDetailsController.registerNow.
     context.pushNamed(AppRoutes.eventsDetailsScreen, extra: {
