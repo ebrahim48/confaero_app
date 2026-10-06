@@ -1,0 +1,68 @@
+PODS:
+  - emoji_picker_flutter (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - flutter_logs_yoer (0.0.1):
+    - Flutter
+    - ZIPFoundation
+  - Masonry (1.1.0)
+  - permission_handler_apple (9.3.0):
+    - Flutter
+  - zego_express_engine (3.22.0):
+    - Flutter
+  - zego_uikit (0.0.1):
+    - Flutter
+    - Masonry
+    - zego_express_engine
+    - ZegoUIKitReport (= 0.2.10)
+  - zego_uikit_prebuilt_video_conference (0.0.1):
+    - Flutter
+  - ZegoUIKitReport (0.2.10)
+  - ZIPFoundation (0.9.20)
+
+DEPENDENCIES:
+  - emoji_picker_flutter (from `.symlinks/plugins/emoji_picker_flutter/ios`)
+  - Flutter (from `Flutter`)
+  - flutter_logs_yoer (from `.symlinks/plugins/flutter_logs_yoer/ios`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - zego_express_engine (from `.symlinks/plugins/zego_express_engine/ios`)
+  - zego_uikit (from `.symlinks/plugins/zego_uikit/ios`)
+  - zego_uikit_prebuilt_video_conference (from `.symlinks/plugins/zego_uikit_prebuilt_video_conference/ios`)
+
+SPEC REPOS:
+  trunk:
+    - Masonry
+    - ZegoUIKitReport
+    - ZIPFoundation
+
+EXTERNAL SOURCES:
+  emoji_picker_flutter:
+    :path: ".symlinks/plugins/emoji_picker_flutter/ios"
+  Flutter:
+    :path: Flutter
+  flutter_logs_yoer:
+    :path: ".symlinks/plugins/flutter_logs_yoer/ios"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+  zego_express_engine:
+    :path: ".symlinks/plugins/zego_express_engine/ios"
+  zego_uikit:
+    :path: ".symlinks/plugins/zego_uikit/ios"
+  zego_uikit_prebuilt_video_conference:
+    :path: ".symlinks/plugins/zego_uikit_prebuilt_video_conference/ios"
+
+SPEC CHECKSUMS:
+  emoji_picker_flutter: ed468d9746c21711e66b2788880519a9de5de211
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  flutter_logs_yoer: 4b6ed7705cc0e5306d9ecce1d5be5568045e0e73
+  Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
+  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
+  zego_express_engine: e81024e004a282760ab48584aa4fe74ecdb5ee03
+  zego_uikit: 0843069d9d4d0e4845abf0ea9b24efa95c1760fa
+  zego_uikit_prebuilt_video_conference: 518ff543f1069822b7d0b340c28de176ce522600
+  ZegoUIKitReport: a993f7ccc5d243998a7e601a60e16fcd6c084417
+  ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
+
+PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
+
+COCOAPODS: 1.17.0
